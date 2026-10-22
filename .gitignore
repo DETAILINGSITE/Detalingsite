@@ -1,0 +1,33 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# next
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# env
+.env
+.env.*
+!.env.example
+
+# local data (embedded postgres, local uploads)
+.data/
+.uploads/
+
+# test output
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.lighthouseci/
+tests/.artifacts/
+
+# os / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+*.log
