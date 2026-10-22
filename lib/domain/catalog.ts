@@ -43,6 +43,7 @@ export interface CatalogPackage {
 }
 
 export interface ServiceRule {
+  id?: string;
   kind: "requires" | "excludes";
   serviceId: string;
   targetServiceId: string;

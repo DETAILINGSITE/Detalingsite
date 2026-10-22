@@ -136,6 +136,7 @@ export async function loadCatalog(db: Queryable, opts: { activeOnly?: boolean } 
     services: serviceViews,
     packages: packageViews,
     rules: rules.map((r) => ({
+      id: r.id,
       kind: r.kind,
       serviceId: r.serviceId,
       targetServiceId: r.targetServiceId,
