@@ -39,6 +39,9 @@ export async function getPublicCatalog() {
         .filter((n): n is string => Boolean(n)),
     })),
     deposit: settings.deposit,
+    taxRateBps: settings.taxRateBps,
+    taxTravel: settings.taxTravel,
+    priceRoundingCents: settings.priceRoundingCents,
     cancellation: settings.cancellation,
     reschedule: settings.reschedule,
   };
