@@ -1,0 +1,11 @@
+pnpm-lock.yaml
+.next/
+node_modules/
+.data/
+.uploads/
+coverage/
+playwright-report/
+test-results/
+.lighthouseci/
+public/models/
+db/migrations/*.sql

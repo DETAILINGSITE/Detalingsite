@@ -1,0 +1,21 @@
+# Supply-chain policy (see docs/PLAN.md §1):
+# - never resolve a release younger than 7 days (minutes)
+# - fail if a package's publish trust level drops
+# - dependency install scripts are denied unless explicitly allowed below
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+strictDepBuilds: true
+allowBuilds:
+  # ships its native binary via optionalDependencies; postinstall only re-verifies
+  esbuild: false
+  # recreates symlinks listed in the package's own pg-symlinks.json (no network)
+  "@embedded-postgres/windows-x64": true
+  "@embedded-postgres/linux-x64": true
+  "@embedded-postgres/darwin-arm64": true
+  "@embedded-postgres/darwin-x64": true
+  # napi-postinstall re-fetches bindings already provided via optionalDependencies
+  unrs-resolver: false
+# Reviewed exceptions to trustPolicy (legit backports published without provenance
+# after newer majors gained it — not takeovers):
+trustPolicyExclude:
+  - semver@6.3.1
