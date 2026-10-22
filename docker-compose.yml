@@ -1,0 +1,57 @@
+# Self-hosted deployment: app + Postgres 18 + scheduler (cron) + one-shot migrations.
+#   cp .env.example .env   # fill in production values
+#   docker compose up -d db && docker compose run --rm migrate && docker compose up -d
+# Put a TLS reverse proxy (Caddy, Traefik, a load balancer) in front of port 3000.
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: detailing
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: detailing
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U detailing"]
+      interval: 10s
+      retries: 5
+
+  migrate:
+    build: { context: ., target: migrate }
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://detailing:${POSTGRES_PASSWORD}@db:5432/detailing
+    depends_on:
+      db: { condition: service_healthy }
+    profiles: ["tools"]
+
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        DATABASE_URL: postgres://detailing:${POSTGRES_PASSWORD}@db:5432/detailing
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+        NEXT_PUBLIC_PLAUSIBLE_DOMAIN: ${NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+        NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_EMBED_KEY}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://detailing:${POSTGRES_PASSWORD}@db:5432/detailing
+    ports: ["3000:3000"]
+    depends_on:
+      db: { condition: service_healthy }
+
+  # Calls the cron endpoint every 5 minutes (reminders, hold sweeps, outbox retries).
+  scheduler:
+    image: curlimages/curl:8.10.1
+    restart: unless-stopped
+    env_file: .env
+    entrypoint: ["/bin/sh", "-c", "while true; do curl -fsS -H \"Authorization: Bearer $$CRON_SECRET\" http://app:3000/api/cron/tick || true; sleep 300; done"]
+    depends_on: [app]
+
+volumes:
+  pgdata:

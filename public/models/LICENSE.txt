@@ -1,0 +1,16 @@
+PLACEHOLDER — no 3D model has been licensed yet.
+
+The hero expects public/models/car.glb. Requirements (docs/PLAN.md §7):
+  - Licence: CC0 or purchased (commercial use). Paste the licence text and source URL below.
+  - No real manufacturer badge, logo or trademark visible.
+  - Optimised with `pnpm model:optimize <input.glb>` (Meshopt geometry + KTX2 textures), under 2 MB.
+
+Development placeholder suggestion: Khronos glTF Sample Asset "ToyCar" — CC0 1.0 Universal
+https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/ToyCar
+
+Until a model is added the site shows the static poster image, which is the intended fallback.
+
+Model:
+Source URL:
+Licence:
+Purchased/obtained on:

@@ -1,0 +1,328 @@
+/**
+ * Booking E2E — brief §9 scenarios 1–17. Runs on desktop-chrome, mobile-safari and
+ * mobile-chrome (fake payment driver, captured notifications, test clock).
+ */
+import { expect, test } from "@playwright/test";
+import { advanceClock, agreeAndPay, bookingNumber, fakePaySuccess, fillContact, mobileAddress, next, outbox, pickFirstSlot, setClock, startService } from "./helpers";
+
+test.beforeEach(async ({ request }) => {
+  await setClock(request);
+});
+
+test("E2E-01 package → sedan → 2 add-ons → mobile → slot → contact → deposit → confirmed, notified @smoke", async ({ page, request }) => {
+  await startService(page, { size: "Sedan", pkg: "Premium", addons: ["Headlight restoration", "Engine bay"] });
+  await mobileAddress(page);
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page);
+  await page.getByRole("checkbox", { name: /text me confirmations/i }).click();
+  await next(page, /continue to review/i);
+  await expect(page.getByRole("heading", { name: /review and confirm/i })).toBeVisible();
+  await agreeAndPay(page);
+  await fakePaySuccess(page);
+  await expect(page.getByText(/headlight restoration/i).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /add to google calendar/i })).toBeVisible();
+  const number = await bookingNumber(page);
+  const msgs = await outbox(request, number);
+  expect(msgs.some((m) => m.template === "booking_confirmed" && m.audience === "customer" && m.type === "email" && m.status === "done")).toBe(true);
+  expect(msgs.some((m) => m.template === "owner_booking_confirmed" && m.audience === "owner")).toBe(true);
+});
+
+test("E2E-02 SUV and truck multipliers flow through price summary and confirmation", async ({ page }) => {
+  await startService(page, { size: "SUV", pkg: "Premium" });
+  const summary = page.getByRole("complementary", { name: /booking summary/i }).or(page.getByRole("button", { name: /show booking summary/i }));
+  await expect(summary.first()).toBeVisible();
+  await mobileAddress(page);
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page, { email: "suv@example.com" });
+  await next(page, /continue to review/i);
+  // Premium base 279 × 1.2 = 334.80 → $335
+  await expect(page.getByText("$335").first()).toBeVisible();
+  await agreeAndPay(page);
+  await fakePaySuccess(page);
+  await expect(page.getByText("$335").first()).toBeVisible();
+});
+
+test("E2E-03 in-shop path shows the shop address and books a bay", async ({ page }) => {
+  await startService(page, { pkg: "Basic" });
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await expect(page.getByText(/123 Example Street/).first()).toBeVisible();
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page, { email: "shop@example.com" });
+  await next(page, /continue to review/i);
+  await agreeAndPay(page);
+  await fakePaySuccess(page);
+  await expect(page.getByText(/at our shop|example street/i).first()).toBeVisible();
+});
+
+test("E2E-04 address outside the area → friendly block + quote option", async ({ page }) => {
+  await startService(page);
+  await mobileAddress(page, "99999");
+  await next(page);
+  await expect(page.getByRole("alert").filter({ hasText: /outside our regular service area/i })).toBeVisible();
+  await page.getByRole("button", { name: /request a quote anyway/i }).click();
+  await expect(page.getByRole("heading", { name: /describe your job/i })).toBeVisible();
+});
+
+test("E2E-05 custom job → photo → quote request saved", async ({ page }) => {
+  await page.goto("/quote");
+  await page.getByRole("radio", { name: /sedan/i }).click();
+  await next(page);
+  await page.getByLabel(/job description/i).fill("Paint protection film on the full front end, please quote.");
+  await page.locator('input[type="file"]').setInputFiles({ name: "car.png", mimeType: "image/png", buffer: Buffer.from("89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da6364f8ff1f0003030200ef9a5cf70000000049454e44ae426082", "hex") });
+  await expect(page.getByText(/uploaded/i)).toBeVisible({ timeout: 20_000 });
+  await next(page);
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  await fillContact(page, { email: "quote@example.com" });
+  await page.getByRole("button", { name: /send quote request/i }).click();
+  await expect(page.getByRole("heading", { name: /request received/i })).toBeVisible();
+});
+
+test("E2E-06 two users race for the last in-shop slot → one wins, the other sees alternatives", async ({ browser, request }) => {
+  const a = await browser.newPage();
+  const b = await browser.newPage();
+  for (const p of [a, b]) {
+    await startService(p, { pkg: "Basic" });
+    await p.getByRole("radio", { name: /at your shop/i }).click();
+    await next(p);
+  }
+  const slotA = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").nth(4);
+  const slotB = b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").nth(4);
+  await Promise.all([slotA.click(), slotB.click()]);
+  const heldA = await a.getByText(/held for you/i).isVisible().catch(() => false);
+  const heldB = await b.getByText(/held for you/i).isVisible().catch(() => false);
+  await expect.poll(async () => (await a.getByText(/someone just booked/i).count()) + (await b.getByText(/someone just booked/i).count())).toBe(1);
+  expect(heldA !== heldB || heldA).toBeTruthy();
+  await expect((heldA ? b : a).getByText(/closest open times/i)).toBeVisible();
+  void request;
+});
+
+test("E2E-07 slot hold expires → the time becomes available again", async ({ browser, request }) => {
+  const a = await browser.newPage();
+  await startService(a, { pkg: "Basic" });
+  await a.getByRole("radio", { name: /at your shop/i }).click();
+  await next(a);
+  const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").first();
+  const label = (await first.textContent()) ?? "";
+  await first.click();
+  await expect(a.getByText(/held for you/i)).toBeVisible();
+  await advanceClock(request, 11 * 60_000);
+  const b = await browser.newPage();
+  await startService(b, { pkg: "Basic" });
+  await b.getByRole("radio", { name: /at your shop/i }).click();
+  await next(b);
+  await expect(b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: label.trim() })).toBeVisible();
+});
+
+test("E2E-08 declined card / 3DS / closing → no confirmed booking, retry works", async ({ page }) => {
+  await startService(page, { pkg: "Basic" });
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page, { email: "decline@example.com" });
+  await next(page, /continue to review/i);
+  await agreeAndPay(page);
+  await page.getByRole("button", { name: /card declined/i }).click();
+  await expect(page.getByRole("alert").filter({ hasText: /declined/i })).toBeVisible();
+  await expect(page).toHaveURL(/\/book/);
+  await page.getByRole("button", { name: /requires 3-d secure/i }).click();
+  await page.getByRole("button", { name: /fail authentication/i }).click();
+  await expect(page.getByRole("alert").filter({ hasText: /authentication failed/i })).toBeVisible();
+  await page.getByRole("button", { name: /requires 3-d secure/i }).click();
+  await page.getByRole("button", { name: /complete authentication/i }).click();
+  await expect(page.getByRole("heading", { name: /you're booked/i })).toBeVisible({ timeout: 30_000 });
+});
+
+test("E2E-09 webhook delivered twice → one booking, one confirmation email", async ({ page, request }) => {
+  await startService(page, { pkg: "Basic" });
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page, { email: "twice@example.com" });
+  await next(page, /continue to review/i);
+  await agreeAndPay(page);
+  const panel = page.getByTestId("fake-payment");
+  await expect(panel).toBeVisible();
+  // Deliver the same event twice through the real webhook route.
+  const session = await page.evaluate(() => sessionStorage.getItem("booking.wizard.v1"));
+  expect(session).toBeTruthy();
+  await page.route("**/api/test/fake-pay", async (route) => {
+    const body = JSON.parse(route.request().postData() ?? "{}");
+    await route.continue({ postData: JSON.stringify({ ...body, deliveries: 2 }) });
+  });
+  await fakePaySuccess(page);
+  const number = await bookingNumber(page);
+  const msgs = await outbox(request, number);
+  expect(msgs.filter((m) => m.template === "booking_confirmed" && m.type === "email")).toHaveLength(1);
+});
+
+test("E2E-10 refresh and browser back keep progress", async ({ page }) => {
+  await startService(page, { size: "Truck", pkg: "Ultimate" });
+  await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole("heading", { name: /choose your services/i })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /^Ultimate/i })).toBeChecked();
+  await page.goBack();
+  await expect(page.getByRole("radio", { name: /truck/i })).toBeChecked();
+});
+
+async function bookConfirmed(page: import("@playwright/test").Page, email: string) {
+  await startService(page, { pkg: "Basic" });
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page, { email });
+  await next(page, /continue to review/i);
+  await agreeAndPay(page);
+  await fakePaySuccess(page);
+  return bookingNumber(page);
+}
+
+test("E2E-11 reschedule via manage link frees the old slot and notifies", async ({ page, request }) => {
+  const number = await bookConfirmed(page, "move@example.com");
+  await page.getByRole("button", { name: /reschedule/i }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("group", { name: /available days/i }).getByRole("button").nth(2).click();
+  await dialog.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").first().click();
+  await dialog.getByRole("button", { name: /move to/i }).click();
+  await expect(dialog).toBeHidden();
+  const msgs = await outbox(request, number);
+  expect(msgs.some((m) => m.template === "booking_rescheduled")).toBe(true);
+});
+
+test("E2E-12 cancel outside the window → full refund queued", async ({ page, request }) => {
+  const number = await bookConfirmed(page, "cancel@example.com");
+  await page.getByRole("button", { name: /cancel booking/i }).click();
+  await expect(page.getByText(/full deposit of \$50/i)).toBeVisible();
+  await page.getByRole("button", { name: /yes, cancel my booking/i }).click();
+  await expect(page.getByRole("heading", { name: /booking cancelled/i })).toBeVisible();
+  const msgs = await outbox(request, number);
+  expect(msgs.some((m) => m.type === "stripe.refund")).toBe(true);
+  expect(msgs.some((m) => m.template === "booking_cancelled")).toBe(true);
+});
+
+test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
+  await startService(page, { pkg: "Basic" });
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  // Sunday 2026-10-25 is closed in seed hours.
+  await expect(page.getByRole("button", { name: /sunday, october 25/i })).toBeDisabled();
+});
+
+test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {
+  await startService(page, { pkg: "Ultimate" });
+  await page.goBack();
+  await page.getByRole("radio", { name: /no package/i }).click();
+  await page.getByRole("checkbox", { name: /paint correction — 2-stage/i }).click();
+  await page.getByRole("checkbox", { name: /ceramic coating/i }).click();
+  await expect(page.getByText(/longer than a single day/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /switch to a custom quote/i })).toBeVisible();
+});
+
+test("E2E-15 invalid inputs show clear errors and block progress", async ({ page }) => {
+  await page.goto("/book");
+  await next(page);
+  await expect(page.getByRole("alert").filter({ hasText: /choose one option/i })).toBeVisible();
+  await page.getByRole("radio", { name: /choose a service or package/i }).click();
+  await next(page);
+  await next(page);
+  await expect(page.getByText(/choose your vehicle size/i)).toBeVisible();
+  await page.getByRole("radio", { name: /sedan/i }).click();
+  await page.getByLabel(/^year/i).fill("1800");
+  await next(page);
+  await expect(page.getByText(/enter a year between/i)).toBeVisible();
+  await page.getByLabel(/^year/i).fill("");
+  await next(page);
+  await page.getByRole("radio", { name: /^Basic/i }).click();
+  await next(page);
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await page.getByLabel(/mobile phone/i).fill("12");
+  await page.getByLabel(/^email/i).fill("not-an-email");
+  await next(page, /continue to review/i);
+  await expect(page.getByText(/enter your full name/i)).toBeVisible();
+  await expect(page.getByText(/valid phone number/i)).toBeVisible();
+  await expect(page.getByText(/valid email address/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /your contact details/i })).toBeVisible();
+});
+
+test("E2E-16 deposit disabled → no payment step, booking confirmed", async ({ page, request }) => {
+  await request.post("/api/test/settings", { data: { deposit: { mode: "none" } } });
+  try {
+    await startService(page, { pkg: "Basic" });
+    await page.getByRole("radio", { name: /at your shop/i }).click();
+    await next(page);
+    await pickFirstSlot(page);
+    await next(page);
+    await fillContact(page, { email: "nodeposit@example.com" });
+    await next(page, /continue to review/i);
+    await expect(page.getByText(/no payment needed now/i)).toBeVisible();
+    await page.getByRole("checkbox", { name: /cancellation policy/i }).click();
+    await page.getByRole("button", { name: /confirm booking/i }).click();
+    await expect(page.getByRole("heading", { name: /you're booked/i })).toBeVisible();
+  } finally {
+    await request.post("/api/test/settings", { data: { deposit: { mode: "fixed", valueCents: 5000 } } });
+  }
+});
+
+test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
+  await page.goto("/book");
+  const tabTo = async (name: RegExp, role: "radio" | "button" | "checkbox" | "textbox" = "button") => {
+    for (let i = 0; i < 60; i++) {
+      await page.keyboard.press("Tab");
+      const focused = page.locator(":focus");
+      const accessible = (await focused.getAttribute("aria-label")) ?? (await focused.textContent()) ?? "";
+      if (name.test(accessible) && (await focused.evaluate((el, r) => el.getAttribute("role") === r || el.tagName.toLowerCase() === (r === "textbox" ? "input" : r), role).catch(() => true))) return;
+    }
+    throw new Error(`Could not reach ${name} by keyboard`);
+  };
+  await tabTo(/choose a service or package/i, "radio");
+  await page.keyboard.press("Space");
+  await tabTo(/continue/i);
+  await page.keyboard.press("Enter");
+  await tabTo(/sedan/i, "radio");
+  await page.keyboard.press("Space");
+  await tabTo(/continue/i);
+  await page.keyboard.press("Enter");
+  await tabTo(/basic/i, "radio");
+  await page.keyboard.press("Space");
+  await tabTo(/continue/i);
+  await page.keyboard.press("Enter");
+  await tabTo(/at your shop/i, "radio");
+  await page.keyboard.press("Space");
+  await tabTo(/continue/i);
+  await page.keyboard.press("Enter");
+  await tabTo(/(AM|PM)/, "radio");
+  await page.keyboard.press("Space");
+  await expect(page.getByText(/held for you/i)).toBeVisible();
+  await tabTo(/continue/i);
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("Kay Board");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("(555) 010-2039");
+  await page.keyboard.press("Tab");
+  await page.keyboard.type("keyboard@example.com");
+  await tabTo(/continue to review/i);
+  await page.keyboard.press("Enter");
+  await tabTo(/cancellation policy/i, "checkbox");
+  await page.keyboard.press("Space");
+  await tabTo(/continue to payment/i);
+  await page.keyboard.press("Enter");
+  await tabTo(/succeeds/i);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: /you're booked/i })).toBeVisible({ timeout: 30_000 });
+});

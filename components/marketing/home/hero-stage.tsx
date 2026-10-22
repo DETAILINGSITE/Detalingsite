@@ -46,7 +46,13 @@ export function HeroStage() {
       if (done) return;
       done = true;
       cleanup();
-      setLoad(true);
+      // Don't download Three.js until we know a licensed model has been added.
+      fetch("/models/car.glb", { method: "HEAD" })
+        .then((r) => {
+          if (r.ok) setLoad(true);
+          else document.documentElement.dataset.hero3d = "off:no-model";
+        })
+        .catch(() => (document.documentElement.dataset.hero3d = "off:no-model"));
     };
     const events = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"] as const;
     events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));

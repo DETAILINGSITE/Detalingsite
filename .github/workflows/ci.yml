@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.14.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium webkit firefox
+      - run: pnpm e2e --project=desktop-chrome --project=mobile-safari --project=mobile-chrome --project=site-checks --project=desktop-firefox --project=desktop-webkit
+      - name: Lighthouse (mobile + desktop) and bundle budget
+        run: |
+          SKIP_BUILD=1 PORT=3100 pnpm exec tsx scripts/e2e-server.ts &
+          npx wait-on http://localhost:3100/api/health --timeout 120000
+          BASE_URL=http://localhost:3100 pnpm check:bundle
+          BASE_URL=http://localhost:3100 pnpm lhci
+          LHCI_PRESET=desktop BASE_URL=http://localhost:3100 pnpm lhci
+      - run: pnpm verify:report
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reports
+          path: |
+            docs/VERIFICATION.md
+            playwright-report
+            .lighthouseci
+            test-results
