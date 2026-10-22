@@ -43,7 +43,8 @@ import { Summary } from "./summary";
 
 const uuid = () => crypto.randomUUID();
 
-function fromInit(init: WizardInit, data: WizardData): WizardState {
+/** `makeId` is a no-op during prerender; real ids are minted on mount (see the hydrate effect). */
+function fromInit(init: WizardInit, data: WizardData, makeId: () => string = () => ""): WizardState {
   const pkg = init.packageId ? data.packages.find((p) => p.slug === init.packageId || p.id === init.packageId) : null;
   const svcIds = (init.serviceIds ?? [])
     .map((x) => data.services.find((s) => s.slug === x || s.id === x))
@@ -57,7 +58,7 @@ function fromInit(init: WizardInit, data: WizardData): WizardState {
     serviceIds: svcIds.filter((x) => x.kind === "service").map((x) => x.id),
     zip: init.zip,
     locationType: init.quote?.locationType ?? init.locationType ?? (data.serviceMode !== "both" ? data.serviceMode : null),
-    uuid,
+    uuid: makeId,
   });
   if (init.quote) {
     s.contact = { ...s.contact, name: init.quote.customer.name, email: init.quote.customer.email, phone: init.quote.customer.phone };
@@ -93,6 +94,8 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
         }
       }
       dispatch({ type: "reset", state: next });
+    } else {
+      dispatch({ type: "reset", state: fromInit(init, data, uuid) });
     }
     setReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount

@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/db/client";
 import { now } from "@/lib/server/clock";
@@ -8,6 +9,7 @@ import { ipFromRequest } from "@/lib/server/request";
 const Query = z.object({ id: z.string().min(10).max(300), session: z.uuid() });
 
 export async function GET(request: Request) {
+  await connection(); // always per-request: key availability is a runtime fact
   if (!placesEnabled()) return Response.json({ address: null });
   const rl = await rateLimit(getDb(), "places", ipFromRequest(request), now());
   if (!rl.ok) return Response.json({ address: null }, { status: 429 });

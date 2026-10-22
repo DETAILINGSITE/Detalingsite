@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { Suspense, type ReactNode } from "react";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
@@ -5,8 +6,14 @@ import { Header } from "@/components/site/header";
 /**
  * Booking, manage and quote-link pages: rendered per request (strict nonce CSP),
  * native scrolling (no Lenis), no decorative motion.
+ *
+ * Nonces only reach scripts rendered per request; a prerendered (PPR) shell would ship
+ * un-nonced scripts that the CSP blocks. So this segment opts out of the static shell.
  */
-export default function FlowLayout({ children }: { children: ReactNode }) {
+export const instant = false;
+
+export default async function FlowLayout({ children }: { children: ReactNode }) {
+  await connection();
   return (
     <>
       <Header minimal />

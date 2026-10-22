@@ -23,7 +23,7 @@ export default function OpengraphImage() {
       >
         <div style={{ fontSize: 28, letterSpacing: 6, color: "#e5c77c", textTransform: "uppercase" }}>{business.name}</div>
         <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.02, marginTop: 18, maxWidth: 900 }}>{business.tagline}</div>
-        <div style={{ fontSize: 30, color: "#b1b4ba", marginTop: 24 }}>Book online · {business.contact.phoneDisplay}</div>
+        <div style={{ fontSize: 30, color: "#b1b4ba", marginTop: 24 }}>{`Book online · ${business.contact.phoneDisplay}`}</div>
       </div>
     ),
     size,
