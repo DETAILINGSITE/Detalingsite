@@ -1,0 +1,185 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ─── Design tokens ─────────────────────────────────────────────────────────
+   Dark, cinematic surfaces + one warm accent. Every text/surface pair below
+   meets WCAG 2.2 AA (4.5:1); see tests/unit/contrast.test.ts. */
+@theme {
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-ink-950: #060709;
+  --color-ink-900: #0b0c0e;
+  --color-ink-850: #101215;
+  --color-ink-800: #15181c;
+  --color-ink-700: #1d2126;
+  --color-ink-600: #2a2f36;
+  --color-ink-500: #3d434c;
+
+  --color-fg: #f4f3ef;
+  --color-fg-muted: #b1b4ba;
+  --color-fg-subtle: #8d929b;
+
+  --color-gold-200: #f0dfae;
+  --color-gold-300: #e5c77c;
+  --color-gold-400: #d6b25d;
+  --color-gold-500: #c8a24a;
+  --color-gold-600: #a4822f;
+
+  --color-danger: #ff7a7a;
+  --color-success: #5fd69a;
+  --color-warning: #f5c451;
+  --color-placeholder: #f5c451;
+
+  --radius-card: 1.25rem;
+  --radius-pill: 999px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --animate-fade-in: fade-in 0.3s var(--ease-out-expo) both;
+  --animate-rise: rise 0.9s var(--ease-out-expo) both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Transform-only so the hero headline is painted (and counted for LCP) on frame 1. */
+@keyframes rise {
+  from { transform: translate3d(0, 0.35em, 0); }
+  to { transform: none; }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --brand: var(--color-gold-500);
+    --header-h: 4.5rem;
+    --mobile-bar-h: 0px;
+  }
+
+  @media (max-width: 767px) {
+    :root { --mobile-bar-h: 4.25rem; }
+  }
+
+  html {
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    scroll-padding-bottom: calc(var(--mobile-bar-h) + 1rem);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-ink-900);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-gold-400);
+    color: var(--color-ink-950);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-300);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  h1, h2, h3, .font-display {
+    font-stretch: 125%;
+    font-variation-settings: "wdth" 125;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  .container-site {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 80rem;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 768px) {
+    .container-site { padding-inline: 2rem; }
+  }
+
+  .eyebrow {
+    color: var(--color-gold-300);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: linear-gradient(180deg, var(--color-ink-800), var(--color-ink-850));
+    border: 1px solid rgb(255 255 255 / 0.07);
+    border-radius: var(--radius-card);
+  }
+
+  .hairline { border-color: rgb(255 255 255 / 0.08); }
+}
+
+/* ─── Motion: pre-reveal states only exist once JS motion is confirmed ready ── */
+html.motion-ready [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+}
+html.motion-ready [data-reveal="fade"] { transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.motion-ready [data-reveal] { opacity: 1; transform: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.15s !important;
+  }
+}
+
+/* ─── View transitions (React <ViewTransition>, docs/PLAN.md §6) ──────────── */
+::view-transition { pointer-events: none; }
+
+::view-transition-old(.page-fade) { animation: 180ms ease-in both vt-fade-out; }
+::view-transition-new(.page-fade) { animation: 360ms var(--ease-out-expo) 80ms both vt-fade-in; }
+
+::view-transition-group(.morph) { animation-duration: 420ms; animation-timing-function: var(--ease-out-expo); }
+
+::view-transition-group(site-header) { animation: none; z-index: 100; }
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+
+::view-transition-old(.step-forward) { animation: 160ms ease-in both vt-fade-out, 160ms ease-in both vt-slide-out-left; }
+::view-transition-new(.step-forward) { animation: 300ms var(--ease-out-expo) both vt-fade-in, 300ms var(--ease-out-expo) both vt-slide-in-right; }
+::view-transition-old(.step-back) { animation: 160ms ease-in both vt-fade-out, 160ms ease-in both vt-slide-out-right; }
+::view-transition-new(.step-back) { animation: 300ms var(--ease-out-expo) both vt-fade-in, 300ms var(--ease-out-expo) both vt-slide-in-left; }
+
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes vt-fade-out { to { opacity: 0; } }
+@keyframes vt-slide-in-right { from { transform: translateX(12px); } }
+@keyframes vt-slide-in-left { from { transform: translateX(-12px); } }
+@keyframes vt-slide-out-left { to { transform: translateX(-12px); } }
+@keyframes vt-slide-out-right { to { transform: translateX(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*), ::view-transition-new(*), ::view-transition-group(*) {
+    animation-duration: 150ms !important;
+    animation-delay: 0s !important;
+    animation-name: vt-fade-in !important;
+  }
+  ::view-transition-old(*) { animation-name: vt-fade-out !important; }
+}
+
+/* Fallback when the View Transitions API is unavailable: a plain opacity fade. */
+@supports not (view-transition-name: none) {
+  .route-fallback-fade { animation: fade-in 300ms var(--ease-out-expo) both; }
+}
