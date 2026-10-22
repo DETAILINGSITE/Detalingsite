@@ -45,10 +45,10 @@ export const business = {
   timezone: ph("America/Chicago", "contact.timezone", "IANA time zone of the business"),
 
   contact: {
-    /** E.164 — used for tel: links and Twilio. 555-01xx numbers are reserved as fictional. */
-    phone: ph("+15550102030", "contact.phone", "Main phone number in E.164 (+1…)"),
-    phoneDisplay: ph("(555) 010-2030", "contact.phoneDisplay", "Phone number as displayed"),
-    sms: ph("+15550102030", "contact.sms", "Number customers can text (sms: link)"),
+    /** E.164 — used for tel: links and Twilio. NXX-555-01xx numbers are reserved as fictional. */
+    phone: ph("+12015550123", "contact.phone", "Main phone number in E.164 (+1…)"),
+    phoneDisplay: ph("(201) 555-0123", "contact.phoneDisplay", "Phone number as displayed"),
+    sms: ph("+12015550123", "contact.sms", "Number customers can text (sms: link)"),
     email: ph("hello@example.com", "contact.email", "Public contact email"),
   },
 

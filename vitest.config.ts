@@ -23,6 +23,8 @@ export default defineConfig({
       CAPTCHA_DRIVER: "test",
       TEST_CLOCK: "1",
       NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
+      OWNER_NOTIFY_EMAIL: "owner@example.com",
+      OWNER_NOTIFY_PHONE: "+12015550199",
     },
   },
 });

@@ -47,6 +47,25 @@ export function getDb(): Db {
 /** Postgres SQLSTATE for an exclusion-constraint violation (overlapping allocation). */
 export const EXCLUSION_VIOLATION = "23P01";
 export const UNIQUE_VIOLATION = "23505";
+export const DEADLOCK_DETECTED = "40P01";
+export const SERIALIZATION_FAILURE = "40001";
+
+/**
+ * Concurrent inserts into an exclusion constraint can deadlock: each transaction waits on the
+ * other's uncommitted row and Postgres aborts one with 40P01. Re-running the aborted
+ * transaction is safe; it then sees the winner's committed row and reports a normal conflict.
+ */
+export async function retryOnDeadlock<T>(run: () => Promise<T>, attempts = 4): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await run();
+    } catch (err) {
+      const code = pgErrorCode(err);
+      if (i >= attempts || (code !== DEADLOCK_DETECTED && code !== SERIALIZATION_FAILURE)) throw err;
+      await new Promise((r) => setTimeout(r, 5 + Math.random() * 20 * i));
+    }
+  }
+}
 
 export function pgErrorCode(err: unknown): string | undefined {
   let e: unknown = err;

@@ -31,7 +31,7 @@ describe("U-ZONE service area", () => {
 
 describe("U-VALID schemas", () => {
   it("phone normalises to E.164 and rejects junk", () => {
-    expect(PhoneSchema.parse("(555) 010-2030")).toBe("+15550102030");
+    expect(PhoneSchema.parse("(201) 555-0123")).toBe("+12015550123");
     expect(PhoneSchema.safeParse("12").success).toBe(false);
     expect(PhoneSchema.safeParse("").success).toBe(false);
   });

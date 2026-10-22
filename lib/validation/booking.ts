@@ -51,7 +51,7 @@ export const PhoneSchema = z
   .transform((value, ctx) => {
     const parsed = parsePhoneNumberFromString(value, "US");
     if (!parsed || !parsed.isValid()) {
-      ctx.addIssue({ code: "custom", message: "Enter a valid phone number, e.g. (555) 010-2030" });
+      ctx.addIssue({ code: "custom", message: "Enter a valid phone number, e.g. (201) 555-0123" });
       return z.NEVER;
     }
     return parsed.number;

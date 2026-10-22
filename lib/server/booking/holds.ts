@@ -4,7 +4,7 @@
  */
 import { and, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import { business } from "@/config/business";
-import { EXCLUSION_VIOLATION, getDb, pgErrorCode, type Db, type Queryable } from "@/db/client";
+import { EXCLUSION_VIOLATION, getDb, pgErrorCode, retryOnDeadlock, type Db, type Queryable } from "@/db/client";
 import * as s from "@/db/schema";
 import {
   blockedRange,
@@ -270,7 +270,7 @@ export async function createHold(req: HoldRequest, now: Date, db: Db = getDb()):
   const sizeLabel = ctx.catalog.sizes.find((z) => z.id === plan.selection.sizeId)?.label ?? plan.selection.sizeId;
 
   try {
-    const booking = await db.transaction(async (tx) => {
+    const booking = await retryOnDeadlock(() => db.transaction(async (tx) => {
       await sweepExpiredHolds(tx, now, {
         resourceIds: plan.resourceIds,
         start: new Date(blocked.start),
@@ -373,7 +373,7 @@ export async function createHold(req: HoldRequest, now: Date, db: Db = getDb()):
         createdAt: now,
       });
       return row;
-    });
+    }));
 
     await recordFunnel(db, { sessionId: req.sessionId, event: "hold_created", step: "schedule", bookingId: id, at: now, utmSource: req.attribution.utmSource });
 

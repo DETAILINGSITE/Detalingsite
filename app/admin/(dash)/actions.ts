@@ -7,7 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
-import { EXCLUSION_VIOLATION, getDb, pgErrorCode } from "@/db/client";
+import { EXCLUSION_VIOLATION, getDb, pgErrorCode, retryOnDeadlock } from "@/db/client";
 import * as s from "@/db/schema";
 import { OperationalSettingsSchema } from "@/lib/domain/settings";
 import { audit, requireAdmin } from "@/lib/server/admin-guard";
@@ -430,7 +430,7 @@ export async function timeBlockAction(form: FormData): Promise<ActionResult> {
     const p = z.object({ resourceId: z.uuid(), start: z.iso.datetime({ offset: true }), end: z.iso.datetime({ offset: true }), note: z.string().max(200).default("") }).parse(raw);
     if (Date.parse(p.end) <= Date.parse(p.start)) return { ok: false, message: "End must be after start." };
     try {
-      await getDb().insert(s.resourceAllocations).values({ resourceId: p.resourceId, kind: "block", period: { start: new Date(p.start), end: new Date(p.end) }, note: p.note, createdBy: admin.userId });
+      await retryOnDeadlock(() => getDb().insert(s.resourceAllocations).values({ resourceId: p.resourceId, kind: "block", period: { start: new Date(p.start), end: new Date(p.end) }, note: p.note, createdBy: admin.userId }));
     } catch (err) {
       if (pgErrorCode(err) === EXCLUSION_VIOLATION) return { ok: false, message: "That block overlaps an existing booking or block on this crew/bay." };
       throw err;

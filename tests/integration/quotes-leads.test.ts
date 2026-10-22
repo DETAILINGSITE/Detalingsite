@@ -11,7 +11,7 @@ import { rateLimit } from "@/lib/server/rate-limit";
 import { db, at, attribution, mobileLocation, resetDb } from "../support/db";
 
 const clock = () => new Date(now());
-const contact = { name: "Quinn Quote", phone: "+15550102032", email: "quinn@example.com", preferredContact: "sms" as const, smsConsent: false, leadConsent: false };
+const contact = { name: "Quinn Quote", phone: "+12015550132", email: "quinn@example.com", preferredContact: "sms" as const, smsConsent: false, leadConsent: false };
 
 describe("quotes, leads, availability (integration)", () => {
   beforeEach(async () => {

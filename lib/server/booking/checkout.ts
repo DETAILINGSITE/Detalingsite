@@ -4,7 +4,7 @@
  */
 import { and, desc, eq, sql } from "drizzle-orm";
 import { business } from "@/config/business";
-import { EXCLUSION_VIOLATION, UNIQUE_VIOLATION, getDb, pgErrorCode, type Db, type Queryable } from "@/db/client";
+import { EXCLUSION_VIOLATION, UNIQUE_VIOLATION, getDb, pgErrorCode, retryOnDeadlock, type Db, type Queryable } from "@/db/client";
 import * as s from "@/db/schema";
 import { blockedRange } from "@/lib/domain/availability";
 import { price } from "@/lib/domain/pricing";
@@ -375,7 +375,7 @@ export async function handlePaymentEvent(event: NormalizedPaymentEvent, now: Dat
 async function onDepositPaid(db: Db, event: NormalizedPaymentEvent, now: Date): Promise<string> {
   if (!event.sessionId) return "no_session";
   const ctx = await loadBookingContext(db);
-  return db.transaction(async (tx) => {
+  return retryOnDeadlock(() => db.transaction(async (tx) => {
     const [payment] = await tx
       .select()
       .from(s.payments)
@@ -477,7 +477,7 @@ async function onDepositPaid(db: Db, event: NormalizedPaymentEvent, now: Date): 
       return "cancelled_refunded";
     }
     return "noop";
-  });
+  }));
 }
 
 async function reacquire(

@@ -3,7 +3,7 @@
  * (docs/PLAN.md §5.4). Shared by the customer manage link and the admin dashboard.
  */
 import { and, eq } from "drizzle-orm";
-import { EXCLUSION_VIOLATION, getDb, pgErrorCode, type Db } from "@/db/client";
+import { EXCLUSION_VIOLATION, getDb, pgErrorCode, retryOnDeadlock, type Db } from "@/db/client";
 import * as s from "@/db/schema";
 import { blockedRange, freeResourcesAt } from "@/lib/domain/availability";
 import { canReschedule, cancellationOutcome, type Actor as PolicyActor } from "@/lib/domain/policy";
@@ -96,7 +96,7 @@ export async function rescheduleBooking(
   );
 
   const previousStart = booking.startsAt;
-  const updated = await db.transaction(async (tx) => {
+  const updated = await retryOnDeadlock(() => db.transaction(async (tx) => {
     let moved = false;
     for (const resourceId of candidates) {
       try {
@@ -131,7 +131,8 @@ export async function rescheduleBooking(
     if (!row) throw new Error("reschedule transition failed");
     await enqueueBookingRescheduled(tx, row, previousStart, ctx.settings, now);
     return row;
-  });
+  }));
+
   if (!updated) return { ok: false, code: "SLOT_TAKEN", message: "Someone just booked that time — please pick another." };
   return { ok: true, startsAt: updated.startsAt.toISOString() };
 }

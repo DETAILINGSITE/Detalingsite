@@ -15,7 +15,7 @@ import { db, at, attribution, ids, mobileLocation, resetDb, shopLocation } from 
 
 const clock = () => new Date(now());
 const SLOT = "2026-11-03T15:00:00.000Z"; // Tue 9:00 CST
-const contact = { name: "Alex Driver", phone: "+15550102031", email: "alex@example.com", preferredContact: "email" as const, smsConsent: true, leadConsent: true };
+const contact = { name: "Alex Driver", phone: "+12015550131", email: "alex@example.com", preferredContact: "email" as const, smsConsent: true, leadConsent: true };
 
 async function holdReq(p: Partial<HoldRequest> = {}): Promise<HoldRequest> {
   const { pkg } = await ids();
@@ -75,12 +75,11 @@ describe("booking flow (integration)", () => {
   });
 
   it("I-DB-EXCL-01 two simultaneous holds on one crew: exactly one wins (scenario 6)", async () => {
-    // Only one mobile crew for this test.
-    const { resources } = await ids();
-    const crews = resources.filter((r) => r.type === "mobile_crew");
-    await db().update(s.resources).set({ active: false }).where(eq(s.resources.id, crews[1]!.id));
-    for (let round = 0; round < 5; round++) {
+    // Only one mobile crew for this test. Reseeding issues new ids, so look it up each round.
+    for (let round = 0; round < 20; round++) {
       await resetDb();
+      const crews = (await ids()).resources.filter((r) => r.type === "mobile_crew");
+      expect(crews.length).toBeGreaterThanOrEqual(2);
       await db().update(s.resources).set({ active: false }).where(eq(s.resources.id, crews[1]!.id));
       const reqs = await Promise.all([holdReq(), holdReq(), holdReq()]);
       const results = await Promise.all(reqs.map((r) => createHold(r, clock())));
