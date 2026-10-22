@@ -40,6 +40,11 @@
   --animate-rise: rise 0.9s var(--ease-out-expo) both;
 }
 
+@keyframes sheen {
+  0% { transform: translateX(0); }
+  60%, 100% { transform: translateX(400%); }
+}
+
 @keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
