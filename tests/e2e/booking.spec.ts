@@ -109,7 +109,8 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await a.getByRole("radio", { name: /at your shop/i }).click();
   await next(a);
   const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").first();
-  const label = (await first.textContent()) ?? "";
+  const time = /d{1,2}:d{2} [AP]M/.exec((await first.textContent()) ?? "")?.[0] ?? "";
+  expect(time).not.toBe("");
   await first.click();
   await expect(a.getByText(/held for you/i)).toBeVisible();
   await advanceClock(request, 11 * 60_000);
@@ -117,7 +118,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await startService(b, { pkg: "Basic" });
   await b.getByRole("radio", { name: /at your shop/i }).click();
   await next(b);
-  await expect(b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: label.trim() })).toBeVisible();
+  await expect(b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: new RegExp(`^${time}`) })).toBeVisible();
 });
 
 test("E2E-08 declined card / 3DS / closing → no confirmed booking, retry works", async ({ page }) => {
@@ -236,6 +237,7 @@ test("E2E-15 invalid inputs show clear errors and block progress", async ({ page
   await expect(page.getByRole("alert").filter({ hasText: /choose one option/i })).toBeVisible();
   await page.getByRole("radio", { name: /choose a service or package/i }).click();
   await next(page);
+  await expect(page.getByRole("heading", { name: /tell us about your vehicle/i })).toBeVisible();
   await next(page);
   await expect(page.getByText(/choose your vehicle size/i)).toBeVisible();
   await page.getByRole("radio", { name: /sedan/i }).click();
@@ -289,31 +291,40 @@ test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
     }
     throw new Error(`Could not reach ${name} by keyboard`);
   };
-  await tabTo(/choose a service or package/i, "radio");
-  await page.keyboard.press("Space");
+  // Radio groups use roving tabindex (WAI-ARIA): Tab reaches the group, arrow keys pick the option.
+  const chooseRadio = async (name: RegExp) => {
+    await tabTo(/./, "radio");
+    for (let i = 0; i < 12; i++) {
+      const focused = page.locator(":focus");
+      const label = (await focused.getAttribute("aria-label")) ?? (await focused.textContent()) ?? "";
+      if (name.test(label)) {
+        await page.keyboard.press("Space");
+        return;
+      }
+      await page.keyboard.press("ArrowDown");
+    }
+    throw new Error(`Could not choose ${name} by keyboard`);
+  };
+  await chooseRadio(/choose a service or package/i);
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
-  await tabTo(/sedan/i, "radio");
-  await page.keyboard.press("Space");
+  await chooseRadio(/sedan/i);
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
-  await tabTo(/basic/i, "radio");
-  await page.keyboard.press("Space");
+  await chooseRadio(/basic/i);
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
-  await tabTo(/at your shop/i, "radio");
-  await page.keyboard.press("Space");
+  await chooseRadio(/at your shop/i);
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
-  await tabTo(/(AM|PM)/, "radio");
-  await page.keyboard.press("Space");
+  await chooseRadio(/(AM|PM)/);
   await expect(page.getByText(/held for you/i)).toBeVisible();
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
   await page.keyboard.press("Tab");
   await page.keyboard.type("Kay Board");
   await page.keyboard.press("Tab");
-  await page.keyboard.type("(555) 010-2039");
+  await page.keyboard.type("(201) 555-0139");
   await page.keyboard.press("Tab");
   await page.keyboard.type("keyboard@example.com");
   await tabTo(/continue to review/i);

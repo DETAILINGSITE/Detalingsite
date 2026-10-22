@@ -1,12 +1,13 @@
 "use client";
 /**
- * Booking wizard (docs/PLAN.md §4.1). State: reducer + sessionStorage; URL: ?step=
- * (pushState, so browser back walks the steps). Steps animate with React View
+ * Booking wizard (docs/PLAN.md §4.1). State: reducer + sessionStorage. The URL's ?step= is
+ * kept in sync through the Next router (router.push per step), so browser back/forward walk
+ * the steps; Next owns the history entries. Steps animate with React View
  * Transitions typed "step-forward" / "step-back".
  */
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { addTransitionType, startTransition, useEffect, useMemo, useReducer, useRef, useState, ViewTransition } from "react";
 import { submitQuoteAction } from "@/app/(flow)/book/actions";
 import { buttonVariants } from "@/components/ui/button";
@@ -69,6 +70,9 @@ function fromInit(init: WizardInit, data: WizardData, makeId: () => string = () 
 
 export function BookingWizard({ data, init }: { data: WizardData; init: WizardInit }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const urlStep = searchParams.get("step") as StepId | null;
   const [ready, setReady] = useState(false);
   const [state, dispatch] = useReducer(reducer, null, () => fromInit(init, data));
   const [notice, setNotice] = useState<string | null>(init.quoteError ?? null);
@@ -105,39 +109,55 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
     if (ready) persist(state);
   }, [state, ready]);
 
-  // URL ⇄ step sync. Back/forward buttons move between steps without losing state.
+  // State → URL: every step change becomes a history entry (replace for the first one).
   useEffect(() => {
     if (!ready) return;
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("step") !== state.step) {
-      url.searchParams.set("step", state.step);
-      for (const k of ["pkg", "svc", "size", "zip", "loc", "path"]) url.searchParams.delete(k);
-      window.history.pushState(null, "", url);
+    if (urlStep !== state.step) {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const k of ["pkg", "svc", "size", "zip", "loc", "path"]) params.delete(k);
+      params.set("step", state.step);
+      const href = `${pathname}?${params}`;
+      if (urlStep) router.push(href, { scroll: false });
+      else router.replace(href, { scroll: false });
     }
     if (lastStep.current !== state.step) {
       funnel("step_view", state.step, getAttribution().utmSource);
       lastStep.current = state.step;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to step changes only
   }, [state.step, ready]);
 
-  const go = (step: StepId, direction: "forward" | "back", fromHistory = false) => {
-    if (!fromHistory && !canEnter(state, step) && step !== "submitted") return;
+  // URL → state: browser back/forward. A step that can't be entered yet snaps the URL back.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  });
+  useEffect(() => {
+    const current = stateRef.current;
+    if (!ready || !urlStep || urlStep === current.step) return;
+    if (urlStep !== "submitted" && canEnter(current, urlStep)) {
+      const order = stepsFor(current);
+      const back = order.indexOf(urlStep) < order.indexOf(current.step);
+      startTransition(() => {
+        addTransitionType(back ? "step-back" : "step-forward");
+        dispatch({ type: "goto", step: urlStep });
+      });
+    } else {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("step", current.step);
+      router.replace(`${pathname}?${params}`, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to URL changes only
+  }, [urlStep, ready]);
+
+  const go = (step: StepId, direction: "forward" | "back") => {
+    if (!canEnter(state, step) && step !== "submitted") return;
     startTransition(() => {
       addTransitionType(direction === "forward" ? "step-forward" : "step-back");
       dispatch({ type: "goto", step });
     });
     window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   };
-
-  useEffect(() => {
-    const onPop = () => {
-      const s = new URL(window.location.href).searchParams.get("step") as StepId | null;
-      if (s) go(s, "back", true);
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  });
-
 
   const goNext = () => {
     funnel("step_complete", state.step);

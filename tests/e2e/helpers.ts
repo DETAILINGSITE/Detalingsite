@@ -1,9 +1,11 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
-/** Freeze server time (TEST_CLOCK=1). Default: Thu 2026-10-22 10:00 CDT. */
+/** Freeze server time (TEST_CLOCK=1) and reset rate limits. Default: Thu 2026-10-22 10:00 CDT. */
 export async function setClock(request: APIRequestContext, iso = "2026-10-22T15:00:00Z") {
   const r = await request.post("/api/test/clock", { data: { to: iso } });
   expect(r.ok()).toBeTruthy();
+  // Every test starts with fresh rate-limit counters (same IP, same pinned instant).
+  expect((await request.delete("/api/test/rate-limits")).ok()).toBeTruthy();
 }
 
 export async function advanceClock(request: APIRequestContext, ms: number) {
