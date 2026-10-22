@@ -22,7 +22,7 @@ export function noteText(n: PriceNote): string {
     : `${n.serviceName} is already included in the ${n.packageName} package.`;
 }
 
-export function priceSummary(p: PriceResult & { sizeLabel?: string }): PriceSummary {
+export function priceSummary(p: PriceResult & { sizeLabel?: string; computedAt?: string }): PriceSummary {
   return {
     lines: p.lines,
     notes: p.notes.map(noteText),

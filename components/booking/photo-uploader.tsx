@@ -1,6 +1,6 @@
 "use client";
 import { ImagePlus, RotateCcw, X } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { confirmUploadAction, signUploadAction } from "@/app/(flow)/book/actions";
 import { Button } from "@/components/ui/button";
 import { compressImage, putWithProgress } from "@/lib/booking/compress";
@@ -25,7 +25,9 @@ export function PhotoUploader({ uploadSessionId, photoIds, onChange }: { uploadS
   const input = useRef<HTMLInputElement>(null);
   const id = useId();
   const idsRef = useRef(photoIds);
-  idsRef.current = photoIds;
+  useEffect(() => {
+    idsRef.current = photoIds;
+  }, [photoIds]);
 
   const update = (key: string, patch: Partial<Item>) => setItems((list) => list.map((i) => (i.key === key ? { ...i, ...patch } : i)));
 

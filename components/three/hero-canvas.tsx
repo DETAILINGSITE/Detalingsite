@@ -17,15 +17,15 @@ import { KTX2Loader } from "three/examples/jsm/loaders/KTX2Loader.js";
 const MODEL_URL = "/models/car.glb";
 
 class CanvasBoundary extends Component<{ children: ReactNode; onError: () => void }, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch(err: unknown) {
+  override componentDidCatch(err: unknown) {
     console.warn("[hero-3d] disabled:", err);
     this.props.onError();
   }
-  render() {
+  override render() {
     return this.state.failed ? null : this.props.children;
   }
 }

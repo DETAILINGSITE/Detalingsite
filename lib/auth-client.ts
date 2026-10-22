@@ -7,6 +7,8 @@ export const authClient = createAuthClient({
   plugins: [
     twoFactorClient({
       onTwoFactorRedirect() {
+        // Full navigation on purpose: resets client auth state before the 2FA step.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = "/admin/login?step=2fa";
       },
     }),

@@ -22,7 +22,7 @@ export async function resetDb(opts: { hours?: { weekday: number; opens: string; 
   const [row] = await db().select().from(s.settings).where(eq(s.settings.id, 1));
   await db()
     .update(s.settings)
-    .set({ data: { ...row!.data, timezone: "America/Chicago", minLeadHours: 0, maxDaysAhead: 120, ...(opts.settings ?? {}) } as typeof row.data })
+    .set({ data: { ...row!.data, timezone: "America/Chicago", minLeadHours: 0, maxDaysAhead: 120, ...(opts.settings ?? {}) } as NonNullable<typeof row>["data"] })
     .where(eq(s.settings.id, 1));
 }
 

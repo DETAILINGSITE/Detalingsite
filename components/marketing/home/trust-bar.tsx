@@ -22,7 +22,7 @@ export function TrustBar() {
               <it.icon className="size-7 shrink-0 text-gold-300" aria-hidden="true" />
               <div>
                 <p className="font-display text-2xl font-bold text-fg">
-                  {"value" in it ? (
+                  {"value" in it && it.value !== undefined ? (
                     <>
                       <span className="tabular inline-block min-w-[3ch]" data-count={it.value} data-decimals={it.decimals}>
                         {it.value.toLocaleString("en-US", { maximumFractionDigits: it.decimals, minimumFractionDigits: it.decimals })}

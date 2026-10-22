@@ -94,6 +94,7 @@ export function ScheduleStep({ state, dispatch, data, onNext, onBack, onSwitchTo
   }, [signature, fromDate]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetches availability; the loading flag is set by design
     void load();
   }, [load]);
 

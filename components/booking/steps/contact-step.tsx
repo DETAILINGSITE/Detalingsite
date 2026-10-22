@@ -68,7 +68,7 @@ export function ContactStep({
     if (!state.hold) return setServerError("Your time hold expired. Please choose a time again.");
     const res = await attachContactAction({ token: state.hold.token, sessionId: state.ids.sessionId, contact, captchaToken: captcha ?? undefined });
     if (!res.ok) {
-      setServerError(res.message ?? "Please check your details.");
+      setServerError("message" in res ? res.message : res.code === "HOLD_EXPIRED" ? "Your hold on that time expired. Please choose a time again." : "Please check your details.");
       setCaptchaReset((n) => n + 1);
       return;
     }

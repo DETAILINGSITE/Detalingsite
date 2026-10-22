@@ -23,6 +23,8 @@ export function ConsentTags() {
   const [consent, setConsent] = useState<Consent>(null);
   const [ready, setReady] = useState(false);
   useEffect(() => {
+    // Storage is only readable after mount; reading it during render would mismatch hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsent(readConsent());
     setReady(true);
   }, []);

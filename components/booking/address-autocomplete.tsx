@@ -45,12 +45,11 @@ export function AddressAutocomplete({
   const session = useRef<string | null>(null);
   const listId = useId();
   const timer = useRef<number | undefined>(undefined);
+  const shown = enabled && value.trim().length >= 3 ? items : [];
+  const isOpen = open && shown.length > 0;
 
   useEffect(() => {
-    if (!enabled || value.trim().length < 3) {
-      setItems([]);
-      return;
-    }
+    if (!enabled || value.trim().length < 3) return;
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(async () => {
       session.current ??= crypto.randomUUID();
@@ -85,9 +84,9 @@ export function AddressAutocomplete({
         id={id}
         role={enabled ? "combobox" : undefined}
         aria-autocomplete={enabled ? "list" : undefined}
-        aria-expanded={enabled ? open : undefined}
+        aria-expanded={enabled ? isOpen : undefined}
         aria-controls={enabled ? listId : undefined}
-        aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined}
+        aria-activedescendant={isOpen && active >= 0 ? `${listId}-${active}` : undefined}
         aria-invalid={invalid || undefined}
         aria-describedby={describedById}
         autoComplete="address-line1"
@@ -95,24 +94,24 @@ export function AddressAutocomplete({
         onChange={(e) => onChange(e.target.value)}
         onBlur={() => window.setTimeout(() => setOpen(false), 150)}
         onKeyDown={(e) => {
-          if (!open) return;
+          if (!isOpen) return;
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            setActive((a) => Math.min(items.length - 1, a + 1));
+            setActive((a) => Math.min(shown.length - 1, a + 1));
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
             setActive((a) => Math.max(0, a - 1));
-          } else if (e.key === "Enter" && active >= 0 && items[active]) {
+          } else if (e.key === "Enter" && active >= 0 && shown[active]) {
             e.preventDefault();
-            void pick(items[active]);
+            void pick(shown[active]);
           } else if (e.key === "Escape") {
             setOpen(false);
           }
         }}
       />
-      {enabled && open && (
+      {enabled && isOpen && (
         <ul id={listId} role="listbox" aria-label="Address suggestions" className="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-ink-800 shadow-2xl">
-          {items.map((s, i) => (
+          {shown.map((s, i) => (
             <li
               key={s.placeId}
               id={`${listId}-${i}`}

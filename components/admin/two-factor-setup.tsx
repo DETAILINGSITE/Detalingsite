@@ -26,7 +26,7 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
             e.preventDefault();
             const password = String(new FormData(e.currentTarget).get("password"));
             const res = await authClient.twoFactor.enable({ password });
-            if (res.error || !res.data) return setError("Password incorrect.");
+            if (res.error || !res.data || !("totpURI" in res.data)) return setError("Password incorrect.");
             setUri(res.data.totpURI);
             setCodes(res.data.backupCodes);
           }}

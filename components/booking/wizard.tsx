@@ -7,7 +7,7 @@
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { addTransitionType, startTransition, useCallback, useEffect, useMemo, useReducer, useRef, useState, ViewTransition } from "react";
+import { addTransitionType, startTransition, useEffect, useMemo, useReducer, useRef, useState, ViewTransition } from "react";
 import { submitQuoteAction } from "@/app/(flow)/book/actions";
 import { buttonVariants } from "@/components/ui/button";
 import { captureAttribution, funnel, getAttribution, track } from "@/lib/analytics/track";
@@ -88,13 +88,14 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
         next = { ...next, hold: null, ids: { ...next.ids, holdKey: uuid() } };
         if (["contact", "review"].includes(next.step)) {
           next.step = "schedule";
+          // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from sessionStorage
           setNotice("Your hold on that time expired. Please choose a time again.");
         }
       }
       dispatch({ type: "reset", state: next });
     }
     setReady(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount
   }, []);
 
   useEffect(() => {
@@ -116,6 +117,15 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
     }
   }, [state.step, ready]);
 
+  const go = (step: StepId, direction: "forward" | "back", fromHistory = false) => {
+    if (!fromHistory && !canEnter(state, step) && step !== "submitted") return;
+    startTransition(() => {
+      addTransitionType(direction === "forward" ? "step-forward" : "step-back");
+      dispatch({ type: "goto", step });
+    });
+    window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
+
   useEffect(() => {
     const onPop = () => {
       const s = new URL(window.location.href).searchParams.get("step") as StepId | null;
@@ -125,17 +135,6 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
     return () => window.removeEventListener("popstate", onPop);
   });
 
-  const go = useCallback(
-    (step: StepId, direction: "forward" | "back", fromHistory = false) => {
-      if (!fromHistory && !canEnter(state, step) && step !== "submitted") return;
-      startTransition(() => {
-        addTransitionType(direction === "forward" ? "step-forward" : "step-back");
-        dispatch({ type: "goto", step });
-      });
-      window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-    },
-    [state],
-  );
 
   const goNext = () => {
     funnel("step_complete", state.step);

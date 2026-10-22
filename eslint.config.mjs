@@ -9,6 +9,8 @@ const config = [
   },
   {
     rules: {
+      // Apostrophes in JSX copy render fine; escaping them all hurts readability.
+      "react/no-unescaped-entities": "off",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", destructuredArrayIgnorePattern: "^_" }],
     },
   },

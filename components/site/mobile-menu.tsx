@@ -3,7 +3,7 @@ import { Menu, Phone, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Dialog } from "radix-ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { business } from "@/config/business";
 import { buttonVariants } from "@/components/ui/button";
 import { NAV } from "@/lib/site/nav";
@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils";
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  useEffect(() => setOpen(false), [pathname]);
+  const [openedOn, setOpenedOn] = useState(pathname);
+  if (openedOn !== pathname) {
+    setOpenedOn(pathname);
+    setOpen(false);
+  }
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>

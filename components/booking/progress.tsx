@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 /** Visible progress with a text equivalent ("Step 3 of 7"). */
 export function Progress({ steps, current }: { steps: StepId[]; current: StepId }) {
   const visible = steps.filter((s) => s !== "submitted");
-  const idx = Math.max(0, visible.indexOf(current));
+  const idx = Math.max(0, (visible as StepId[]).indexOf(current));
   const pct = ((idx + 1) / visible.length) * 100;
   return (
     <div className="flex flex-col gap-3">
