@@ -48,7 +48,7 @@ export async function pickFirstSlot(page: Page) {
 
 export async function fillContact(page: Page, p: { name?: string; phone?: string; email?: string } = {}) {
   await page.getByLabel(/full name/i).fill(p.name ?? "Alex Driver");
-  await page.getByLabel(/mobile phone/i).fill(p.phone ?? "(555) 010-2031");
+  await page.getByLabel(/mobile phone/i).fill(p.phone ?? "(201) 555-0131");
   await page.getByLabel(/^email/i).fill(p.email ?? "alex@example.com");
 }
 

@@ -34,6 +34,7 @@ export interface AddressState {
 export interface HoldState {
   token: string;
   number: string;
+  /** On the browser's clock (converted with toLocalClock), so device clock skew can't expire a hold early. */
   holdExpiresAt: string;
   startsAt: string;
   endsAt: string;
@@ -250,4 +251,9 @@ export function selectionOf(s: WizardState) {
 /** Everything that affects price/duration/location of the job. */
 export function signatureOf(s: WizardState): string {
   return JSON.stringify([selectionOf(s), s.location.locationType, s.location.address.postalCode, s.location.address.lat, s.location.address.lng, s.quoteToken]);
+}
+
+/** Re-bases a server timestamp onto the browser clock: same remaining time, local epoch. */
+export function toLocalClock(serverIso: string, serverNow: string): string {
+  return new Date(Date.now() + (Date.parse(serverIso) - Date.parse(serverNow))).toISOString();
 }

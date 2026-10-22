@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox, Input } from "@/components/ui/field";
 import { track } from "@/lib/analytics/track";
 import type { PriceSummary } from "@/lib/booking/summary";
+import { toLocalClock } from "@/lib/booking/wizard-state";
 import { formatMoney } from "@/lib/domain/money";
 import { PaymentPanel } from "../payment-panel";
 import { StepShell } from "../step-shell";
@@ -64,6 +65,8 @@ export function ReviewStep({ state, dispatch, data, onBack, onConfirmed, summary
       return;
     }
     track("Payment Started");
+    // The server extends the hold while the customer pays; keep the countdown in step.
+    if ("serverNow" in res) dispatch({ type: "hold", hold: { ...hold, holdExpiresAt: toLocalClock(res.holdExpiresAt, res.serverNow) } });
     setPayment({ driver: res.driver, clientSecret: res.clientSecret, sessionId: res.sessionId, amountCents: res.amountCents });
   };
 

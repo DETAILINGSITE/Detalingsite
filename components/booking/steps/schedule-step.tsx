@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { RadioCards } from "@/components/ui/radio-cards";
 import { getAttribution } from "@/lib/analytics/track";
 import { priceSummary } from "@/lib/booking/summary";
-import { selectionOf, signatureOf } from "@/lib/booking/wizard-state";
+import { selectionOf, signatureOf, toLocalClock } from "@/lib/booking/wizard-state";
 import { formatDuration } from "@/lib/domain/money";
 import { formatDateLong } from "@/lib/domain/time";
 import { StepShell } from "../step-shell";
@@ -135,7 +135,7 @@ export function ScheduleStep({ state, dispatch, data, onNext, onBack, onSwitchTo
         hold: {
           token: res.token,
           number: res.number,
-          holdExpiresAt: res.holdExpiresAt,
+          holdExpiresAt: toLocalClock(res.holdExpiresAt, res.serverNow),
           startsAt: res.startsAt,
           endsAt: res.endsAt,
           price: priceSummary(res.price),

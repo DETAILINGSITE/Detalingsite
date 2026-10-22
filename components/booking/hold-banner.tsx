@@ -3,6 +3,7 @@ import { Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import { extendHoldAction } from "@/app/(flow)/book/actions";
 import { Button } from "@/components/ui/button";
+import { toLocalClock } from "@/lib/booking/wizard-state";
 
 /** Countdown for the slot hold. Announces only at 2 and 1 minutes (not every second). */
 export function HoldBanner({ token, expiresAt, canExtend, onExtended, onExpired }: { token: string; expiresAt: string; canExtend: boolean; onExtended: (iso: string) => void; onExpired: () => void }) {
@@ -35,7 +36,7 @@ export function HoldBanner({ token, expiresAt, canExtend, onExtended, onExpired 
           variant="secondary"
           onClick={async () => {
             const r = await extendHoldAction({ token });
-            if (r.ok && "holdExpiresAt" in r) onExtended(r.holdExpiresAt);
+            if (r.ok && "holdExpiresAt" in r) onExtended(toLocalClock(r.holdExpiresAt, r.serverNow));
           }}
         >
           Need more time?

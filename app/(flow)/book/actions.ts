@@ -69,15 +69,19 @@ export async function createHoldAction(raw: unknown) {
   if (!parsed.success) return invalid(parsed.error);
   const rl = await limited("hold");
   if (rl) return rl;
-  const result = await createHold(parsed.data, new Date(now()));
+  const at = new Date(now());
+  const result = await createHold(parsed.data, at);
   flushLater();
-  return result;
+  // serverNow lets the browser measure the hold against its own clock (see toLocalClock).
+  return result.ok ? { ...result, serverNow: at.toISOString() } : result;
 }
 
 export async function extendHoldAction(raw: unknown) {
   const parsed = TokenSchema.safeParse(raw);
   if (!parsed.success) return invalid(parsed.error);
-  return extendHold(parsed.data.token, new Date(now()));
+  const at = new Date(now());
+  const result = await extendHold(parsed.data.token, at);
+  return result.ok && "holdExpiresAt" in result ? { ...result, serverNow: at.toISOString() } : result;
 }
 
 export async function releaseHoldAction(raw: unknown) {
@@ -169,7 +173,7 @@ export async function startPaymentAction(raw: unknown) {
     new Date(now()),
   );
   flushLater();
-  return result;
+  return result.ok && result.kind === "payment" ? { ...result, serverNow: new Date(now()).toISOString() } : result;
 }
 
 export async function submitQuoteAction(raw: unknown) {
