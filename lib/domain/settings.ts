@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+// No compiled (new Function) parsers: the strict nonce CSP forbids eval, and Zod's probe for it
+// would otherwise log a CSP violation in the browser.
+z.config({ jitless: true });
+
 /** "HH:MM" 24-hour wall-clock time. */
 export const HHMM = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use 24-hour HH:MM");
 

@@ -51,7 +51,15 @@ export function startMotion(): MotionHandle {
     const mm = gsap.matchMedia(root);
     mm.add(QUERIES, (ctx) => {
       const { desktop, reduce: reduced } = ctx.conditions as Record<keyof typeof QUERIES, boolean>;
-      const reveals = gsap.utils.toArray<HTMLElement>("[data-reveal]", root);
+      // Anything already on screen (or scrolled past) when motion starts stays as it is:
+      // the engine can boot late, and hiding visible content to re-reveal it would flash.
+      const reveals = gsap.utils.toArray<HTMLElement>("[data-reveal]:not([data-revealed])", root).filter((el) => {
+        if (el.getBoundingClientRect().top < window.innerHeight * 0.88) {
+          el.dataset.revealed = "";
+          return false;
+        }
+        return true;
+      });
 
       if (reduced) {
         gsap.set(reveals, { opacity: 1, y: 0, clearProps: "transform" });

@@ -336,7 +336,10 @@ test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
         await page.keyboard.press("Space");
         return;
       }
+      const before = await page.evaluateHandle(() => document.activeElement);
       await page.keyboard.press("ArrowDown");
+      // WebKit moves focus asynchronously; read the next label only once focus has moved.
+      await page.waitForFunction((prev) => document.activeElement !== prev, before, { timeout: 2_000 }).catch(() => {});
     }
     throw new Error(`Could not choose ${name} by keyboard`);
   };

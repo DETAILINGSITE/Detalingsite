@@ -6,6 +6,10 @@
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { z } from "zod";
 
+// No compiled (new Function) parsers: the strict nonce CSP forbids eval, and Zod's probe for it
+// would otherwise log a CSP violation in the browser.
+z.config({ jitless: true });
+
 export const LOCATION_TYPES = ["mobile", "shop"] as const;
 export const CONTACT_METHODS = ["email", "sms", "call"] as const;
 export const HEARD_ABOUT = [

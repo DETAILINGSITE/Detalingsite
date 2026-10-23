@@ -52,7 +52,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             {zone.name} · {zone.travelFeeCents ? `travel fee ${formatMoney(zone.travelFeeCents)}` : "no travel fee"}
           </p>
         )}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Link href={`/book?zip=${zone?.zipCodes[0] ?? ""}`} className={buttonVariants({ size: "lg" })}>
             Book in {page.city}
           </Link>

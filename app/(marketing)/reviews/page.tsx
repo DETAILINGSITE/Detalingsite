@@ -33,7 +33,7 @@ export default async function ReviewsPage() {
               </>
             }
           />
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href={business.links.googleReviews} target="_blank" rel="noopener noreferrer" className={buttonVariants()}>
               Leave a review
             </a>

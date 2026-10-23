@@ -251,13 +251,9 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
     vehicle: [state.vehicle.year, state.vehicle.make, state.vehicle.model].filter(Boolean).join(" ") || data.sizes.find((z) => z.id === state.vehicle.sizeId)?.label || null,
   };
 
-  if (!ready) {
-    return (
-      <div className="container-site py-16" aria-busy="true">
-        <div className="h-8 w-64 animate-pulse rounded-lg bg-white/[0.06]" />
-      </div>
-    );
-  }
+  // No loading gate: the server and the first client render share the same initial state (ids
+  // are minted on mount), so the first step is real HTML for LCP. Saved progress, if any,
+  // replaces it right after hydration.
 
   const steps = stepsFor(state);
   const common = { state, dispatch, data, onNext: goNext, onBack: prevStep(state) ? goBack : undefined };

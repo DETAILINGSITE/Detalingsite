@@ -46,7 +46,7 @@ export function ManageActions({ token, timezone, canReschedule, rescheduleNote }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         {canReschedule ? (
           <Button variant="secondary" onClick={() => void openReschedule()}>
             Reschedule

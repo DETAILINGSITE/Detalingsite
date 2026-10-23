@@ -99,7 +99,7 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
         </dl>
 
         {!cancelled && (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a href={`/booking/${token}/calendar.ics`} className={buttonVariants({ variant: "secondary" })} download>
               <CalendarPlus aria-hidden="true" /> Add to calendar (.ics)
             </a>

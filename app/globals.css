@@ -95,6 +95,9 @@
   }
 
   h1, h2, h3, .font-display {
+    /* Expanded headings need a wider fallback than next/font's normal-width one, or they re-wrap
+       when Archivo arrives and push the page down (CLS). See @font-face below. */
+    font-family: Archivo, "Archivo Display Fallback", var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
     font-stretch: 125%;
     font-variation-settings: "wdth" 125;
     letter-spacing: -0.02em;
@@ -135,11 +138,12 @@
 }
 
 /* ─── Motion: pre-reveal states only exist once JS motion is confirmed ready ── */
-html.motion-ready [data-reveal] {
+/* data-revealed: already on screen when motion booted, so it is never hidden. */
+html.motion-ready [data-reveal]:not([data-revealed]) {
   opacity: 0;
   transform: translate3d(0, 24px, 0);
 }
-html.motion-ready [data-reveal="fade"] { transform: none; }
+html.motion-ready [data-reveal="fade"]:not([data-revealed]) { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
   html.motion-ready [data-reveal] { opacity: 1; transform: none; }
@@ -187,6 +191,18 @@ html.motion-ready [data-reveal="fade"] { transform: none; }
 /* Fallback when the View Transitions API is unavailable: a plain opacity fade. */
 @supports not (view-transition-name: none) {
   .route-fallback-fade { animation: fade-in 300ms var(--ease-out-expo) both; }
+}
+
+/* Fallback for the 125%-wide headline cut: Arial scaled to the measured width of Archivo wdth 125
+   at heavy weights (x1.118). Ascent/descent are next/font's Archivo values rescaled by the same
+   factor so line boxes keep their height. */
+@font-face {
+  font-family: "Archivo Display Fallback";
+  src: local("Arial");
+  size-adjust: 111.8%;
+  ascent-override: 78.5%;
+  descent-override: 18.8%;
+  line-gap-override: 0%;
 }
 
 /* Lock page scroll while a modal <dialog> (mobile menu) is open. */

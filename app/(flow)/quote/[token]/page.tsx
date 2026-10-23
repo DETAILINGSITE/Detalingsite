@@ -43,7 +43,7 @@ export default async function QuoteTokenPage({ params }: { params: Promise<{ tok
           </div>
         </dl>
         {q.status === "quoted" && !expired && (
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link href={`/book?quote=${token}`} className={buttonVariants({ size: "lg" })}>
               Accept & choose a time
             </Link>

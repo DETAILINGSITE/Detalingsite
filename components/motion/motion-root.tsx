@@ -1,7 +1,8 @@
 "use client";
 /**
- * Boots the motion engine after hydration + idle (so GSAP/Lenis never block first
- * paint) and re-initialises section motion on every client navigation.
+ * Boots the motion engine on the first scroll/touch/key/pointer, or after a few idle seconds,
+ * so GSAP/Lenis (~50 KB gz) never compete with first paint or LCP. Content is fully visible
+ * without it; it only adds reveals for what's still below the fold. Re-inits per navigation.
  */
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
@@ -25,11 +26,22 @@ export function MotionRoot({ children }: { children: ReactNode }) {
           cleanupRef.current = handleRef.current.initPage(rootRef.current);
         })
         .catch((err) => console.warn("[motion] disabled:", err));
+    const EVENTS = ["scroll", "wheel", "touchstart", "pointerdown", "keydown"] as const;
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      for (const e of EVENTS) window.removeEventListener(e, start);
+      clearTimeout(timer);
+      void boot();
+    };
+    for (const e of EVENTS) window.addEventListener(e, start, { passive: true, once: true });
     const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
-    const id = w.requestIdleCallback ? w.requestIdleCallback(boot, { timeout: 1500 }) : window.setTimeout(boot, 400);
+    const timer = window.setTimeout(() => (w.requestIdleCallback ? w.requestIdleCallback(start, { timeout: 2000 }) : start()), 3500);
     return () => {
       cancelled = true;
-      if (!w.requestIdleCallback) clearTimeout(id);
+      for (const e of EVENTS) window.removeEventListener(e, start);
+      clearTimeout(timer);
       cleanupRef.current?.();
       handleRef.current?.destroy();
       handleRef.current = null;

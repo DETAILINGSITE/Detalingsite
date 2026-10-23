@@ -64,7 +64,8 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
             </span>
             {s.isPlaceholder && <PlaceholderBadge label="Sample price" />}
           </div>
-          <div className="flex flex-wrap gap-3">
+          {/* Stacked on phones: a side-by-side row could wrap differently once the web font loads (CLS). */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link href={bookHref} className={buttonVariants({ size: "lg" })}>
               {s.quoteOnly ? "Request a quote" : `Book ${s.name}`}
             </Link>

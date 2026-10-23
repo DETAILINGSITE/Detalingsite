@@ -71,7 +71,8 @@ if (process.env.DATABASE_URL) {
     await sample("city pages", s.cityPages);
     const [st] = await db.select().from(s.settings).where(eq(s.settings.id, 1));
     const settings = OperationalSettingsSchema.safeParse(st?.data);
-    add("content", Boolean(settings.success && settings.data.catalogReviewed), "Owner has ticked “prices reviewed” in Admin → Settings");
+    const reviewed = Boolean(settings.success && settings.data.catalogReviewed);
+    add("content", reviewed, reviewed ? "Prices confirmed as real in Admin → Settings" : "Prices not yet confirmed: tick “prices reviewed” in Admin → Settings");
     const [owners] = await db.select({ n: count() }).from(s.user).where(eq(s.user.role, "owner"));
     add("admin", (owners?.n ?? 0) > 0, `${owners?.n ?? 0} owner account(s)`);
   } finally {
