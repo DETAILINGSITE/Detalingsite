@@ -92,17 +92,26 @@ test("E2E-06 two users race for the last in-shop slot → one wins, the other se
     await p.getByRole("radio", { name: /at your shop/i }).click();
     await next(p);
   }
+  // Both tabs must look at the same day: each defaults to its first open day, which can differ
+  // once earlier tests have taken slots. Use the last open day in A's visible month.
+  const day = a.getByRole("grid").getByRole("button", { disabled: false }).last();
+  const dayName = (await day.getAttribute("aria-label"))?.replace(/^Today, /, "").replace(/, selected$/, "") ?? "";
+  expect(dayName).not.toBe("");
+  for (const p of [a, b]) await p.getByRole("grid").getByRole("button", { name: dayName }).click();
   // Target one start time by name: after a loss the list reloads, and an index-based locator
   // would re-resolve to a different slot if Playwright retried the click.
-  const time = /\d{1,2}:\d{2} [AP]M/.exec(await a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").last().ariaSnapshot())?.[0];
+  const times = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio");
+  await expect(times.first()).toBeVisible();
+  const time = /\d{1,2}:\d{2} [AP]M/.exec(await times.last().ariaSnapshot())?.[0];
   expect(time).toBeTruthy();
   const pick = (p: typeof a) => p.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: new RegExp(`^${time}`) });
+  await expect(pick(b)).toBeVisible();
   await Promise.all([pick(a).click({ timeout: 5_000 }).catch(() => {}), pick(b).click({ timeout: 5_000 }).catch(() => {})]);
-  const heldA = await a.getByText(/held for you/i).isVisible().catch(() => false);
-  const heldB = await b.getByText(/held for you/i).isVisible().catch(() => false);
   await expect.poll(async () => (await a.getByText(/someone just booked/i).count()) + (await b.getByText(/someone just booked/i).count())).toBe(1);
-  expect(heldA !== heldB || heldA).toBeTruthy();
-  await expect((heldA ? b : a).getByText(/closest open times/i)).toBeVisible();
+  const loser = (await a.getByText(/someone just booked/i).count()) ? a : b;
+  const winner = loser === a ? b : a;
+  await expect(winner.getByText(/held for you/i)).toBeVisible();
+  await expect(loser.getByText(/closest open times/i)).toBeVisible();
   void request;
 });
 
@@ -339,11 +348,12 @@ test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
   await expect(page.getByText(/held for you/i)).toBeVisible();
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
-  await page.keyboard.press("Tab");
+  await page.getByRole("heading", { name: /your contact details/i }).waitFor();
+  await tabTo(/full name/i, "textbox");
   await page.keyboard.type("Kay Board");
-  await page.keyboard.press("Tab");
+  await tabTo(/mobile phone/i, "textbox");
   await page.keyboard.type("(201) 555-0139");
-  await page.keyboard.press("Tab");
+  await tabTo(/^email/i, "textbox");
   await page.keyboard.type("keyboard@example.com");
   await tabTo(/continue to review/i);
   await page.keyboard.press("Enter");
