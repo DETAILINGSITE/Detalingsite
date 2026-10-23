@@ -35,7 +35,7 @@ export function ReviewsCarousel({ reviews }: { reviews: ReviewData[] }) {
         {reviews.map((r) => (
           <li key={r.id} className="card flex w-[85%] shrink-0 snap-start flex-col gap-4 p-6 sm:w-[46%] lg:w-[31.5%]">
             <div className="flex items-center justify-between">
-              <span className="flex text-gold-300" aria-label={`${r.rating} out of 5 stars`}>
+              <span className="flex text-gold-300" role="img" aria-label={`${r.rating} out of 5 stars`}>
                 {Array.from({ length: r.rating }, (_, i) => (
                   <Star key={i} className="size-4 fill-current" aria-hidden="true" />
                 ))}

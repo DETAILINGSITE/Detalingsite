@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useEffect } from "react";
-import { business } from "@/config/business";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -13,7 +12,7 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
       <p className="eyebrow">Something went wrong</p>
       <h1 className="text-[clamp(2rem,5vw,3.6rem)] leading-[1] font-extrabold">We hit a bump.</h1>
       <p className="max-w-md text-lg text-fg-muted">
-        Please try again. If it keeps happening, call us on {business.contact.phoneDisplay} and we'll book you in directly.
+        Please try again. If it keeps happening, <Link href="/contact" className="text-gold-300 underline">contact us</Link> and we'll book you in directly.
       </p>
       {error.digest && <p className="text-xs text-fg-subtle">Reference: {error.digest}</p>}
       <div className="flex flex-wrap gap-3">

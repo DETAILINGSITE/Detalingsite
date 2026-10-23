@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { clsx as cn } from "clsx";
 
 /**
  * Visible marker on placeholder content (sample reviews, stats, photos) so nothing

@@ -6,7 +6,8 @@ import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+// clsx, not cn(): no conflicting utilities here, and it keeps tailwind-merge off the client.
+import { clsx as cn } from "clsx";
 import { BeforeAfter } from "./before-after";
 
 export interface GalleryItemData {

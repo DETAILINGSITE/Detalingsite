@@ -1,0 +1,22 @@
+import { expect, test } from "@playwright/test";
+import { agreeAndPay, fillContact, next, pickFirstSlot, setClock, startService } from "./helpers";
+test("pay timing", async ({ page, request }) => {
+  await setClock(request);
+  await startService(page, { pkg: "Basic" });
+  await page.getByRole("radio", { name: /at your shop/i }).click();
+  await next(page);
+  await pickFirstSlot(page);
+  await next(page);
+  await fillContact(page, { email: "timing@example.com" });
+  await next(page, /continue to review/i);
+  await agreeAndPay(page);
+  const t0 = Date.now();
+  page.on("console", (m) => console.log("PAGE", ((Date.now() - t0) / 1000).toFixed(1), m.type(), m.text().slice(0, 150)));
+  page.on("request", (r) => { if (!r.url().includes("/_next/static")) console.log("REQ", ((Date.now() - t0) / 1000).toFixed(1), r.method(), r.url().replace("http://localhost:3100", "").slice(0, 90)); });
+  await page.getByTestId("fake-payment").getByRole("button", { name: /succeeds/i }).click();
+  console.log("CLICKED", (Date.now() - t0) / 1000);
+  await expect(page).toHaveURL(/\/booking\//, { timeout: 30000 });
+  console.log("URL", (Date.now() - t0) / 1000);
+  await expect(page.getByRole("heading", { name: /you're booked/i })).toBeVisible({ timeout: 40000 });
+  console.log("HEADING", (Date.now() - t0) / 1000);
+});

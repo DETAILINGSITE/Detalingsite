@@ -5,7 +5,8 @@ import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
 import { formatDuration, formatMoney } from "@/lib/domain/money";
-import { cn } from "@/lib/utils";
+// clsx, not cn(): no conflicting utilities here, and it keeps tailwind-merge off the client.
+import { clsx as cn } from "clsx";
 
 export interface PackageCardData {
   id: string;

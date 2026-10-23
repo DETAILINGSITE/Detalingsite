@@ -1,4 +1,15 @@
+import fs from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+
+// Edge is only exercised where it's installed (always on Windows CI runners).
+const EDGE_PATHS = [
+  "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+  "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+  `${process.env.LOCALAPPDATA ?? ""}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  "/opt/microsoft/msedge/msedge",
+  "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+];
+const hasEdge = EDGE_PATHS.some((p) => fs.existsSync(p));
 
 const PORT = Number(process.env.PORT ?? 3100);
 const baseURL = process.env.BASE_URL ?? `http://localhost:${PORT}`;
@@ -29,6 +40,6 @@ export default defineConfig({
     // Smoke subset on other engines
     { name: "desktop-firefox", use: { ...devices["Desktop Firefox"] }, grep: /@smoke/ },
     { name: "desktop-webkit", use: { ...devices["Desktop Safari"] }, grep: /@smoke/ },
-    { name: "msedge", use: { ...devices["Desktop Edge"], channel: "msedge" }, grep: /@smoke/ },
+    ...(hasEdge ? [{ name: "msedge", use: { ...devices["Desktop Edge"], channel: "msedge" }, grep: /@smoke/ }] : []),
   ],
 });

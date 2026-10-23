@@ -5,7 +5,9 @@
  * The booking is confirmed by the webhook, never by this component.
  */
 import { CheckoutElementsProvider, PaymentElement, useCheckout } from "@stripe/react-stripe-js/checkout";
-import { loadStripe, type Stripe } from "@stripe/stripe-js";
+// /pure: Stripe.js is fetched when loadStripe() first runs (the payment step), not on import.
+import { loadStripe } from "@stripe/stripe-js/pure";
+import type { Stripe } from "@stripe/stripe-js";
 import { Lock } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";

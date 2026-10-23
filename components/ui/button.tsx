@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { Slot } from "radix-ui";
 import type { ComponentProps } from "react";
-import { cn } from "@/lib/utils";
+// clsx, not cn(): Button ships to the client on every page. Callers only add layout classes
+// (width) that never conflict with the variants, so tailwind-merge would be dead weight.
+import { clsx } from "clsx";
 
 export const buttonVariants = cva(
   "inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-[0.95rem] font-semibold transition-[transform,opacity,background-color,color,box-shadow] duration-200 select-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-[1.1em] [&_svg]:shrink-0",
@@ -26,11 +27,9 @@ export const buttonVariants = cva(
   },
 );
 
-export interface ButtonProps extends ComponentProps<"button">, VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+export interface ButtonProps extends ComponentProps<"button">, VariantProps<typeof buttonVariants> {}
 
-export function Button({ className, variant, size, asChild, ...props }: ButtonProps) {
-  const Comp = asChild ? Slot.Root : "button";
-  return <Comp className={cn(buttonVariants({ variant, size }), className)} {...props} />;
+/** For links styled as buttons, use buttonVariants() on the <Link>/<a> directly. */
+export function Button({ className, variant, size, ...props }: ButtonProps) {
+  return <button className={clsx(buttonVariants({ variant, size }), className)} {...props} />;
 }

@@ -1,7 +1,8 @@
 "use client";
 import { RadioGroup } from "radix-ui";
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
+// clsx, not cn(): no conflicting utilities here, and it keeps tailwind-merge off the client.
+import { clsx as cn } from "clsx";
 
 export interface RadioCardOption {
   value: string;

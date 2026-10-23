@@ -6,7 +6,7 @@
 import { Dialog } from "radix-ui";
 import { useEffect, useState } from "react";
 import { business } from "@/config/business";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 const KEY = "exit-offer.seen";
 
@@ -40,9 +40,9 @@ export function ExitIntentOffer() {
             Use code <strong className="text-gold-300">{business.exitOffer.promoCode}</strong> when you book.
           </Dialog.Description>
           <div className="mt-5 flex gap-2">
-            <Button asChild>
-              <a href="/book">Book now</a>
-            </Button>
+            <a href="/book" className={buttonVariants()}>
+              Book now
+            </a>
             <Dialog.Close asChild>
               <Button variant="secondary">No thanks</Button>
             </Dialog.Close>

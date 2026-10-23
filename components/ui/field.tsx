@@ -5,7 +5,9 @@
 import { Checkbox as RCheckbox } from "radix-ui";
 import { Check } from "lucide-react";
 import { useId, type ComponentProps, type ReactNode } from "react";
-import { cn } from "@/lib/utils";
+// clsx, not cn(): these ship to the client; callers add only spacing/position classes, so
+// tailwind-merge isn't needed (Textarea handles its one overridable default explicitly).
+import { clsx as cn } from "clsx";
 
 const control =
   "w-full min-h-12 rounded-xl border border-white/12 bg-ink-850 px-4 text-base text-fg placeholder:text-fg-subtle transition-colors focus:border-gold-400 focus:outline-none focus-visible:outline-2 focus-visible:outline-gold-300 aria-[invalid=true]:border-danger";
@@ -66,7 +68,7 @@ export function Input({ className, ...props }: ComponentProps<"input">) {
 }
 
 export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
-  return <textarea className={cn(control, "min-h-32 py-3 leading-relaxed", className)} {...props} />;
+  return <textarea className={cn(control, !className?.includes("min-h-") && "min-h-32", "py-3 leading-relaxed", className)} {...props} />;
 }
 
 export function Select({ className, children, ...props }: ComponentProps<"select">) {

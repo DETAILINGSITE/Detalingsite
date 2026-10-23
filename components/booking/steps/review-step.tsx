@@ -1,4 +1,5 @@
 "use client";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { previewPromoAction, startPaymentAction } from "@/app/(flow)/book/actions";
@@ -8,10 +9,15 @@ import { track } from "@/lib/analytics/track";
 import type { PriceSummary } from "@/lib/booking/summary";
 import { toLocalClock } from "@/lib/booking/wizard-state";
 import { formatMoney } from "@/lib/domain/money";
-import { PaymentPanel } from "../payment-panel";
 import { StepShell } from "../step-shell";
 import { SummaryBody } from "../summary";
 import type { StepProps } from "./types";
+
+// Loaded only once payment starts: keeps Stripe's React bindings out of the wizard bundle.
+const PaymentPanel = dynamic(() => import("../payment-panel").then((m) => m.PaymentPanel), {
+  ssr: false,
+  loading: () => <p role="status" className="text-fg-muted">Loading secure payment…</p>,
+});
 
 export function ReviewStep({ state, dispatch, data, onBack, onConfirmed, summaryProps }: StepProps & { onConfirmed: (token: string) => void; summaryProps: { when: string | null; where: string | null; vehicle: string | null } }) {
   const hold = state.hold;

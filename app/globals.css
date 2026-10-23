@@ -188,3 +188,8 @@ html.motion-ready [data-reveal="fade"] { transform: none; }
 @supports not (view-transition-name: none) {
   .route-fallback-fade { animation: fade-in 300ms var(--ease-out-expo) both; }
 }
+
+/* Lock page scroll while a modal <dialog> (mobile menu) is open. */
+html:has(dialog[open]:modal) {
+  overflow: hidden;
+}

@@ -44,7 +44,7 @@ export function Header({ minimal = false }: { minimal?: boolean }) {
           <Link href="/book" className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}>
             Book Now
           </Link>
-          {!minimal && <MobileMenu />}
+          {!minimal && <MobileMenu phone={business.contact.phone} phoneDisplay={business.contact.phoneDisplay} />}
         </div>
       </div>
     </header>

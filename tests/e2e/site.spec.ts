@@ -33,8 +33,11 @@ test("S-CRAWL every internal link resolves (no 404s)", async ({ page, request })
 
 test("S-AXE no serious/critical accessibility violations on any page", async ({ page }) => {
   const problems: string[] = [];
+  // Audit the settled page: reveals and the route fade animate opacity only, and axe would
+  // otherwise measure contrast mid-fade. Reduced motion renders the final state immediately.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   for (const path of [...PAGES, "/does-not-exist"]) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "networkidle" });
     const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
     for (const v of results.violations.filter((x) => x.impact === "serious" || x.impact === "critical")) problems.push(`${path}: ${v.id} (${v.nodes.length})`);
   }
