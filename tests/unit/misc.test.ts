@@ -116,6 +116,8 @@ describe("U-CSP & U-MOTION-GUARD", () => {
     expect(strict).toContain("'strict-dynamic'");
     expect(strict).not.toContain("unsafe-eval");
     expect(buildCsp({ mode: "static", dev: false })).toContain("frame-ancestors 'none'");
+    expect(strict).toContain("upgrade-insecure-requests");
+    expect(buildCsp({ mode: "strict", nonce: "abc", dev: false, secure: false })).not.toContain("upgrade-insecure-requests");
     expect(isDynamicRoute("/admin/bookings")).toBe(true);
     expect(isDynamicRoute("/quote")).toBe(false);
     expect(isDynamicRoute(`/quote/${"a".repeat(43)}`)).toBe(true);

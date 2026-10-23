@@ -11,6 +11,8 @@ export interface CspOptions {
   mode: "strict" | "static";
   nonce?: string;
   dev: boolean;
+  /** Site is served over HTTPS. Without it, upgrade-insecure-requests breaks plain-http hosts (WebKit doesn't exempt localhost). Defaults to true. */
+  secure?: boolean;
   plausibleSrc?: string | null;
   extraImgHosts?: string[];
   adsEnabled?: boolean;
@@ -46,7 +48,7 @@ export function buildCsp(o: CspOptions): string {
     "frame-ancestors": ["'none'"],
   };
   const parts = Object.entries(directives).map(([k, v]) => `${k} ${[...new Set(v)].join(" ")}`);
-  if (!o.dev) parts.push("upgrade-insecure-requests");
+  if (!o.dev && o.secure !== false) parts.push("upgrade-insecure-requests");
   return parts.join("; ");
 }
 

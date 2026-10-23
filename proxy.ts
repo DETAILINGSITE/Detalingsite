@@ -22,6 +22,7 @@ export function proxy(request: NextRequest) {
   }
 
   const dev = process.env.NODE_ENV !== "production";
+  const secure = (process.env.NEXT_PUBLIC_SITE_URL ?? "https:").startsWith("https:");
   const plausibleSrc = process.env.NEXT_PUBLIC_PLAUSIBLE_SRC ?? null;
   const adsEnabled = Boolean(
     process.env.NEXT_PUBLIC_GA4_ID || process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.NEXT_PUBLIC_GADS_ID,
@@ -29,7 +30,7 @@ export function proxy(request: NextRequest) {
 
   if (isDynamicRoute(pathname)) {
     const nonce = btoa(crypto.randomUUID());
-    const csp = buildCsp({ mode: "strict", nonce, dev, plausibleSrc, adsEnabled });
+    const csp = buildCsp({ mode: "strict", nonce, dev, secure, plausibleSrc, adsEnabled });
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-nonce", nonce);
     requestHeaders.set("Content-Security-Policy", csp);
@@ -46,7 +47,7 @@ export function proxy(request: NextRequest) {
   }
 
   const response = NextResponse.next();
-  response.headers.set("Content-Security-Policy", buildCsp({ mode: "static", dev, plausibleSrc, adsEnabled }));
+  response.headers.set("Content-Security-Policy", buildCsp({ mode: "static", dev, secure, plausibleSrc, adsEnabled }));
   return response;
 }
 

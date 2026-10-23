@@ -120,7 +120,9 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await startService(a, { pkg: "Basic" });
   await a.getByRole("radio", { name: /at your shop/i }).click();
   await next(a);
-  const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").first();
+  // Last slot of the day, so advancing the clock can't push it into the past.
+  const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").last();
+  const dayName = ((await a.getByRole("grid").getByRole("button", { name: /selected/ }).getAttribute("aria-label")) ?? "").replace(/^Today, /, "").replace(/, selected$/, "");
   const time = /\d{1,2}:\d{2} [AP]M/.exec(await first.ariaSnapshot())?.[0] ?? "";
   expect(time).not.toBe("");
   await first.click();
@@ -130,6 +132,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await startService(b, { pkg: "Basic" });
   await b.getByRole("radio", { name: /at your shop/i }).click();
   await next(b);
+  await b.getByRole("grid").getByRole("button", { name: dayName }).click();
   await expect(b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: new RegExp(`^${time}`) })).toBeVisible();
 });
 
