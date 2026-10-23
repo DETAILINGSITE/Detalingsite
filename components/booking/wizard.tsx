@@ -1,8 +1,8 @@
 "use client";
 /**
  * Booking wizard (docs/PLAN.md §4.1). State: reducer + sessionStorage. The URL's ?step= is
- * kept in sync through the Next router (router.push per step), so browser back/forward walk
- * the steps; Next owns the history entries. Steps animate with React View
+ * kept in sync with native history.pushState, which Next integrates with useSearchParams (no
+ * server round trip), so browser back/forward walk the steps. Steps animate with React View
  * Transitions typed "step-forward" / "step-back".
  */
 import { CheckCircle2 } from "lucide-react";
@@ -117,8 +117,8 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
       for (const k of ["pkg", "svc", "size", "zip", "loc", "path"]) params.delete(k);
       params.set("step", state.step);
       const href = `${pathname}?${params}`;
-      if (urlStep) router.push(href, { scroll: false });
-      else router.replace(href, { scroll: false });
+      if (urlStep) window.history.pushState(null, "", href);
+      else window.history.replaceState(null, "", href);
     }
     if (lastStep.current !== state.step) {
       funnel("step_view", state.step, getAttribution().utmSource);
@@ -132,23 +132,36 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
   useEffect(() => {
     stateRef.current = state;
   });
+  const readyRef = useRef(ready);
   useEffect(() => {
+    readyRef.current = ready;
+  });
+  // Idempotent: safe to call from both the popstate listener and the useSearchParams effect.
+  const followUrl = (step: StepId | null) => {
     const current = stateRef.current;
-    if (!ready || !urlStep || urlStep === current.step) return;
-    if (urlStep !== "submitted" && canEnter(current, urlStep)) {
+    if (!readyRef.current || !step || step === current.step) return;
+    if (step !== "submitted" && canEnter(current, step)) {
       const order = stepsFor(current);
-      const back = order.indexOf(urlStep) < order.indexOf(current.step);
+      const back = order.indexOf(step) < order.indexOf(current.step);
       startTransition(() => {
         addTransitionType(back ? "step-back" : "step-forward");
-        dispatch({ type: "goto", step: urlStep });
+        dispatch({ type: "goto", step });
       });
     } else {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("step", current.step);
-      router.replace(`${pathname}?${params}`, { scroll: false });
+      const url = new URL(window.location.href);
+      url.searchParams.set("step", current.step);
+      window.history.replaceState(null, "", url);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to URL changes only
+  };
+  useEffect(() => {
+    followUrl(urlStep);
   }, [urlStep, ready]);
+  // Rapid back/forward can outrun Next's router transition; read the URL directly as well.
+  useEffect(() => {
+    const onPop = () => followUrl(new URLSearchParams(window.location.search).get("step") as StepId | null);
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const go = (step: StepId, direction: "forward" | "back") => {
     if (!canEnter(state, step) && step !== "submitted") return;

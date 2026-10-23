@@ -92,9 +92,12 @@ test("E2E-06 two users race for the last in-shop slot → one wins, the other se
     await p.getByRole("radio", { name: /at your shop/i }).click();
     await next(p);
   }
-  const slotA = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").nth(4);
-  const slotB = b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").nth(4);
-  await Promise.all([slotA.click(), slotB.click()]);
+  // Target one start time by name: after a loss the list reloads, and an index-based locator
+  // would re-resolve to a different slot if Playwright retried the click.
+  const time = /\d{1,2}:\d{2} [AP]M/.exec(await a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").last().ariaSnapshot())?.[0];
+  expect(time).toBeTruthy();
+  const pick = (p: typeof a) => p.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: new RegExp(`^${time}`) });
+  await Promise.all([pick(a).click({ timeout: 5_000 }).catch(() => {}), pick(b).click({ timeout: 5_000 }).catch(() => {})]);
   const heldA = await a.getByText(/held for you/i).isVisible().catch(() => false);
   const heldB = await b.getByText(/held for you/i).isVisible().catch(() => false);
   await expect.poll(async () => (await a.getByText(/someone just booked/i).count()) + (await b.getByText(/someone just booked/i).count())).toBe(1);
@@ -109,7 +112,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await a.getByRole("radio", { name: /at your shop/i }).click();
   await next(a);
   const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").first();
-  const time = /d{1,2}:d{2} [AP]M/.exec((await first.textContent()) ?? "")?.[0] ?? "";
+  const time = /\d{1,2}:\d{2} [AP]M/.exec(await first.ariaSnapshot())?.[0] ?? "";
   expect(time).not.toBe("");
   await first.click();
   await expect(a.getByText(/held for you/i)).toBeVisible();
@@ -223,6 +226,7 @@ test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
 
 test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {
   await startService(page, { pkg: "Ultimate" });
+  await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
   await page.goBack();
   await page.getByRole("radio", { name: /no package/i }).click();
   await page.getByRole("checkbox", { name: /paint correction — 2-stage/i }).click();
@@ -285,18 +289,32 @@ test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
   const tabTo = async (name: RegExp, role: "radio" | "button" | "checkbox" | "textbox" = "button") => {
     for (let i = 0; i < 60; i++) {
       await page.keyboard.press("Tab");
-      const focused = page.locator(":focus");
-      const accessible = (await focused.getAttribute("aria-label")) ?? (await focused.textContent()) ?? "";
-      if (name.test(accessible) && (await focused.evaluate((el, r) => el.getAttribute("role") === r || el.tagName.toLowerCase() === (r === "textbox" ? "input" : r), role).catch(() => true))) return;
+      // document.activeElement, not :focus — focus may sit on <body> between steps.
+      const hit = await page.evaluate(
+        ({ src, flags, r }) => {
+          const el = document.activeElement as HTMLElement | null;
+          if (!el || el === document.body) return false;
+          const label = el.getAttribute("aria-label") ?? (el.getAttribute("aria-labelledby") ? document.getElementById(el.getAttribute("aria-labelledby")!)?.textContent : null) ?? (el as HTMLButtonElement).labels?.[0]?.textContent ?? el.closest("label")?.textContent ?? el.textContent ?? "";
+          const roleOk = el.getAttribute("role") === r || el.tagName.toLowerCase() === (r === "textbox" ? "input" : r);
+          return new RegExp(src, flags).test(label) && roleOk;
+        },
+        { src: name.source, flags: name.flags, r: role },
+      );
+      if (hit) return;
     }
     throw new Error(`Could not reach ${name} by keyboard`);
   };
   // Radio groups use roving tabindex (WAI-ARIA): Tab reaches the group, arrow keys pick the option.
   const chooseRadio = async (name: RegExp) => {
+    // Wait for the step to render (view transitions keep the old step briefly).
+    await page.getByRole("radio", { name }).first().waitFor();
     await tabTo(/./, "radio");
     for (let i = 0; i < 12; i++) {
-      const focused = page.locator(":focus");
-      const label = (await focused.getAttribute("aria-label")) ?? (await focused.textContent()) ?? "";
+      const label = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        const by = el?.getAttribute("aria-labelledby");
+        return el?.getAttribute("aria-label") ?? (by ? document.getElementById(by)?.textContent : null) ?? (el as HTMLButtonElement | null)?.labels?.[0]?.textContent ?? el?.closest("label")?.textContent ?? el?.textContent ?? "";
+      });
       if (name.test(label)) {
         await page.keyboard.press("Space");
         return;
