@@ -69,6 +69,8 @@ export const EnvSchema = z.object({
   CAPTCHA_DRIVER: z.enum(["turnstile", "test"]).optional(),
   TEST_CLOCK: optional,
   E2E_TEST_MODE: optional,
+  // Shareable demo of a test-mode build: fake payments stay, test controls (clock, settings, outbox) are off.
+  PREVIEW_MODE: optional,
 });
 
 export type Env = z.infer<typeof EnvSchema>;

@@ -4,10 +4,10 @@ import { revalidateTag } from "next/cache";
 import { getDb } from "@/db/client";
 import * as s from "@/db/schema";
 import { OperationalSettingsSchema } from "@/lib/domain/settings";
-import { notFound, testEndpointsEnabled } from "@/lib/server/test-mode";
+import { notFound, testControlsEnabled } from "@/lib/server/test-mode";
 
 export async function POST(request: Request) {
-  if (!testEndpointsEnabled()) return notFound();
+  if (!testControlsEnabled()) return notFound();
   const patch = (await request.json()) as Record<string, unknown>;
   const [row] = await getDb().select().from(s.settings).where(eq(s.settings.id, 1));
   const next = OperationalSettingsSchema.parse({ ...(row?.data ?? {}), ...patch });

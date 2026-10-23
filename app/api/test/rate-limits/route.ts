@@ -4,10 +4,10 @@
  */
 import { sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { notFound, testEndpointsEnabled } from "@/lib/server/test-mode";
+import { notFound, testControlsEnabled } from "@/lib/server/test-mode";
 
 export async function DELETE() {
-  if (!testEndpointsEnabled()) return notFound();
+  if (!testControlsEnabled()) return notFound();
   await getDb().execute(sql`DELETE FROM rate_limits`);
   return Response.json({ ok: true });
 }

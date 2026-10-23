@@ -3,10 +3,10 @@ import { and, asc, eq, type SQL } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import * as s from "@/db/schema";
 import { cronTick, flushOutbox } from "@/lib/server/jobs";
-import { notFound, testEndpointsEnabled } from "@/lib/server/test-mode";
+import { notFound, testControlsEnabled } from "@/lib/server/test-mode";
 
 export async function GET(request: Request) {
-  if (!testEndpointsEnabled()) return notFound();
+  if (!testControlsEnabled()) return notFound();
   const url = new URL(request.url);
   const conds: SQL[] = [];
   const bookingNumber = url.searchParams.get("booking");
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!testEndpointsEnabled()) return notFound();
+  if (!testControlsEnabled()) return notFound();
   const { action } = (await request.json().catch(() => ({}))) as { action?: string };
   if (action === "cron") return Response.json(await cronTick());
   return Response.json(await flushOutbox(getDb(), { limit: 200 }));

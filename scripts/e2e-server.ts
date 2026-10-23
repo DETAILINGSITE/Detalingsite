@@ -27,7 +27,14 @@ const d = createDb(p2);
 await seed(d, { reset: true });
 // Deterministic settings for E2E: zero lead time; hours Mon–Sat 08:00–18:00.
 await p2.query(`UPDATE settings SET data = jsonb_set(jsonb_set(data, '{minLeadHours}', '0'), '{timezone}', '"America/Chicago"') WHERE id = 1`);
-const hash = await hashPassword("e2e-admin-password-123");
+// A shared preview link gets a random admin password (saved locally, git-ignored), not the
+// fixed test password that's in this repo.
+const adminPassword = process.env.PREVIEW_MODE === "1" ? (await import("node:crypto")).randomBytes(12).toString("base64url") : "e2e-admin-password-123";
+if (process.env.PREVIEW_MODE === "1") fs.writeFileSync(".preview-admin.txt", `Preview admin login (http://<preview-link>/admin/login)
+Email: owner@e2e.test
+Password: ${adminPassword}
+`);
+const hash = await hashPassword(adminPassword);
 await p2.query(`INSERT INTO "user"(id,name,email,email_verified,role,two_factor_enabled) VALUES ('e2e-owner','E2E Owner','owner@e2e.test',true,'owner',false) ON CONFLICT DO NOTHING`);
 await p2.query(`INSERT INTO account(id,account_id,provider_id,user_id,password) VALUES ('e2e-acc','e2e-owner','credential','e2e-owner',$1) ON CONFLICT DO NOTHING`, [hash]);
 await p2.end();
