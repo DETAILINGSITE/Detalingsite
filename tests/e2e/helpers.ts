@@ -1,4 +1,29 @@
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Browser, type BrowserContext, type Page } from "@playwright/test";
+
+const extraContexts: BrowserContext[] = [];
+
+/**
+ * A second, independent visitor (own cookies and storage) with the current project's device
+ * emulation; browser.newPage() would give a desktop page even in the mobile projects.
+ */
+export async function newTab(browser: Browser): Promise<Page> {
+  const u = test.info().project.use;
+  const ctx = await browser.newContext({
+    baseURL: process.env.BASE_URL ?? u.baseURL,
+    viewport: u.viewport,
+    userAgent: u.userAgent,
+    deviceScaleFactor: u.deviceScaleFactor,
+    isMobile: u.isMobile,
+    hasTouch: u.hasTouch,
+  });
+  extraContexts.push(ctx);
+  return ctx.newPage();
+}
+
+/** Close every tab opened with newTab (call from afterEach). */
+export async function closeTabs() {
+  await Promise.all(extraContexts.splice(0).map((c) => c.close()));
+}
 
 /** Freeze server time (TEST_CLOCK=1) and reset rate limits. Default: Thu 2026-10-22 10:00 CDT. */
 export async function setClock(request: APIRequestContext, iso = "2026-10-22T15:00:00Z") {

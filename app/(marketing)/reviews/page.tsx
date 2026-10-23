@@ -46,7 +46,7 @@ export default async function ReviewsPage() {
           {testimonials.map((t) => (
             <li key={t.id} className="card mb-5 break-inside-avoid p-6" data-reveal>
               <div className="flex items-center justify-between">
-                <span className="flex text-gold-300" aria-label={`${t.rating} out of 5 stars`}>
+                <span className="flex text-gold-300" role="img" aria-label={`${t.rating} out of 5 stars`}>
                   {Array.from({ length: t.rating }, (_, i) => (
                     <Star key={i} className="size-4 fill-current" aria-hidden="true" />
                   ))}

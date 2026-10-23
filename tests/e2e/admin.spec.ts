@@ -1,8 +1,9 @@
 /** Admin E2E: auth guard, booking visible in admin (scenario 1 end), status changes, CSV. */
 import { expect, test } from "@playwright/test";
-import { agreeAndPay, bookingNumber, fakePaySuccess, fillContact, next, pickFirstSlot, setClock, startService } from "./helpers";
+import { agreeAndPay, bookingNumber, closeTabs, fakePaySuccess, fillContact, newTab, next, pickFirstSlot, setClock, startService } from "./helpers";
 
 test.beforeEach(async ({ request }) => setClock(request));
+test.afterEach(closeTabs);
 
 test("E2E-ADMIN-AUTH admin pages and exports require a session", async ({ page, request }) => {
   await page.goto("/admin/bookings");
@@ -23,7 +24,7 @@ test("E2E-ADMIN-BOOKINGS a confirmed booking appears in admin and can be complet
   await fakePaySuccess(page);
   const number = await bookingNumber(page);
 
-  const admin = await browser.newPage();
+  const admin = await newTab(browser);
   await admin.goto("/admin/login");
   await admin.getByLabel(/^email/i).fill("owner@e2e.test");
   await admin.getByLabel(/^password/i).fill("e2e-admin-password-123");

@@ -3,11 +3,12 @@
  * mobile-chrome (fake payment driver, captured notifications, test clock).
  */
 import { expect, test } from "@playwright/test";
-import { advanceClock, agreeAndPay, bookingNumber, fakePaySuccess, fillContact, mobileAddress, next, outbox, pickFirstSlot, setClock, startService } from "./helpers";
+import { advanceClock, agreeAndPay, bookingNumber, closeTabs, fakePaySuccess, fillContact, mobileAddress, newTab, next, outbox, pickFirstSlot, setClock, startService } from "./helpers";
 
 test.beforeEach(async ({ request }) => {
   await setClock(request);
 });
+test.afterEach(closeTabs);
 
 test("E2E-01 package → sedan → 2 add-ons → mobile → slot → contact → deposit → confirmed, notified @smoke", async ({ page, request }) => {
   await startService(page, { size: "Sedan", pkg: "Premium", addons: ["Headlight restoration", "Engine bay"] });
@@ -85,8 +86,8 @@ test("E2E-05 custom job → photo → quote request saved", async ({ page }) => 
 });
 
 test("E2E-06 two users race for the last in-shop slot → one wins, the other sees alternatives", async ({ browser, request }) => {
-  const a = await browser.newPage();
-  const b = await browser.newPage();
+  const a = await newTab(browser);
+  const b = await newTab(browser);
   for (const p of [a, b]) {
     await startService(p, { pkg: "Basic" });
     await p.getByRole("radio", { name: /at your shop/i }).click();
@@ -116,19 +117,23 @@ test("E2E-06 two users race for the last in-shop slot → one wins, the other se
 });
 
 test("E2E-07 slot hold expires → the time becomes available again", async ({ browser, request }) => {
-  const a = await browser.newPage();
+  const a = await newTab(browser);
   await startService(a, { pkg: "Basic" });
   await a.getByRole("radio", { name: /at your shop/i }).click();
   await next(a);
   // Last slot of the day, so advancing the clock can't push it into the past.
   const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").last();
-  const dayName = ((await a.getByRole("grid").getByRole("button", { name: /selected/ }).getAttribute("aria-label")) ?? "").replace(/^Today, /, "").replace(/, selected$/, "");
+  // The slot list's legend names the day ("Friday, October 23, 2026"); B selects the same day.
+  const legend = (await a.locator("fieldset legend").first().textContent()) ?? "";
+  const [, month, dayNum] = /([A-Z][a-z]+) (\d{1,2}),/.exec(legend) ?? [];
+  expect(month).toBeTruthy();
+  const dayName = new RegExp(`${month} ${dayNum}(st|nd|rd|th),`);
   const time = /\d{1,2}:\d{2} [AP]M/.exec(await first.ariaSnapshot())?.[0] ?? "";
   expect(time).not.toBe("");
   await first.click();
   await expect(a.getByText(/held for you/i)).toBeVisible();
   await advanceClock(request, 11 * 60_000);
-  const b = await browser.newPage();
+  const b = await newTab(browser);
   await startService(b, { pkg: "Basic" });
   await b.getByRole("radio", { name: /at your shop/i }).click();
   await next(b);
@@ -364,6 +369,8 @@ test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
   await page.keyboard.press("Space");
   await tabTo(/continue to payment/i);
   await page.keyboard.press("Enter");
+  // The payment panel is loaded on demand; wait for it like a person would.
+  await page.getByTestId("fake-payment").waitFor();
   await tabTo(/succeeds/i);
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { name: /you're booked/i })).toBeVisible({ timeout: 30_000 });
