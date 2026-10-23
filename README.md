@@ -55,14 +55,16 @@ The schema lives in SQL (`db/migrations/0001_init.sql`) because the double-booki
 | Command | Covers |
 |---|---|
 | `pnpm test` | Vitest unit + integration tests. Starts its own throwaway Postgres; includes real concurrent-booking tests |
-| `pnpm e2e` | Playwright: builds, starts an isolated server (own DB, fake payments, captured messages, test clock) and runs booking scenarios 1–17 on desktop Chrome, mobile Safari (WebKit) and mobile Chrome, plus admin and smoke tests on Firefox, WebKit and Edge |
+| `pnpm e2e` | Playwright: builds, starts an isolated server (own DB, fake payments, captured messages, test clock) and runs booking scenarios 1–17 on desktop Chrome, mobile Safari (WebKit) and mobile Chrome, plus admin and smoke tests on Firefox, WebKit and Edge (Edge only where it's installed) |
 | `pnpm site-checks` | Crawl for broken links, axe accessibility on every page, SEO, security headers, reduced motion, WebGL-off fallback, tap targets, fonts |
 | `pnpm check:bundle` | Initial-JS budget (≤ 170 KB gzip) for the mobile home page, against a running server |
-| `pnpm lhci` | Lighthouse CI budgets (mobile; `LIGHTHOUSE_DESKTOP=1` for desktop) |
+| `pnpm lhci` | Lighthouse CI budgets against a running server (mobile with real throttling; `LIGHTHOUSE_DESKTOP=1` for desktop). On Windows without Chrome on the PATH, set `CHROME_PATH` |
 | `pnpm e2e:stripe` | Optional: real Stripe test-mode payments. Needs test keys and `stripe listen --forward-to localhost:3100/api/stripe/webhook` |
 | `pnpm verify:report` | Writes `docs/VERIFICATION.md` from the latest results |
 
 First run: `pnpm exec playwright install chromium webkit firefox`.
+
+To reproduce the full verification report locally: start the production test server (`PORT=3100 pnpm exec tsx scripts/e2e-server.ts`), then with `BASE_URL=http://localhost:3100` run `pnpm e2e`, `CI=1 pnpm test` (writes the JSON results), `pnpm check:bundle`, `pnpm lhci`, rename `.lighthouseci` to `.lighthouseci-mobile`, run `LIGHTHOUSE_DESKTOP=1 pnpm lhci`, and finally `pnpm verify:report`. CI does all of this on every push.
 
 ## Deploying
 

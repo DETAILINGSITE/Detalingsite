@@ -1,55 +1,46 @@
 # Build Progress — Premium Car Detailing Website
 
-_Last updated: 2026-10-22_
+_Last updated: 2026-10-23_
 
 | Phase | Status |
 |---|---|
 | Phase 1 — Plan | ✅ Done (`docs/PLAN.md`) |
-| Phase 2 — Build | 🟡 **All planned code is written. None of it has been compiled or run yet** (see "Blocker") |
-| Phase 3 — Verify | 🟡 Test suites are written (unit, integration, end-to-end, site checks, Lighthouse, bundle budget). **None have been run.** |
+| Phase 2 — Build | ✅ Done. Production build passes; lint and typecheck clean |
+| Phase 3 — Verify | ✅ Done. Every suite green: see [`VERIFICATION.md`](VERIFICATION.md) |
 
-## Blocker: move the project to a short folder path
+Project location: `C:\dev\detailing-site` (moved out of the temp folder and Downloads; the old copies are deleted).
 
-The project still lives in a temporary folder 187 characters deep. Windows caps paths at 260 characters, so esbuild, Postgres and Next's compiler can't start from here. Nothing has been typechecked, built or tested.
+## Final results (same production build)
 
-**Next steps, once it's in a short path such as `C:\dev\detailing-site`:**
-
-```
-pnpm install
-pnpm typecheck        # fix compile errors (expect some: first build of never-run code)
-pnpm lint
-pnpm test             # unit + integration (starts its own Postgres)
-pnpm exec playwright install chromium webkit firefox
-pnpm e2e              # builds, seeds an isolated DB, runs scenarios 1–17 + admin + smoke
-pnpm site-checks
-pnpm check:bundle && pnpm lhci
-pnpm verify:report    # writes docs/VERIFICATION.md
-```
-
-## What exists (commits on `main`)
-
-| Area | Files |
+| Check | Result |
 |---|---|
-| Plan & docs | `docs/PLAN.md`, `README.md` (setup, deploy, Values to fill in, admin walkthrough), this file |
-| Config | `config/business.ts`, `config/placeholder.ts`, `.env.example`, `pnpm-workspace.yaml` (supply-chain policy) |
-| Database | `db/migrations/0001_init.sql` (exclusion constraint), `db/schema.ts`, `db/seed.ts` + `db/seed-data/*`, `scripts/db/*` |
-| Domain engines | `lib/domain/*`: pricing/rules, availability (DST-safe), policy, state machines, zones, ICS, CSV, reminders |
-| Booking backend | `lib/server/booking/*`: holds, checkout/webhooks/late payment, manage (reschedule/cancel), availability service; plus payments (Stripe + fake), outbox, notifications + email layout, quotes, leads, storage, places, rate limiting, captcha, auth, jobs |
-| Routes | `app/api/*`: availability, Stripe webhook, cron, Places, uploads, events, auth, health, Twilio, admin export, test-only endpoints; `app/(flow)/book/actions.ts`, `app/(flow)/booking/[token]/actions.ts` |
-| Marketing site | `app/(marketing)/*`: home (12 sections), services + service pages, pricing, gallery, about, reviews, FAQ, contact, quote, city pages, gift cards, legal pages, accessibility; sitemap, robots, OG image, 404/error |
-| Motion & 3D | `lib/motion/engine.ts` (GSAP + ScrollTrigger + SplitText + Lenis, deferred), `components/motion/*`, `components/three/hero-canvas.tsx`, `components/marketing/home/hero*.tsx` |
-| Booking UI | `components/booking/*`: wizard, 8 steps, summary/bottom sheet, hold countdown, photo uploader, payment panel, manage/confirmation; `app/(flow)/*` pages |
-| Admin | `app/admin/*`: login + 2FA, overview metrics + health, calendar (drag + keyboard move), bookings, leads, quotes, customers, catalog, schedule, service area, settings, promo codes, content, export |
-| Security | `proxy.ts` + `lib/security/csp.ts` (nonce CSP on dynamic routes), headers in `next.config.ts`, server-side admin guard, signed tokens, Turnstile, rate limits |
-| Ops | `scripts/launch-check.ts`, `scripts/check-bundle.ts`, `scripts/optimize-model.ts`, `scripts/verification-report.ts`, `scripts/e2e-server.ts`, `Dockerfile`, `docker-compose.yml`, `vercel.json`, `.github/workflows/ci.yml`, `lighthouserc.cjs` |
-| Tests | `tests/unit/*`, `tests/integration/*` (real Postgres, concurrency), `tests/e2e/booking.spec.ts` (E2E-01…17), `admin.spec.ts`, `site.spec.ts` |
+| Lint + typecheck | Clean |
+| Unit + integration (Vitest, real Postgres) | 84 / 84 |
+| End-to-end + site checks (Playwright) | 73 / 73 across desktop Chrome, mobile Safari (WebKit), mobile Chrome, site checks, Firefox and desktop WebKit smoke. No retries needed |
+| Requirements mapped in VERIFICATION.md | 52 / 52 pass, plus the bundle budget |
+| Home page initial JS (mobile) | 167.4 KB (budget 170 KB); no 3D/GSAP/Lenis before `load` |
+| Lighthouse mobile (real throttling) | Perf 96–98, a11y 100, best practices 100, LCP 1.7–2.1 s, CLS 0 |
+| Lighthouse desktop | Perf 100, a11y 100, best practices 100, CLS 0 |
 
-## Known gaps and risks
+## Bugs the verification run caught and fixed
 
-- **Never compiled.** Expect type errors and some selector mismatches in the end-to-end tests on the first run. That's the first job after the move.
-- **3D model:** no model is checked in. The hero shows the static poster until a licensed `public/models/car.glb` is added; the HEAD check skips Three.js entirely when it's missing. The poster is a placeholder illustration.
-- **Not yet verified against current docs:** Better Auth (role additional field, two-factor client API), Drizzle (`onConflictDoUpdate` with `targetWhere`, `.for("update")`), React `ViewTransition` in server components, react-day-picker v10 `timeZone`, Stripe `CheckoutElementsProvider` options.
-- **Ad conversion tags** (GA4/Meta) don't run on the nonce-CSP booking routes yet. Plausible works.
-- **Real Stripe test-mode end-to-end runs** need your Stripe test keys.
-- **Real-device / BrowserStack testing** isn't possible here; only emulation.
-- **Budgets:** the 170 KB initial-JS and Lighthouse targets can only be checked once the project builds.
+- **Double-booking race:** concurrent holds on one crew could deadlock (40P01) instead of returning "slot taken". Fixed with ordered per-resource advisory locks plus a retry backstop; the exclusion constraint is still the guarantee.
+- **Booking and admin pages didn't work in production:** a prerendered shell shipped scripts without the CSP nonce, so nothing ran. Those routes now render per request.
+- **Safari loaded nothing over plain HTTP:** `upgrade-insecure-requests` is now only sent when the site is HTTPS.
+- **Holds expired instantly** when a device clock disagreed with the server: expiry is now measured on the browser's own clock.
+- **Browser back button** in the booking wizard could jump to the wrong step.
+- **Mobile "Continue" tap did nothing** on the contact step: blur-time validation moved the button mid-tap. Validation now runs on submit.
+- **Layout shift (CLS 0.115)** on service pages when the web font loaded; fixed.
+- Home page JavaScript cut from 198 KB to 167 KB; Stripe.js now loads only at the payment step.
+- Smaller fixes: OG image, favicon, star-rating accessibility, Zod eval probe under the strict CSP, places API caching, launch-check wording.
+
+## What's left (needs you, not code)
+
+`pnpm launch-check` lists everything still to do before going live: 51 items right now, all business details, content and accounts:
+
+- **Business details** in `config/business.ts` (name, phone, address, hours, zones, prices, proof points). See README → *Values to fill in*.
+- **Real content in Admin:** reviews, gallery photos, city pages, and ticking "prices reviewed".
+- **Accounts and keys:** Stripe, Resend (+ email DNS), Turnstile, cron secret, optional Twilio (start toll-free verification early) and R2 for photo uploads.
+- **3D model:** a licensed, debadged `public/models/car.glb` + licence. Until then the hero shows the poster image.
+- **Legal:** have the privacy, terms, cancellation and SMS-consent wording reviewed.
+- **Not testable here:** real phones/BrowserStack, real Stripe test-mode runs (needs your test keys), email/SMS deliverability.
