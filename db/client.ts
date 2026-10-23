@@ -2,6 +2,7 @@
  * Database access. App code calls `getDb()`; scripts and tests build their own pool
  * with `createDb()` so nothing here depends on Next.js.
  */
+import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema";
@@ -27,6 +28,18 @@ export type Db = ReturnType<typeof createDb>;
 export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 /** Anything that can run queries: the db itself or a transaction. */
 export type Queryable = Db | Tx;
+
+/**
+ * Serialises allocation writes per crew/bay: transaction-scoped advisory locks, always taken
+ * in sorted order so two transactions can never wait on each other. Without this, concurrent
+ * inserts into the exclusion constraint can deadlock (40P01) instead of cleanly reporting a
+ * conflict (23P01). The constraint stays the real guarantee; this just keeps contention orderly.
+ */
+export async function lockResources(tx: Queryable, resourceIds: readonly string[]) {
+  for (const id of [...new Set(resourceIds)].sort()) {
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${"alloc:" + id}, 0))`);
+  }
+}
 
 const globalForDb = globalThis as unknown as { __detailingPool?: pg.Pool; __detailingDb?: Db };
 

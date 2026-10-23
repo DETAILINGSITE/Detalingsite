@@ -4,6 +4,7 @@
  * Measures gzip-encoded JS transferred before the `load` event on a mobile profile,
  * and asserts that no Three.js / GSAP chunk is part of it.
  */
+import fs from "node:fs";
 import { chromium, devices } from "@playwright/test";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
@@ -39,6 +40,12 @@ const heavy = scripts.filter((s) => s.heavy);
 console.log(`Initial JS: ${total.toFixed(1)} KB across ${scripts.length} scripts (budget ${BUDGET_KB} KB)`);
 for (const s of scripts.sort((a, b) => b.bytes - a.bytes).slice(0, 8)) console.log(`  ${(s.bytes / 1024).toFixed(1).padStart(7)} KB  ${s.url.replace(BASE, "")}`);
 await browser.close();
+// Picked up by `pnpm verify:report`.
+fs.mkdirSync("test-results", { recursive: true });
+fs.writeFileSync(
+  "test-results/bundle.json",
+  JSON.stringify({ totalKb: Number(total.toFixed(1)), budgetKb: BUDGET_KB, scripts: scripts.length, heavyBeforeLoad: heavy.map((h) => h.heavy) }),
+);
 let fail = false;
 if (total > BUDGET_KB) {
   console.error(`✖ Over budget by ${(total - BUDGET_KB).toFixed(1)} KB`);

@@ -31,6 +31,7 @@ jobs:
           npx wait-on http://localhost:3100/api/health --timeout 120000
           BASE_URL=http://localhost:3100 pnpm check:bundle
           BASE_URL=http://localhost:3100 pnpm lhci
+          mv .lighthouseci .lighthouseci-mobile
           LIGHTHOUSE_DESKTOP=1 BASE_URL=http://localhost:3100 pnpm lhci
       - run: pnpm verify:report
         if: always()
@@ -41,5 +42,5 @@ jobs:
           path: |
             docs/VERIFICATION.md
             playwright-report
-            .lighthouseci
+            .lighthouseci*
             test-results

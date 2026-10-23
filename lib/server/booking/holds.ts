@@ -4,7 +4,7 @@
  */
 import { and, eq, inArray, isNotNull, lte, sql } from "drizzle-orm";
 import { business } from "@/config/business";
-import { EXCLUSION_VIOLATION, getDb, pgErrorCode, retryOnDeadlock, type Db, type Queryable } from "@/db/client";
+import { EXCLUSION_VIOLATION, getDb, lockResources, pgErrorCode, retryOnDeadlock, type Db, type Queryable } from "@/db/client";
 import * as s from "@/db/schema";
 import {
   blockedRange,
@@ -271,6 +271,7 @@ export async function createHold(req: HoldRequest, now: Date, db: Db = getDb()):
 
   try {
     const booking = await retryOnDeadlock(() => db.transaction(async (tx) => {
+      await lockResources(tx, plan.resourceIds);
       await sweepExpiredHolds(tx, now, {
         resourceIds: plan.resourceIds,
         start: new Date(blocked.start),

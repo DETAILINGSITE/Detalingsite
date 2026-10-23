@@ -4,7 +4,7 @@
  */
 import { and, desc, eq, sql } from "drizzle-orm";
 import { business } from "@/config/business";
-import { EXCLUSION_VIOLATION, UNIQUE_VIOLATION, getDb, pgErrorCode, retryOnDeadlock, type Db, type Queryable } from "@/db/client";
+import { EXCLUSION_VIOLATION, UNIQUE_VIOLATION, getDb, lockResources, pgErrorCode, retryOnDeadlock, type Db, type Queryable } from "@/db/client";
 import * as s from "@/db/schema";
 import { blockedRange } from "@/lib/domain/availability";
 import { price } from "@/lib/domain/pricing";
@@ -490,7 +490,9 @@ async function reacquire(
   const travel = booking.locationType === "mobile" ? (zone?.travelMinutes ?? 0) : 0;
   const blocked = blockedRange(booking.startsAt.getTime(), booking.durationMin, travel, ctx.settings.bufferMin);
   if (booking.startsAt.getTime() <= now.getTime()) return false;
-  for (const resourceId of eligibleResourceIds(ctx, booking.locationType)) {
+  const eligible = eligibleResourceIds(ctx, booking.locationType);
+  await lockResources(tx, eligible);
+  for (const resourceId of eligible) {
     try {
       await tx.transaction(async (sp) => {
         await sp.insert(s.resourceAllocations).values({

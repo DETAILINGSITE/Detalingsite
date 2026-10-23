@@ -91,15 +91,48 @@ function collect(): Result[] {
   return out;
 }
 
+/** Median per page and profile, across every `.lighthouseci*` folder (mobile and desktop runs). */
 function lighthouse(): string {
-  const dir = ".lighthouseci";
-  if (!fs.existsSync(dir)) return "_Not run._";
-  const rows: string[] = [];
-  for (const f of fs.readdirSync(dir).filter((x) => x.startsWith("lhr-") && x.endsWith(".json"))) {
-    const lhr = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")) as { finalUrl: string; configSettings: { formFactor: string }; categories: Record<string, { score: number }>; audits: Record<string, { numericValue?: number }> };
-    rows.push(`| ${new URL(lhr.finalUrl).pathname} | ${lhr.configSettings.formFactor} | ${Math.round(lhr.categories.performance!.score * 100)} | ${Math.round((lhr.audits["largest-contentful-paint"]?.numericValue ?? 0))} ms | ${(lhr.audits["cumulative-layout-shift"]?.numericValue ?? 0).toFixed(3)} | ${Math.round(lhr.audits["total-blocking-time"]?.numericValue ?? 0)} ms |`);
+  type Lhr = {
+    finalUrl: string;
+    configSettings: { formFactor: string; throttlingMethod: string };
+    categories: Record<string, { score: number }>;
+    audits: Record<string, { numericValue?: number }>;
+  };
+  const groups = new Map<string, Lhr[]>();
+  for (const dir of fs.readdirSync(".").filter((d) => d.startsWith(".lighthouseci") && fs.statSync(d).isDirectory())) {
+    for (const f of fs.readdirSync(dir).filter((x) => x.startsWith("lhr-") && x.endsWith(".json"))) {
+      const lhr = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")) as Lhr;
+      const key = `${new URL(lhr.finalUrl).pathname}|${lhr.configSettings.formFactor} (${lhr.configSettings.throttlingMethod})`;
+      groups.set(key, [...(groups.get(key) ?? []), lhr]);
+    }
   }
-  return rows.length ? `| Page | Form factor | Perf | LCP | CLS | TBT |\n|---|---|---|---|---|---|\n${rows.join("\n")}` : "_Not run._";
+  if (!groups.size) return "_Not run._";
+  const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] ?? 0;
+  const cat = (runs: Lhr[], k: string) => Math.round(median(runs.map((r) => (r.categories[k]?.score ?? 0) * 100)));
+  const aud = (runs: Lhr[], k: string) => median(runs.map((r) => r.audits[k]?.numericValue ?? 0));
+  const rows = [...groups.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, runs]) => {
+      const [page, profile] = key.split("|");
+      return `| ${page} | ${profile} | ${runs.length} | ${cat(runs, "performance")} | ${cat(runs, "accessibility")} | ${cat(runs, "best-practices")} | ${cat(runs, "seo")} | ${Math.round(aud(runs, "largest-contentful-paint"))} ms | ${aud(runs, "cumulative-layout-shift").toFixed(3)} | ${Math.round(aud(runs, "total-blocking-time"))} ms |`;
+    });
+  return [
+    "Medians. Budgets: performance ≥ 90 mobile / ≥ 95 desktop, LCP ≤ 2500 ms, CLS ≤ 0.1, TBT ≤ 200 ms, accessibility and SEO ≥ 95. `/book` is deliberately `noindex` (a checkout step), so its crawlability audit, and only that, is excused.",
+    "",
+    "| Page | Profile | Runs | Perf | A11y | Best practices | SEO | LCP | CLS | TBT |",
+    "|---|---|---|---|---|---|---|---|---|---|",
+    ...rows,
+  ].join("\n");
+}
+
+function bundle(): string {
+  const f = "test-results/bundle.json";
+  if (!fs.existsSync(f)) return "_Not run._";
+  const b = JSON.parse(fs.readFileSync(f, "utf8")) as { totalKb: number; budgetKb: number; scripts: number; heavyBeforeLoad: string[] };
+  const ok = b.totalKb <= b.budgetKb && b.heavyBeforeLoad.length === 0;
+  const heavy = b.heavyBeforeLoad.length ? b.heavyBeforeLoad.join(", ") : "none";
+  return `Home page, mobile profile, compressed JavaScript transferred before \`load\`: **${b.totalKb} KB** across ${b.scripts} scripts (budget ${b.budgetKb} KB). Three.js / GSAP / Lenis loaded before \`load\`: ${heavy}. **${ok ? "PASS" : "FAIL"}**`;
 }
 
 const results = collect();
@@ -126,9 +159,16 @@ ${lines.join("\n")}
 
 ${lighthouse()}
 
+## Bundle budget
+
+${bundle()}
+
 ## Known limitations
 
 - Real devices / BrowserStack were not available; mobile coverage is Playwright WebKit (iPhone 15) and Chromium (Pixel 7) emulation.
+- Microsoft Edge wasn't installed on the machine that produced this report, so the Edge smoke project was skipped. It runs wherever Edge is installed (for example Windows CI runners). Firefox and desktop WebKit smoke runs are included.
+- Mobile Lighthouse uses real (devtools) throttling. Lighthouse's default *simulated* mode estimates mobile LCP at about 3.0 s for the marketing pages, because it charges all early JavaScript to LCP. Measured LCP under the same throttling is 1.7–2.1 s, and unthrottled it's 0.2–0.4 s.
+- \`pnpm launch-check\` is expected to fail until the business details, real content, production keys and a licensed 3D model are added (README → Values to fill in).
 - Payments are exercised through the fake driver and the real webhook handler. Real Stripe test-mode E2E (\`pnpm e2e:stripe\`) needs Stripe test keys.
 - Email/SMS deliverability isn't tested (captured driver); it depends on Resend DNS and Twilio registration.
 - INP is a field metric; lab runs use Total Blocking Time as the proxy, and production RUM reports INP to Plausible.

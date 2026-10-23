@@ -22,7 +22,7 @@ coverage/
 test-results/
 playwright-report/
 blob-report/
-.lighthouseci/
+.lighthouseci*/
 tests/.artifacts/
 
 # os / editor

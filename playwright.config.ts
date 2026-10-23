@@ -16,6 +16,9 @@ const baseURL = process.env.BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "tests/e2e",
+  // Own subfolder: Playwright empties outputDir on start, which would delete the Vitest and
+  // bundle JSON that pnpm verify:report reads from test-results/.
+  outputDir: "test-results/e2e",
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
