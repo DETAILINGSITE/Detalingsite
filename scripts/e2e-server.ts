@@ -53,7 +53,8 @@ const serverEnv = {
   TOKEN_PEPPER: "e2e-pepper-0123456789abcdef",
   BETTER_AUTH_SECRET: "e2e-better-auth-secret-0123456789abcdef",
   CRON_SECRET: "e2e-cron",
-  NEXT_PUBLIC_SITE_URL: `http://localhost:${port}`,
+  // A preview behind a tunnel passes its public URL so links, OG images and admin auth use it.
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? `http://localhost:${port}`,
 };
 if (process.env.SKIP_BUILD !== "1") {
   const { execSync } = await import("node:child_process");
