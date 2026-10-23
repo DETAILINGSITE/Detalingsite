@@ -37,7 +37,10 @@ export function ContactStep({
       heardAbout: (state.contact.heardAbout || undefined) as ContactInput["heardAbout"],
       website: "",
     },
-    mode: "onTouched",
+    // Validate on submit, then live while typing. Blur-time validation inserted error text
+    // between pointerdown and click on mobile, shifting the Continue button out from under the tap.
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     shouldFocusError: true,
   });
   const { register, handleSubmit, control, formState } = form;
