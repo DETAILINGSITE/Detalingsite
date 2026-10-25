@@ -40,7 +40,9 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   const addons = catalog.services.filter((x) => x.kind === "addon" && x.id !== s.id).slice(0, 6);
   const faqs = content.faqs.filter((f) => f.serviceId === s.id || (f.serviceId === null && f.category === "Services")).slice(0, 6);
   const gallery = content.gallery.filter((g) => g.serviceId === s.id).slice(0, 2);
-  const bookHref = s.quoteOnly ? `/quote?svc=${s.slug}` : `/book?svc=${s.slug}`;
+  // A package's own service is booked as that package (the booking page doesn't list it separately).
+  const pkg = catalog.packages.find((p) => p.serviceIds.includes(s.id));
+  const bookHref = s.quoteOnly ? `/quote?svc=${s.slug}` : pkg ? `/book?pkg=${pkg.slug}` : `/book?svc=${s.slug}`;
 
   return (
     <PageTransition>

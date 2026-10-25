@@ -33,10 +33,10 @@ export const seedTestimonials = [
 
 export const seedGallery = [
   { title: "Sample — paint correction", vehicle: "Sample vehicle", service: "paint-correction-2-stage", n: 1 },
-  { title: "Sample — interior detail", vehicle: "Sample vehicle", service: "interior-detail", n: 2 },
+  { title: "Sample — interior detail", vehicle: "Sample vehicle", service: "silver-deep-interior-refresh", n: 2 },
   { title: "Sample — ceramic coating", vehicle: "Sample vehicle", service: "ceramic-coating", n: 3 },
   { title: "Sample — headlight restoration", vehicle: "Sample vehicle", service: "headlight-restoration", n: 4 },
-  { title: "Sample — full detail", vehicle: "Sample vehicle", service: "full-detail", n: 5 },
+  { title: "Sample — full detail", vehicle: "Sample vehicle", service: "gold-full-detail", n: 5 },
   { title: "Sample — engine bay", vehicle: "Sample vehicle", service: "engine-bay", n: 6 },
 ].map((g) => ({
   ...g,
@@ -87,21 +87,21 @@ export const seedFaqs = [
     featured: true,
     question: "How long does a ceramic coating last?",
     answerMd:
-      "It depends on the product and how the car is washed and stored. We'll recommend the right coating for your car and give you a care guide so it lasts as long as possible.",
+      "Our ceramic coating is a 1-year coating, and it's included in the VIP package. How well it holds up depends on how the car is washed and stored.",
   },
   {
     category: "Services",
-    featured: false,
-    question: "Why does ceramic coating include paint decontamination?",
+    featured: true,
+    question: "What's the difference between Bronze, Silver, Gold and VIP?",
     answerMd:
-      "A coating bonds to bare, clean paint. Decontamination removes iron and bonded grime so the coating adheres properly and lasts — so we always include it.",
+      "Each package includes everything in the one before it. Bronze is a maintenance wash. Silver adds a deep interior refresh. Gold is a full interior and exterior detail with a premium paint sealant. VIP adds one-step paint correction, a 1-year ceramic coating, an engine bay detail and a free maintenance wash within 30 days.",
   },
   {
     category: "Services",
     featured: false,
     question: "Do you price by vehicle size?",
     answerMd:
-      "Yes. Larger vehicles take longer and use more product, so prices are set for sedans, SUVs, trucks and vans. The booking flow shows your exact price before you pay.",
+      "Yes. Prices are set for cars and for trucks & SUVs, because larger vehicles take longer and use more product. The booking flow shows your exact price before you pay.",
   },
 ];
 

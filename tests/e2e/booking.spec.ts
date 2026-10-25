@@ -11,7 +11,7 @@ test.beforeEach(async ({ request }) => {
 test.afterEach(closeTabs);
 
 test("E2E-01 package → sedan → 2 add-ons → mobile → slot → contact → deposit → confirmed, notified @smoke", async ({ page, request }) => {
-  await startService(page, { size: "Sedan", pkg: "Premium", addons: ["Headlight restoration", "Engine bay"] });
+  await startService(page, { size: "Sedan", pkg: "Gold", addons: ["Headlight restoration", "Engine bay"] });
   await mobileAddress(page);
   await next(page);
   await pickFirstSlot(page);
@@ -31,7 +31,7 @@ test("E2E-01 package → sedan → 2 add-ons → mobile → slot → contact →
 });
 
 test("E2E-02 SUV and truck multipliers flow through price summary and confirmation", async ({ page }) => {
-  await startService(page, { size: "SUV", pkg: "Premium" });
+  await startService(page, { size: "SUV", pkg: "Gold" });
   const summary = page.getByRole("complementary", { name: /booking summary/i }).or(page.getByRole("button", { name: /show booking summary/i }));
   await expect(summary.first()).toBeVisible();
   await mobileAddress(page);
@@ -40,15 +40,15 @@ test("E2E-02 SUV and truck multipliers flow through price summary and confirmati
   await next(page);
   await fillContact(page, { email: "suv@example.com" });
   await next(page, /continue to review/i);
-  // Premium base 279 × 1.2 = 334.80 → $335
-  await expect(page.getByText("$335").first()).toBeVisible();
+  // Gold for trucks & SUVs is a flat $220 (flyer price, via a per-size override)
+  await expect(page.getByText("$220").first()).toBeVisible();
   await agreeAndPay(page);
   await fakePaySuccess(page);
-  await expect(page.getByText("$335").first()).toBeVisible();
+  await expect(page.getByText("$220").first()).toBeVisible();
 });
 
 test("E2E-03 in-shop path shows the shop address and books a bay", async ({ page }) => {
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await expect(page.getByText(/123 Example Street/).first()).toBeVisible();
   await next(page);
@@ -89,7 +89,7 @@ test("E2E-06 two users race for the last in-shop slot → one wins, the other se
   const a = await newTab(browser);
   const b = await newTab(browser);
   for (const p of [a, b]) {
-    await startService(p, { pkg: "Basic" });
+    await startService(p, { pkg: "Bronze" });
     await p.getByRole("radio", { name: /at your shop/i }).click();
     await next(p);
   }
@@ -118,7 +118,7 @@ test("E2E-06 two users race for the last in-shop slot → one wins, the other se
 
 test("E2E-07 slot hold expires → the time becomes available again", async ({ browser, request }) => {
   const a = await newTab(browser);
-  await startService(a, { pkg: "Basic" });
+  await startService(a, { pkg: "Bronze" });
   await a.getByRole("radio", { name: /at your shop/i }).click();
   await next(a);
   // Last slot of the day, so advancing the clock can't push it into the past.
@@ -134,7 +134,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await expect(a.getByText(/held for you/i)).toBeVisible();
   await advanceClock(request, 11 * 60_000);
   const b = await newTab(browser);
-  await startService(b, { pkg: "Basic" });
+  await startService(b, { pkg: "Bronze" });
   await b.getByRole("radio", { name: /at your shop/i }).click();
   await next(b);
   await b.getByRole("grid").getByRole("button", { name: dayName }).click();
@@ -142,7 +142,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
 });
 
 test("E2E-08 declined card / 3DS / closing → no confirmed booking, retry works", async ({ page }) => {
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
   await pickFirstSlot(page);
@@ -162,7 +162,7 @@ test("E2E-08 declined card / 3DS / closing → no confirmed booking, retry works
 });
 
 test("E2E-09 webhook delivered twice → one booking, one confirmation email", async ({ page, request }) => {
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
   await pickFirstSlot(page);
@@ -186,19 +186,19 @@ test("E2E-09 webhook delivered twice → one booking, one confirmation email", a
 });
 
 test("E2E-10 refresh and browser back keep progress", async ({ page }) => {
-  await startService(page, { size: "Truck", pkg: "Ultimate" });
+  await startService(page, { size: "Truck", pkg: "VIP" });
   await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
   await page.goBack();
   await expect(page.getByRole("heading", { name: /choose your services/i })).toBeVisible();
-  await expect(page.getByRole("radio", { name: /^Ultimate/i })).toBeChecked();
+  await expect(page.getByRole("radio", { name: /^VIP/i })).toBeChecked();
   await page.goBack();
   await expect(page.getByRole("radio", { name: /truck/i })).toBeChecked();
 });
 
 async function bookConfirmed(page: import("@playwright/test").Page, email: string) {
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
   await pickFirstSlot(page);
@@ -234,7 +234,7 @@ test("E2E-12 cancel outside the window → full refund queued", async ({ page, r
 });
 
 test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
   // Sunday 2026-10-25 is closed in seed hours.
@@ -242,7 +242,7 @@ test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
 });
 
 test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {
-  await startService(page, { pkg: "Ultimate" });
+  await startService(page, { pkg: "VIP" });
   await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
   await page.goBack();
   await page.getByRole("radio", { name: /no package/i }).click();
@@ -267,7 +267,7 @@ test("E2E-15 invalid inputs show clear errors and block progress", async ({ page
   await expect(page.getByText(/enter a year between/i)).toBeVisible();
   await page.getByLabel(/^year/i).fill("");
   await next(page);
-  await page.getByRole("radio", { name: /^Basic/i }).click();
+  await page.getByRole("radio", { name: /^Bronze/i }).click();
   await next(page);
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
@@ -285,7 +285,7 @@ test("E2E-15 invalid inputs show clear errors and block progress", async ({ page
 test("E2E-16 deposit disabled → no payment step, booking confirmed", async ({ page, request }) => {
   await request.post("/api/test/settings", { data: { deposit: { mode: "none" } } });
   try {
-    await startService(page, { pkg: "Basic" });
+    await startService(page, { pkg: "Bronze" });
     await page.getByRole("radio", { name: /at your shop/i }).click();
     await next(page);
     await pickFirstSlot(page);
@@ -349,7 +349,7 @@ test("E2E-17 keyboard-only completion of the full flow", async ({ page }) => {
   await chooseRadio(/sedan/i);
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
-  await chooseRadio(/basic/i);
+  await chooseRadio(/bronze/i);
   await tabTo(/continue/i);
   await page.keyboard.press("Enter");
   await chooseRadio(/at your shop/i);

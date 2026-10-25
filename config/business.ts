@@ -115,8 +115,21 @@ export const business = {
     ),
   },
 
+  /** VIP maintenance membership (shown when flags.memberships is on). From the owner's price flyer. */
+  membership: {
+    name: "VIP Maintenance Membership",
+    priceLabel: "$1,200 – $1,500",
+    period: "per year",
+    perks: [
+      "Up to 4 maintenance details per month (1 per week)",
+      "Priority scheduling",
+      "Discounted add-on services",
+      "Keeps your vehicles looking their best all year long",
+    ],
+  },
+
   flags: {
-    memberships: false,
+    memberships: true,
     giftCards: false,
     exitIntentOffer: false,
     googleCalendarSync: false,

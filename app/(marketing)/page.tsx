@@ -9,6 +9,7 @@ import { PackagesPricing } from "@/components/marketing/home/packages-pricing";
 import { ServicesOverview } from "@/components/marketing/home/services-overview";
 import { TrustBar } from "@/components/marketing/home/trust-bar";
 import { WhyUs } from "@/components/marketing/home/why-us";
+import { MembershipCard } from "@/components/marketing/membership-card";
 import { ReviewsCarousel } from "@/components/marketing/reviews-carousel";
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { ZipChecker } from "@/components/marketing/zip-checker";
@@ -146,16 +147,7 @@ export default async function HomePage() {
 
       {business.flags.memberships && (
         <section aria-labelledby="members-title" className="container-site pb-24">
-          <div className="card flex flex-col items-start gap-5 p-8 md:flex-row md:items-center md:justify-between md:p-12">
-            <div>
-              <p className="eyebrow">Maintenance plans</p>
-              <h2 id="members-title" className="mt-2 text-3xl font-bold">Keep it this clean, all year.</h2>
-              <p className="mt-2 max-w-xl text-fg-muted">Regular maintenance washes at a member rate. Ask us about a plan for your car.</p>
-            </div>
-            <Link href="/contact?topic=membership" className={buttonVariants()}>
-              Ask about memberships
-            </Link>
-          </div>
+          <MembershipCard headingId="members-title" />
         </section>
       )}
 

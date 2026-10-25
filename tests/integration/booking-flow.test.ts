@@ -22,7 +22,7 @@ async function holdReq(p: Partial<HoldRequest> = {}): Promise<HoldRequest> {
   return {
     idempotencyKey: crypto.randomUUID(),
     sessionId: crypto.randomUUID(),
-    selection: { sizeId: "sedan", packageId: pkg("premium"), serviceIds: [], addonIds: [], conditionIds: [] },
+    selection: { sizeId: "sedan", packageId: pkg("gold"), serviceIds: [], addonIds: [], conditionIds: [] },
     vehicle: {},
     location: mobileLocation(),
     slotStart: SLOT,

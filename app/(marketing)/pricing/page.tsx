@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { business } from "@/config/business";
 import { FinalCta } from "@/components/marketing/final-cta";
+import { MembershipCard } from "@/components/marketing/membership-card";
 import { SectionHeading } from "@/components/marketing/section-heading";
 import { PageTransition } from "@/components/motion/page-transition";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
@@ -56,7 +58,9 @@ function PriceTable({
 export default async function PricingPage() {
   const [catalog, schedule] = await Promise.all([getPublicCatalog(), getPublicSchedule()]);
   const sizes = catalog.sizes.map((z) => ({ id: z.id, label: z.label }));
-  const services = catalog.services.filter((s) => s.kind === "service");
+  // A package's own service is already priced in the Packages table; don't list it twice.
+  const packageServiceIds = new Set(catalog.packages.flatMap((p) => p.serviceIds));
+  const services = catalog.services.filter((s) => s.kind === "service" && !packageServiceIds.has(s.id));
   const addons = catalog.services.filter((s) => s.kind === "addon");
   const deposit = catalog.deposit;
 
@@ -77,7 +81,13 @@ export default async function PricingPage() {
         <section aria-labelledby="p-addons" className="flex flex-col gap-5">
           <h2 id="p-addons" className="text-2xl font-bold">Add-ons</h2>
           <PriceTable caption="Add-on prices by vehicle size" sizes={sizes} rows={addons.map((s) => ({ id: s.id, name: s.name, href: `/services/${s.slug}`, bySize: s.bySize }))} />
+          <p className="text-sm text-fg-muted">Pet hair removal, excessive mud / sand and the ceramic coating start at the price shown. Open an add-on for details.</p>
         </section>
+        {business.flags.memberships && (
+          <section aria-labelledby="p-membership">
+            <MembershipCard headingId="p-membership" />
+          </section>
+        )}
 
         <section aria-labelledby="p-fees" className="grid gap-5 md:grid-cols-3">
           <h2 id="p-fees" className="sr-only">Fees and policies</h2>

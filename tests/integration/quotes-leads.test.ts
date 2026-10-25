@@ -101,7 +101,7 @@ describe("quotes, leads, availability (integration)", () => {
 
   it("I-AVAIL blackout and closed days have no slots (scenario 13)", async () => {
     await db().insert(s.blackoutDates).values({ date: "2026-11-04", reason: "Test" });
-    const r = await getAvailability({ selection: { sizeId: "sedan", packageId: null, serviceIds: [(await db().select().from(s.services).where(eq(s.services.slug, "exterior-wash-wax")))[0]!.id], addonIds: [], conditionIds: [] }, locationType: "shop", fromDate: "2026-11-02", days: 7 }, clock());
+    const r = await getAvailability({ selection: { sizeId: "sedan", packageId: null, serviceIds: [(await db().select().from(s.services).where(eq(s.services.slug, "bronze-maintenance-wash")))[0]!.id], addonIds: [], conditionIds: [] }, locationType: "shop", fromDate: "2026-11-02", days: 7 }, clock());
     if (!r.ok) throw new Error(JSON.stringify(r));
     const dates = r.days.map((d) => d.date);
     expect(dates).not.toContain("2026-11-04"); // blackout

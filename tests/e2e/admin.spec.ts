@@ -13,7 +13,7 @@ test("E2E-ADMIN-AUTH admin pages and exports require a session", async ({ page, 
 });
 
 test("E2E-ADMIN-BOOKINGS a confirmed booking appears in admin and can be completed; CSV export @smoke", async ({ page, browser }) => {
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
   await pickFirstSlot(page);

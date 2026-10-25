@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { agreeAndPay, fillContact, next, pickFirstSlot, setClock, startService } from "./helpers";
 test("pay timing", async ({ page, request }) => {
   await setClock(request);
-  await startService(page, { pkg: "Basic" });
+  await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
   await pickFirstSlot(page);

@@ -116,6 +116,7 @@ export async function seed(db: Db, opts: { reset?: boolean; log?: (m: string) =>
           quoteOnly: svc.quoteOnly ?? false,
           locationTypes: svc.locationTypes ?? ["mobile", "shop"],
           sort: svc.sort,
+          isPlaceholder: !svc.real,
         })),
       )
       .onConflictDoNothing();
@@ -145,6 +146,7 @@ export async function seed(db: Db, opts: { reset?: boolean; log?: (m: string) =>
           baseDurationMin: p.baseDurationMin,
           featured: p.featured,
           sort: p.sort,
+          isPlaceholder: false,
         })),
       )
       .onConflictDoNothing();
@@ -156,6 +158,12 @@ export async function seed(db: Db, opts: { reset?: boolean; log?: (m: string) =>
       for (const slug of p.services) {
         const sid = serviceId.get(slug);
         if (sid) await tx.insert(s.packageItems).values({ packageId: pid, serviceId: sid }).onConflictDoNothing();
+      }
+      for (const [sizeId, o] of Object.entries(p.sizeOverrides)) {
+        await tx
+          .insert(s.packageSizePrices)
+          .values({ packageId: pid, sizeId, priceCents: o?.priceCents ?? null, durationMin: o?.durationMin ?? null })
+          .onConflictDoNothing();
       }
     }
 

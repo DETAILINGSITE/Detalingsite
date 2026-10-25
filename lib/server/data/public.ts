@@ -34,9 +34,11 @@ export async function getPublicCatalog() {
       ...p,
       fromCents: fromPrice(p, catalog.sizes, rounding),
       bySize: priceTable(p),
-      includedNames: p.serviceIds
-        .map((id) => catalog.services.find((x) => x.id === id)?.name)
-        .filter((n): n is string => Boolean(n)),
+      // The package card lists each service's own checklist (falling back to its name).
+      includedNames: p.serviceIds.flatMap((id) => {
+        const svc = catalog.services.find((x) => x.id === id);
+        return svc ? (svc.includes.length ? svc.includes : [svc.name]) : [];
+      }),
     })),
     deposit: settings.deposit,
     taxRateBps: settings.taxRateBps,

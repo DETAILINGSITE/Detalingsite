@@ -5,12 +5,8 @@ import { SectionHeading } from "../section-heading";
 import { ServiceCard } from "../service-card";
 
 export function ServicesOverview({ catalog }: { catalog: PublicCatalog }) {
-  // One headline service per category, plus the rest available on /services.
-  const featured = catalog.categories
-    .map((cat) => catalog.services.find((s) => s.categoryId === cat.id && s.kind === "service"))
-    .filter((s): s is PublicCatalog["services"][number] => Boolean(s));
-  const extra = catalog.services.filter((s) => s.kind === "service" && !featured.includes(s)).slice(0, 2);
-  const cards = [...featured, ...extra].slice(0, 6);
+  // The four detail packages come first (lowest sort), then the next services; the rest are on /services.
+  const cards = catalog.services.filter((s) => s.kind === "service").slice(0, 6);
 
   return (
     <section aria-labelledby="services-title" className="container-site py-24 md:py-32">

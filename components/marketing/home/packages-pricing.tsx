@@ -46,7 +46,7 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
           <PlaceholderBadge label="Sample prices — set real prices in admin" />
         </p>
       )}
-      <ul className="mt-10 grid gap-5 lg:grid-cols-3">
+      <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {packages.map((p) => {
           const entry = p.bySize[size];
           return (

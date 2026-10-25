@@ -14,7 +14,9 @@ export function ServicesStep({ state, dispatch, data, onNext, onBack, onSwitchTo
   const [touched, setTouched] = useState(false);
   const size = data.catalog.sizes.find((z) => z.id === state.vehicle.sizeId);
   const sel = state.services;
-  const mains = data.services.filter((s) => s.kind === "service");
+  // A package's own service is picked via the package above, not as a separate line.
+  const packageServiceIds = new Set(data.packages.flatMap((p) => p.serviceIds));
+  const mains = data.services.filter((s) => s.kind === "service" && !packageServiceIds.has(s.id));
   const addons = data.services.filter((s) => s.kind === "addon");
   const includedInPkg = new Set(data.packages.find((p) => p.id === sel.packageId)?.serviceIds ?? []);
 

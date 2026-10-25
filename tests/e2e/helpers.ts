@@ -53,7 +53,7 @@ export async function startService(page: Page, opts: { size?: string; pkg?: stri
   await next(page);
   await page.getByRole("radio", { name: new RegExp(opts.size ?? "Sedan", "i") }).click();
   await next(page);
-  await page.getByRole("radio", { name: new RegExp(`^${opts.pkg ?? "Premium"}`, "i") }).click();
+  await page.getByRole("radio", { name: new RegExp(`^${opts.pkg ?? "Gold"}`, "i") }).click();
   for (const a of opts.addons ?? []) await page.getByRole("checkbox", { name: new RegExp(a, "i") }).click();
   await next(page);
 }
