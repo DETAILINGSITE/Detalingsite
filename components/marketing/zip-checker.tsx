@@ -51,7 +51,7 @@ export function ZipChecker({ zones, shopEnabled }: { zones: ZoneSummary[]; shopE
             onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${id}-err` : undefined}
-            placeholder="e.g. 00010"
+            placeholder="e.g. 77002"
           />
         </div>
         <Button type="submit">Check my area</Button>

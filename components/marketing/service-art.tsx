@@ -6,9 +6,17 @@ import { cn } from "@/lib/utils";
  */
 const PALETTES: Record<string, [string, string, string]> = {
   exterior: ["#1d2a36", "#3b6b8f", "#9fd0ff"],
-  interior: ["#2a221b", "#7a5c3c", "#f0dfae"],
-  "paint-protection": ["#1c1a24", "#6b4fa3", "#e5c77c"],
+  interior: ["#1b2430", "#3d5f8a", "#cfe6ff"],
+  "paint-protection": ["#1c1a24", "#6b4fa3", "#8cc4ff"],
   specialty: ["#16201c", "#2f7a5c", "#9ff0c9"],
+};
+
+/** The four detail packages use the same tier colours as the price cards. */
+const SLUG_PALETTES: Record<string, [string, string, string]> = {
+  "bronze-maintenance-wash": ["#2a1d14", "#8a5a2b", "#e0a060"],
+  "silver-deep-interior-refresh": ["#1b1f26", "#6b7482", "#d5dae2"],
+  "gold-full-detail": ["#2a2314", "#8f7326", "#e6c056"],
+  "vip-showroom-finish": ["#1e1530", "#6a3fb5", "#b58cff"],
 };
 
 function hash(s: string) {
@@ -18,7 +26,7 @@ function hash(s: string) {
 }
 
 export function ServiceArt({ slug, category, className }: { slug: string; category: string | null; className?: string }) {
-  const [a, b, c] = PALETTES[category ?? ""] ?? ["#15181c", "#3d434c", "#e5c77c"];
+  const [a, b, c] = SLUG_PALETTES[slug] ?? PALETTES[category ?? ""] ?? ["#15181c", "#3d434c", "#8cc4ff"];
   const h = hash(slug);
   const angle = h % 360;
   const x = 20 + (h % 60);

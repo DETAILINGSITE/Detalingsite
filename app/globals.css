@@ -2,7 +2,7 @@
 @import "lenis/dist/lenis.css";
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────
-   Dark, cinematic surfaces + one warm accent. Every text/surface pair below
+   Dark, cinematic surfaces + one electric-blue accent (tokens keep their old "gold" names). Every text/surface pair below
    meets WCAG 2.2 AA (4.5:1); see tests/unit/contrast.test.ts. */
 @theme {
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -19,11 +19,11 @@
   --color-fg-muted: #b1b4ba;
   --color-fg-subtle: #8d929b;
 
-  --color-gold-200: #f0dfae;
-  --color-gold-300: #e5c77c;
-  --color-gold-400: #d6b25d;
-  --color-gold-500: #c8a24a;
-  --color-gold-600: #a4822f;
+  --color-gold-200: #cfe6ff;
+  --color-gold-300: #8cc4ff;
+  --color-gold-400: #4da3ff;
+  --color-gold-500: #2b8cff;
+  --color-gold-600: #1565c0;
 
   --color-danger: #ff7a7a;
   --color-success: #5fd69a;

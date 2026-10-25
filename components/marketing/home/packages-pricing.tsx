@@ -8,6 +8,15 @@ import { formatDuration, formatMoney } from "@/lib/domain/money";
 // clsx, not cn(): no conflicting utilities here, and it keeps tailwind-merge off the client.
 import { clsx as cn } from "clsx";
 
+/** Each tier has its own accent, matching the price flyer. Unknown packages fall back to the brand colour. */
+const TIER_COLOR: Record<string, string> = {
+  bronze: "#e0a060",
+  silver: "#d5dae2",
+  gold: "#e6c056",
+  vip: "#b58cff",
+};
+const tierColor = (slug: string) => TIER_COLOR[slug] ?? "var(--brand)";
+
 export interface PackageCardData {
   id: string;
   slug: string;
@@ -49,22 +58,30 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
       <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {packages.map((p) => {
           const entry = p.bySize[size];
+          const tier = tierColor(p.slug);
           return (
             <li
               key={p.id}
               data-reveal
-              className={cn(
-                "card relative flex flex-col gap-6 p-7",
-                p.featured && "border-gold-400/60 shadow-[0_30px_80px_-40px_var(--brand)] lg:-translate-y-3",
-              )}
+              className={cn("card relative flex flex-col gap-6 overflow-hidden p-7", p.featured && "lg:-translate-y-3")}
+              style={{
+                borderColor: `color-mix(in srgb, ${tier} ${p.featured ? 70 : 40}%, transparent)`,
+                boxShadow: p.featured ? `0 30px 80px -40px ${tier}` : undefined,
+              }}
             >
+              <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1" style={{ background: tier }} />
               {p.featured && (
-                <span className="absolute -top-3 left-7 rounded-full bg-[var(--brand)] px-3 py-1 text-xs font-bold tracking-wide text-ink-950 uppercase">
+                <span
+                  className="absolute top-4 right-5 rounded-full px-3 py-1 text-xs font-bold tracking-wide text-ink-950 uppercase"
+                  style={{ background: tier }}
+                >
                   Most popular
                 </span>
               )}
               <div>
-                <h3 className="text-2xl font-bold">{p.name}</h3>
+                <h3 className="text-2xl font-bold" style={{ color: tier }}>
+                  {p.name}
+                </h3>
                 <p className="mt-1 text-sm text-fg-muted">{p.tagline}</p>
               </div>
               <p aria-live="polite" className="flex items-baseline gap-2">
@@ -77,7 +94,7 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
               <ul className="flex flex-col gap-2.5 text-sm">
                 {p.includedNames.map((n) => (
                   <li key={n} className="flex gap-2.5">
-                    <Check className="mt-0.5 size-4 shrink-0 text-gold-300" aria-hidden="true" />
+                    <Check className="mt-0.5 size-4 shrink-0" style={{ color: tier }} aria-hidden="true" />
                     <span>{n}</span>
                   </li>
                 ))}
@@ -85,6 +102,11 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
               <Link
                 href={`/book?pkg=${p.slug}&size=${size}`}
                 className={cn(buttonVariants({ variant: p.featured ? "primary" : "secondary" }), "mt-auto")}
+                style={
+                  p.featured
+                    ? { background: tier, borderColor: tier, color: "#0b0c0e" }
+                    : { borderColor: `color-mix(in srgb, ${tier} 60%, transparent)`, color: tier }
+                }
               >
                 Book {p.name}
               </Link>

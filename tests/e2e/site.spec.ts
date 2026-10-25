@@ -2,7 +2,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect, test } from "@playwright/test";
 
-const PAGES = ["/", "/services", "/services/ceramic-coating", "/pricing", "/gallery", "/about", "/reviews", "/faq", "/contact", "/quote", "/book", "/privacy", "/terms", "/cancellation-policy", "/accessibility", "/areas/downtown"];
+const PAGES = ["/", "/services", "/services/ceramic-coating", "/pricing", "/gallery", "/about", "/reviews", "/faq", "/contact", "/quote", "/book", "/privacy", "/terms", "/cancellation-policy", "/accessibility", "/areas/houston"];
 
 test("S-CRAWL every internal link resolves (no 404s)", async ({ page, request }) => {
   const sitemap = await (await request.get("/sitemap.xml")).text();
@@ -72,7 +72,7 @@ test("S-SEO robots and sitemap", async ({ request }) => {
   expect(robots).toMatch(/Sitemap:/);
   const sitemap = await (await request.get("/sitemap.xml")).text();
   expect(sitemap).toContain("/services/ceramic-coating");
-  expect(sitemap).toContain("/areas/downtown");
+  expect(sitemap).toContain("/areas/houston");
 });
 
 test("S-HEADERS security headers; nonce CSP on booking routes", async ({ request }) => {

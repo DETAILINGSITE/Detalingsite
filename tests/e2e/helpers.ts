@@ -58,10 +58,10 @@ export async function startService(page: Page, opts: { size?: string; pkg?: stri
   await next(page);
 }
 
-export async function mobileAddress(page: Page, zip = "00010") {
+export async function mobileAddress(page: Page, zip = "77002") {
   await page.getByRole("radio", { name: /come to me/i }).click();
   await page.getByLabel(/street address/i).fill("1 Test Street");
-  await page.getByLabel(/^city/i).fill("Downtown");
+  await page.getByLabel(/^city/i).fill("Houston");
   await page.getByLabel(/^state/i).fill("TX");
   await page.getByLabel(/^zip/i).fill(zip);
 }

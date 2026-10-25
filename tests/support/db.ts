@@ -42,9 +42,9 @@ export async function ids() {
 }
 
 export const shopLocation = { locationType: "shop" as const };
-export const mobileLocation = (zip = "00010") => ({
+export const mobileLocation = (zip = "77002") => ({
   locationType: "mobile" as const,
-  address: { line1: "1 Test Street", city: "Downtown", region: "TX", postalCode: zip, country: "US" as const },
+  address: { line1: "1 Test Street", city: "Houston", region: "TX", postalCode: zip, country: "US" as const },
   hasWater: true,
   hasPower: true,
 });

@@ -113,7 +113,7 @@ export function PaymentPanel({
         elementsOptions: {
           appearance: {
             theme: "night",
-            variables: { colorPrimary: "#c8a24a", colorBackground: "#101215", borderRadius: "12px", fontSizeBase: "16px" },
+            variables: { colorPrimary: "#2b8cff", colorBackground: "#101215", borderRadius: "12px", fontSizeBase: "16px" },
           },
         },
       }}

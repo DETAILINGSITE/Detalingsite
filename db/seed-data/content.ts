@@ -106,9 +106,10 @@ export const seedFaqs = [
 ];
 
 export const seedCityPages = [
-  { slug: "downtown", city: "Downtown", region: "TX", zoneIndex: 0 },
-  { slug: "midtown", city: "Midtown", region: "TX", zoneIndex: 0 },
-  { slug: "northside", city: "Northside", region: "TX", zoneIndex: 1 },
+  { slug: "houston", city: "Houston", region: "TX", zoneIndex: 0 },
+  { slug: "katy", city: "Katy", region: "TX", zoneIndex: 1 },
+  { slug: "sugar-land", city: "Sugar Land", region: "TX", zoneIndex: 1 },
+  { slug: "the-woodlands", city: "The Woodlands", region: "TX", zoneIndex: 2 },
 ].map((c) => ({
   ...c,
   introMd: `Sample city page — replace this with genuinely local content for ${c.city} (neighbourhoods you serve, parking/HOA notes, nearby landmarks). Thin, copy-pasted city pages can hurt search rankings.`,

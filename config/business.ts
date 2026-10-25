@@ -14,15 +14,11 @@ import type { BusinessHoursRow, OperationalSettings } from "@/lib/domain/setting
 import { ph } from "./placeholder";
 
 export const business = {
-  name: ph("Your Detailing Co.", "brand.name", "Trading name shown in the header, emails and SMS"),
-  legalName: ph("Your Detailing Co. LLC", "brand.legalName", "Legal entity name for terms/privacy"),
-  tagline: ph(
-    "Showroom finish, wherever you park.",
-    "brand.tagline",
-    "One-line tagline under the logo / in meta descriptions",
-  ),
+  name: "MJDETAILZ",
+  legalName: ph("MJDETAILZ", "brand.legalName", "Legal entity name for terms/privacy (add LLC/Inc. if registered)"),
+  tagline: "More than just a clean. It's an elite detail.",
   description: ph(
-    "Premium mobile and in-shop car detailing: paint correction, ceramic coating, interior detailing and more. Book online in minutes.",
+    "Premium mobile car detailing in Houston, TX: maintenance washes, deep interior refreshes, full details and showroom finishes. Book online in minutes.",
     "brand.description",
     "Default meta description (≈155 characters)",
   ),
@@ -35,7 +31,7 @@ export const business = {
   },
   /** Brand colours become CSS variables (--brand, --brand-contrast). Must keep 4.5:1 on text. */
   colors: {
-    brand: ph("#c8a24a", "brand.colors.brand", "Primary accent colour (hex)"),
+    brand: ph("#2b8cff", "brand.colors.brand", "Primary accent colour (hex)"),
     brandContrast: "#0b0c0e",
   },
 
@@ -46,9 +42,9 @@ export const business = {
 
   contact: {
     /** E.164 — used for tel: links and Twilio. NXX-555-01xx numbers are reserved as fictional. */
-    phone: ph("+12015550123", "contact.phone", "Main phone number in E.164 (+1…)"),
-    phoneDisplay: ph("(201) 555-0123", "contact.phoneDisplay", "Phone number as displayed"),
-    sms: ph("+12015550123", "contact.sms", "Number customers can text (sms: link)"),
+    phone: "+18322507430",
+    phoneDisplay: "(832) 250-7430",
+    sms: "+18322507430",
     email: ph("hello@example.com", "contact.email", "Public contact email"),
   },
 
@@ -59,15 +55,15 @@ export const business = {
       {
         line1: "123 Example Street",
         line2: "Unit 4",
-        city: "Example City",
+        city: "Houston",
         region: "TX",
-        postalCode: "00010",
+        postalCode: "77002",
         country: "US",
       },
       "shop.address",
       "Shop street address (or set shop.enabled = false)",
     ),
-    geo: ph({ lat: 39.0997, lng: -94.5786 }, "shop.geo", "Shop latitude/longitude"),
+    geo: ph({ lat: 29.7604, lng: -95.3698 }, "shop.geo", "Shop latitude/longitude"),
     mapsUrl: ph(
       "https://maps.google.com/?q=123+Example+Street",
       "shop.mapsUrl",
@@ -191,32 +187,42 @@ export const business = {
       "ops.resources",
       "How many mobile crews and shop bays can work at the same time",
     ),
-    /** ZIP lists and/or radius rings (km from settings.base). Fake ZIPs 000xx are deliberate. */
+    /** ZIP lists and/or radius rings (km from settings.base). Travel fees and ZIP lists are starting guesses. */
     zones: ph(
       [
         {
-          name: "Core area",
-          zipCodes: ["00010", "00011", "00012", "00013", "00014"],
-          ringMaxKm: 15,
+          name: "Houston",
+          // Houston proper: 77001–77099.
+          zipCodes: Array.from({ length: 99 }, (_, i) => String(77001 + i)),
+          ringMaxKm: 25,
           travelFeeCents: 0,
           travelMinutes: 20,
-          cities: ["Downtown", "Midtown"],
+          cities: ["Houston"],
         },
         {
-          name: "Extended area",
-          zipCodes: ["00020", "00021", "00022"],
-          ringMaxKm: 30,
+          name: "Surrounding areas",
+          zipCodes: [
+            "77449", "77450", "77493", "77494", // Katy
+            "77478", "77479", "77498", // Sugar Land
+            "77459", "77489", // Missouri City
+            "77581", "77584", // Pearland
+            "77373", "77379", "77388", "77389", // Spring
+            "77429", "77433", // Cypress
+            "77338", "77346", // Humble
+            "77502", "77503", "77504", "77505", // Pasadena
+          ],
+          ringMaxKm: 45,
           travelFeeCents: 2500,
           travelMinutes: 35,
-          cities: ["Northside", "Lakeview"],
+          cities: ["Katy", "Sugar Land", "Missouri City", "Pearland", "Spring", "Cypress", "Humble", "Pasadena"],
         },
         {
-          name: "Outer area",
-          zipCodes: ["00030", "00031"],
-          ringMaxKm: 45,
+          name: "Outer areas",
+          zipCodes: ["77380", "77381", "77382", "77384", "77385", "77386", "77301", "77302", "77303", "77304", "77573", "77375", "77377", "77520", "77521", "77546"],
+          ringMaxKm: 70,
           travelFeeCents: 4500,
           travelMinutes: 50,
-          cities: ["Riverbend"],
+          cities: ["The Woodlands", "Conroe", "League City", "Tomball", "Baytown", "Friendswood"],
         },
       ],
       "ops.zones",
@@ -235,7 +241,7 @@ export const business = {
         holdMaxTotalMinutes: 25,
         paymentHoldMinutes: 15,
         travelCountsAgainstHours: false,
-        base: { label: "Example City base", lat: 39.0997, lng: -94.5786 },
+        base: { label: "Houston base", lat: 29.7604, lng: -95.3698 },
         deposit: { mode: "fixed", valueCents: 5000 },
         cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" } },
         reschedule: { minHoursBefore: 24, maxCount: 2 },

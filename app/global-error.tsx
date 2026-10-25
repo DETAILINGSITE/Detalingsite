@@ -9,7 +9,7 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
           <p style={{ color: "#b1b4ba", lineHeight: 1.6 }}>Please refresh the page. If the problem continues, give us a call.</p>
           <button
             onClick={reset}
-            style={{ marginTop: 16, minHeight: 44, padding: "0 20px", borderRadius: 999, border: 0, background: "#c8a24a", fontWeight: 700, cursor: "pointer" }}
+            style={{ marginTop: 16, minHeight: 44, padding: "0 20px", borderRadius: 999, border: 0, background: "#2b8cff", fontWeight: 700, cursor: "pointer" }}
           >
             Try again
           </button>

@@ -200,10 +200,10 @@ export default function HeroCanvas() {
         >
           <Suspense fallback={null}>
             <Environment resolution={256} frames={1}>
-              <Lightformer form="rect" intensity={4} position={[0, 5, -2]} scale={[10, 1.2, 1]} color="#fff6e0" />
+              <Lightformer form="rect" intensity={4} position={[0, 5, -2]} scale={[10, 1.2, 1]} color="#eef6ff" />
               <Lightformer form="rect" intensity={2} position={[-5, 2, 1]} rotation-y={Math.PI / 2} scale={[8, 1, 1]} />
               <Lightformer form="rect" intensity={2} position={[5, 1.5, 1]} rotation-y={-Math.PI / 2} scale={[8, 0.6, 1]} />
-              <Lightformer form="ring" intensity={1.5} position={[0, 3, 6]} scale={3} color="#f0dfae" />
+              <Lightformer form="ring" intensity={1.5} position={[0, 3, 6]} scale={3} color="#cfe6ff" />
             </Environment>
             <Car progress={progress} mobile={mobile} />
             <mesh rotation-x={-Math.PI / 2} position-y={-0.001}>

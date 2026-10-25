@@ -104,15 +104,11 @@ docker compose up -d app scheduler
 
 | Key | What to provide |
 |---|---|
-| `brand.name` | Trading name |
 | `brand.legalName` | Legal entity name |
-| `brand.tagline` | One-line tagline |
 | `brand.description` | Default meta description (~155 characters) |
 | `brand.logo` | SVG logo in `/public/brand` (the header currently renders a text wordmark) |
 | `brand.colors.brand` | Accent colour (keep 4.5:1 contrast on dark text) |
 | `contact.timezone` | IANA time zone, e.g. `America/Chicago` |
-| `contact.phone` / `contact.phoneDisplay` | Main number (E.164 and display format) |
-| `contact.sms` | Number customers can text |
 | `contact.email` | Public email |
 | `shop.address` / `shop.geo` / `shop.mapsUrl` | Shop address, coordinates and Maps link, or set `shop.enabled = false` |
 | `links.gbp` / `links.reviews` | Google Business Profile URL and direct review link |
