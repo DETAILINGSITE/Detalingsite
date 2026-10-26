@@ -35,13 +35,13 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
 
   return (
     <div>
-      <fieldset className="mx-auto flex w-fit flex-wrap justify-center gap-1 rounded-full border border-white/10 bg-ink-850 p-1">
+      <fieldset className="mx-auto grid w-full max-w-sm grid-cols-2 gap-1 rounded-3xl border border-white/10 bg-ink-850 p-1 sm:flex sm:w-fit sm:max-w-none sm:flex-wrap sm:justify-center sm:rounded-full">
         <legend className="sr-only">Vehicle size</legend>
         {sizes.map((z) => (
           <label
             key={z.id}
             className={cn(
-              "relative inline-flex min-h-11 cursor-pointer items-center rounded-full px-4 text-sm font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold-300",
+              "relative inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 text-center text-sm font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold-300",
               size === z.id ? "bg-[var(--brand)] text-ink-950" : "text-fg-muted hover:text-fg",
             )}
           >
@@ -104,7 +104,7 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
                 className={cn(buttonVariants({ variant: p.featured ? "primary" : "secondary" }), "mt-auto")}
                 style={
                   p.featured
-                    ? { background: tier, borderColor: tier, color: "#0b0c0e" }
+                    ? { background: tier, borderColor: tier, color: "#0b0c0e", boxShadow: "none" }
                     : { borderColor: `color-mix(in srgb, ${tier} 60%, transparent)`, color: tier }
                 }
               >

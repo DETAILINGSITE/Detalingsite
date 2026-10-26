@@ -15,6 +15,8 @@ const securityHeaders = [
 const r2Host = process.env.NEXT_PUBLIC_MEDIA_HOST;
 
 const nextConfig: NextConfig = {
+  // Lets a second build live beside a running server (e.g. verifying a change while a shared preview stays up).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

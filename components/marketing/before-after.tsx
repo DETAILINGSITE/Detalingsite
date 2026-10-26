@@ -94,7 +94,7 @@ export function BeforeAfter({
         </div>
         <span className="pointer-events-none absolute top-3 left-3 rounded-full bg-ink-900/75 px-2.5 py-1 text-xs font-semibold">Before</span>
         <span className="pointer-events-none absolute top-3 right-3 rounded-full bg-ink-900/75 px-2.5 py-1 text-xs font-semibold">After</span>
-        {isPlaceholder && <PlaceholderBadge className="absolute bottom-3 left-3" />}
+        {isPlaceholder && <PlaceholderBadge className="absolute top-14 left-3" />}
       </div>
       <label htmlFor={id} className="sr-only">
         Compare before and after

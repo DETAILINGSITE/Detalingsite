@@ -4,6 +4,7 @@ node_modules/
 
 # next
 .next/
+.next-alt/
 out/
 next-env.d.ts
 *.tsbuildinfo

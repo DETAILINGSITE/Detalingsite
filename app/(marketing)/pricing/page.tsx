@@ -25,6 +25,8 @@ function PriceTable({
   sizes: { id: string; label: string }[];
 }) {
   return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs text-fg-subtle md:hidden" aria-hidden="true">Swipe sideways to see every vehicle size →</p>
     <div className="overflow-x-auto rounded-[var(--radius-card)] border border-white/10" tabIndex={0} role="region" aria-label={caption}>
       <table className="w-full min-w-[640px] text-left">
         <caption className="sr-only">{caption}</caption>
@@ -51,6 +53,7 @@ function PriceTable({
           ))}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

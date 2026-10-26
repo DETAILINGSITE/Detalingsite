@@ -18,10 +18,10 @@ export function TrustBar() {
         {sample && <PlaceholderBadge className="mb-4" />}
         <ul className="grid grid-cols-2 gap-6 lg:grid-cols-4">
           {items.map((it) => (
-            <li key={it.label} className="flex items-center gap-4" data-reveal>
+            <li key={it.label} className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4" data-reveal>
               <it.icon className="size-7 shrink-0 text-gold-300" aria-hidden="true" />
-              <div>
-                <p className="font-display text-2xl font-bold text-fg">
+              <div className="min-w-0">
+                <p className="font-display text-xl font-bold text-fg sm:text-2xl">
                   {"value" in it && it.value !== undefined ? (
                     <>
                       <span className="tabular inline-block min-w-[3ch]" data-count={it.value} data-decimals={it.decimals}>

@@ -7,14 +7,14 @@ import { buttonVariants } from "@/components/ui/button";
 export function MembershipCard({ headingId }: { headingId: string }) {
   const m = business.membership;
   return (
-    <div className="card flex flex-col gap-8 p-8 md:flex-row md:items-center md:justify-between md:p-12">
+    <div className="card flex flex-col gap-6 p-6 sm:p-8 md:flex-row md:items-center md:justify-between md:p-12">
       <div>
         <p className="eyebrow">Maintenance plans</p>
         <h2 id={headingId} className="mt-2 text-3xl font-bold">
           {m.name}
         </h2>
-        <p className="mt-3 flex items-baseline gap-2">
-          <span className="tabular font-display text-4xl font-bold">{m.priceLabel}</span>
+        <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
+          <span className="tabular font-display text-[1.7rem] font-bold whitespace-nowrap sm:text-4xl">{m.priceLabel}</span>
           <span className="text-fg-muted">{m.period}</span>
         </p>
         <ul className="mt-5 flex max-w-xl flex-col gap-2.5 text-sm">

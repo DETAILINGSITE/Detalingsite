@@ -47,7 +47,7 @@ export async function Footer() {
         </div>
         <div>
           <h2 className="mb-4 text-sm font-semibold text-fg">Service area</h2>
-          <ul className="flex flex-col gap-1.5 text-sm text-fg-muted">
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-fg-muted">
             {cities.map((c) => (
               <li key={c}>{c}</li>
             ))}

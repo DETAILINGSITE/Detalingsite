@@ -5,7 +5,7 @@ const config = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: [".next/**", "node_modules/**", ".data/**", "coverage/**", "playwright-report/**", "test-results/**", "public/**"],
+    ignores: [".next/**", ".next-alt/**", "node_modules/**", ".data/**", "coverage/**", "playwright-report/**", "test-results/**", "public/**"],
   },
   {
     rules: {

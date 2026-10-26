@@ -1,5 +1,6 @@
 pnpm-lock.yaml
 .next/
+.next-alt/
 node_modules/
 .data/
 .uploads/
