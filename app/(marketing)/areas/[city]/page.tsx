@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!page) return {};
   return pageMetadata({
     title: `Car Detailing in ${page.city}, ${page.region}`,
-    description: `Mobile car detailing in ${page.city}: paint correction, ceramic coating and interior detailing at your home or office. Book online.`,
+    description: `Mobile car detailing in ${page.city}: maintenance washes, interior refreshes, full details and showroom finishes at your home or office. Book online.`,
     path: `/areas/${page.slug}`,
   });
 }

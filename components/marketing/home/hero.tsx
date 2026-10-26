@@ -3,8 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { business } from "@/config/business";
 import { buttonVariants } from "@/components/ui/button";
-import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
-import { isPlaceholder } from "@/config/placeholder";
 import { cn } from "@/lib/utils";
 import { HeroStage } from "./hero-stage";
 
@@ -37,8 +35,8 @@ export function Hero() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink-900" />
         </div>
 
-        <div className="container-site flex flex-col justify-start pt-10 pb-[270px] md:h-full md:pt-[16vh] md:pb-0">
-          <p className="eyebrow animate-rise">Mobile &amp; in-shop detailing</p>
+        <div className="container-site flex flex-col justify-start pt-6 pb-[270px] md:h-full md:pt-[8vh] md:pb-0">
+          <p className="eyebrow animate-rise">Mobile auto detailing · Houston, TX</p>
           <h1
             id="hero-title"
             className="mt-5 max-w-4xl animate-rise text-[clamp(2.6rem,7.4vw,6.2rem)] leading-[0.95] font-extrabold text-fg [animation-delay:60ms]"
@@ -50,7 +48,7 @@ export function Hero() {
             </span>
           </h1>
           <p className="mt-6 max-w-xl animate-rise text-lg leading-relaxed text-fg-muted [animation-delay:120ms] md:text-xl">
-            Paint correction, ceramic coatings and deep interior detailing — booked online in minutes, done to an obsessive standard.
+            From a maintenance wash to a full showroom finish, we come to you across Houston. Book online in minutes.
           </p>
           <div className="mt-8 flex animate-rise flex-col gap-3 [animation-delay:180ms] sm:flex-row sm:flex-wrap sm:items-center md:mt-9">
             <Link href="/book" className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}>
@@ -60,6 +58,8 @@ export function Hero() {
               Get a Custom Quote
             </Link>
           </div>
+          {/* Only shown once the rating is a real, verified Google rating (proof.rating.isReal). */}
+          {rating.isReal && (
           <a
             href={business.links.googleReviews.replace(/\/review$/, "")}
             target="_blank"
@@ -74,8 +74,8 @@ export function Hero() {
             <span className="tabular text-sm text-fg">
               <strong>{rating.value.toFixed(1)}</strong> on Google · {rating.count} reviews
             </span>
-            {isPlaceholder("proof.rating") && <PlaceholderBadge label="Sample" />}
           </a>
+          )}
         </div>
       </div>
       <p className={cn("sr-only")}>Scroll to explore our services.</p>

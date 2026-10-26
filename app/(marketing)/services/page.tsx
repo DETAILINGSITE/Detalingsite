@@ -9,7 +9,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
   title: "Detailing Services",
-  description: "Exterior, interior, paint correction, ceramic coating, PPF and more — every detailing service we offer, with prices by vehicle size.",
+  description: "Bronze, Silver, Gold and VIP detail packages plus add-ons — every mobile detailing service we offer, with prices by vehicle size.",
   path: "/services",
 });
 

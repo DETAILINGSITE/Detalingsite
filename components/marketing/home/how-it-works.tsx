@@ -2,9 +2,9 @@ import { CalendarCheck, Car, ClipboardList, Sparkles } from "lucide-react";
 import { SectionHeading } from "../section-heading";
 
 const STEPS = [
-  { icon: ClipboardList, title: "Pick your service", body: "Choose a package or build your own. Prices update live for your vehicle size." },
+  { icon: ClipboardList, title: "Pick your package", body: "Choose Bronze, Silver, Gold or VIP, plus any add-ons. Prices update live for your vehicle size." },
   { icon: CalendarCheck, title: "Choose a time", body: "See real availability and lock your slot with a small deposit." },
-  { icon: Car, title: "We come to you", body: "We bring water and power, or you drop off at our shop." },
+  { icon: Car, title: "We come to you", body: "We bring water, power and equipment to your driveway, office or garage." },
   { icon: Sparkles, title: "Drive away gleaming", body: "Pay the balance when you're happy. Not happy? We come back." },
 ];
 

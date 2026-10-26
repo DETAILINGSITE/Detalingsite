@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
-import { formatDuration, formatMoney } from "@/lib/domain/money";
+import { formatDuration } from "@/lib/domain/money";
+import { priceLabel } from "@/lib/site/pricing-labels";
 // clsx, not cn(): no conflicting utilities here, and it keeps tailwind-merge off the client.
 import { clsx as cn } from "clsx";
 
@@ -87,7 +88,7 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
               <p aria-live="polite" className="flex items-baseline gap-2">
                 <span className="text-sm text-fg-muted">from</span>
                 <span key={size} className="tabular animate-fade-in font-display text-5xl font-bold">
-                  {entry ? formatMoney(entry.priceCents) : "—"}
+                  {entry ? priceLabel(p.slug, size, entry.priceCents) : "—"}
                 </span>
               </p>
               <p className="-mt-3 text-sm text-fg-subtle">About {entry ? formatDuration(entry.durationMin) : "—"}</p>

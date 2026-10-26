@@ -190,12 +190,12 @@ export async function seed(db: Db, opts: { reset?: boolean; log?: (m: string) =>
     const [{ n: testimonialCount } = { n: 0 }] = await tx
       .select({ n: sql<number>`count(*)::int` })
       .from(s.testimonials);
-    if (testimonialCount === 0) await tx.insert(s.testimonials).values(seedTestimonials);
+    if (testimonialCount === 0 && seedTestimonials.length > 0) await tx.insert(s.testimonials).values(seedTestimonials);
 
     const [{ n: galleryCount } = { n: 0 }] = await tx
       .select({ n: sql<number>`count(*)::int` })
       .from(s.galleryItems);
-    if (galleryCount === 0) {
+    if (galleryCount === 0 && seedGallery.length > 0) {
       await tx.insert(s.galleryItems).values(
         seedGallery.map((g) => ({
           title: g.title,
@@ -213,17 +213,6 @@ export async function seed(db: Db, opts: { reset?: boolean; log?: (m: string) =>
     const [{ n: faqCount } = { n: 0 }] = await tx.select({ n: sql<number>`count(*)::int` }).from(s.faqs);
     if (faqCount === 0) {
       await tx.insert(s.faqs).values(seedFaqs.map((f, i) => ({ ...f, sort: i })));
-      const ceramic = serviceId.get("ceramic-coating");
-      if (ceramic) {
-        await tx.insert(s.faqs).values({
-          question: "How should I wash my car after a ceramic coating?",
-          answerMd:
-            "Wait a week before the first wash, then use a pH-neutral shampoo and the two-bucket method. Avoid automatic brush washes. We'll give you a written care guide.",
-          category: "Ceramic coating",
-          serviceId: ceramic,
-          sort: 0,
-        });
-      }
     }
 
     await tx
@@ -235,6 +224,7 @@ export async function seed(db: Db, opts: { reset?: boolean; log?: (m: string) =>
           region: c.region,
           zoneId: zoneIds[c.zoneIndex] ?? null,
           introMd: c.introMd,
+          isPlaceholder: false,
         })),
       )
       .onConflictDoNothing();

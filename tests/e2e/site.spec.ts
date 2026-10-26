@@ -129,9 +129,11 @@ test("S-LOWPOWER low-power/save-data devices get the poster", async ({ browser }
 });
 
 test("S-IMAGES hero is eager/high priority; below-the-fold images lazy", async ({ page }) => {
+  // Below-the-fold images (the gallery has none until real photos are added) must all be lazy.
   await page.goto("/gallery");
+  const images = await page.locator("main img").count();
   const lazy = await page.locator('main img[loading="lazy"]').count();
-  expect(lazy).toBeGreaterThan(0);
+  expect(lazy).toBe(images);
   await page.goto("/");
   const hero = page.locator('img[fetchpriority="high"]').first();
   expect(await hero.getAttribute("loading")).not.toBe("lazy");

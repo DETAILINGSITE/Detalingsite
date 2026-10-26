@@ -242,12 +242,14 @@ test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
 });
 
 test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {
-  await startService(page, { pkg: "VIP" });
+  await startService(page, { size: "SUV", pkg: "VIP" });
   await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
   await page.goBack();
-  await page.getByRole("radio", { name: /no package/i }).click();
-  await page.getByRole("checkbox", { name: /paint correction — 2-stage/i }).click();
-  await page.getByRole("checkbox", { name: /ceramic coating/i }).click();
+  // Gold + every add-on on a truck/SUV is more than the longest working day (10h).
+  await page.getByRole("radio", { name: /^Gold/i }).click();
+  for (const addon of [/ceramic coating/i, /headlight restoration/i, /engine bay/i, /pet hair/i, /mud/i]) {
+    await page.getByRole("checkbox", { name: addon }).click();
+  }
   await expect(page.getByText(/longer than a single day/i)).toBeVisible();
   await expect(page.getByRole("button", { name: /switch to a custom quote/i })).toBeVisible();
 });

@@ -1,38 +1,22 @@
-import { BadgeCheck, ShieldCheck, Sparkles, Star } from "lucide-react";
-import { business } from "@/config/business";
-import { isPlaceholder } from "@/config/placeholder";
-import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
+import { MapPin, ShieldCheck, Sparkles } from "lucide-react";
+
+/** The three promises from the price flyer. */
+const ITEMS = [
+  { icon: Sparkles, title: "Professional", label: "Quality products on every job" },
+  { icon: MapPin, title: "100% mobile", label: "We come to you" },
+  { icon: ShieldCheck, title: "Satisfaction guaranteed", label: "Backed by our guarantee" },
+];
 
 export function TrustBar() {
-  const p = business.proof;
-  const sample = isPlaceholder("proof.rating") || isPlaceholder("proof.carsDetailed");
-  const items = [
-    { icon: Star, value: p.rating.value, decimals: 1, label: `Google rating · ${p.rating.count} reviews` },
-    { icon: Sparkles, value: p.carsDetailed, decimals: 0, suffix: "+", label: "Cars detailed" },
-    { icon: ShieldCheck, text: p.insured ? "Fully insured" : "Licensed", label: "Peace of mind on every job" },
-    { icon: BadgeCheck, text: "Satisfaction", label: "Guaranteed — or we come back" },
-  ];
   return (
     <section aria-label="Why customers trust us" className="relative border-y border-white/[0.06] bg-ink-850">
       <div className="container-site py-8">
-        {sample && <PlaceholderBadge className="mb-4" />}
-        <ul className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-          {items.map((it) => (
-            <li key={it.label} className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4" data-reveal>
+        <ul className="grid gap-6 sm:grid-cols-3">
+          {ITEMS.map((it) => (
+            <li key={it.title} className="flex min-w-0 items-center gap-4" data-reveal>
               <it.icon className="size-7 shrink-0 text-gold-300" aria-hidden="true" />
               <div className="min-w-0">
-                <p className="font-display text-xl font-bold text-fg sm:text-2xl">
-                  {"value" in it && it.value !== undefined ? (
-                    <>
-                      <span className="tabular inline-block min-w-[3ch]" data-count={it.value} data-decimals={it.decimals}>
-                        {it.value.toLocaleString("en-US", { maximumFractionDigits: it.decimals, minimumFractionDigits: it.decimals })}
-                      </span>
-                      {it.suffix}
-                    </>
-                  ) : (
-                    it.text
-                  )}
-                </p>
+                <p className="font-display text-xl font-bold text-fg">{it.title}</p>
                 <p className="text-sm text-fg-muted">{it.label}</p>
               </div>
             </li>

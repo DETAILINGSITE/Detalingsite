@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
   title: "Get a Custom Quote",
-  description: "PPF, boats, RVs, fleets or anything unusual — describe the job, add photos and we'll send you a price.",
+  description: "Anything unusual or outside our packages — describe the job, add photos and we'll send you a price.",
   path: "/quote",
 });
 

@@ -23,7 +23,6 @@
     <filter id="blur"><feGaussianBlur stdDeviation="18"/></filter>
   </defs>
   <rect width="1600" height="900" fill="url(#floor)"/>
-  <rect x="300" y="120" width="1000" height="10" rx="5" fill="#cfe6ff" opacity="0.18" filter="url(#blur)"/>
   <ellipse cx="800" cy="700" rx="560" ry="46" fill="#000" opacity="0.7" filter="url(#blur)"/>
   <path d="M250 640c10-60 60-95 150-110l170-25c60-60 150-110 270-118 140-8 250 40 330 112l170 30c70 14 112 50 118 111z" fill="url(#body)" stroke="#4a515b" stroke-width="2"/>
   <path d="M600 498c55-48 130-82 230-88 105-6 190 26 250 82z" fill="url(#glass)" stroke="#5b6470" stroke-width="2"/>

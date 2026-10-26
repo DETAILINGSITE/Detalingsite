@@ -12,6 +12,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { buttonVariants } from "@/components/ui/button";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
 import { formatDuration, formatMoney } from "@/lib/domain/money";
+import { priceLabel } from "@/lib/site/pricing-labels";
 import { getPublicCatalog, getPublicContent } from "@/lib/server/data/public";
 import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -122,7 +123,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                 {catalog.sizes.map((z) => (
                   <tr key={z.id}>
                     <th scope="row" className="py-3 font-semibold">{z.label}</th>
-                    <td className="tabular py-3">{formatMoney(s.bySize[z.id]?.priceCents ?? 0)}</td>
+                    <td className="tabular py-3">{priceLabel(s.slug, z.id, s.bySize[z.id]?.priceCents ?? 0)}</td>
                     <td className="py-3 text-fg-muted">{formatDuration(s.bySize[z.id]?.durationMin ?? 0)}</td>
                   </tr>
                 ))}

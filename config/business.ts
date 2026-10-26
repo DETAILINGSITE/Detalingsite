@@ -50,7 +50,9 @@ export const business = {
 
   /** Physical shop. Set `enabled: false` for mobile-only businesses (address is then hidden in JSON-LD). */
   shop: {
-    enabled: true,
+    // MJDETAILZ is 100% mobile for now. Set to true (or SHOP_ENABLED=1, used by the e2e suite) once
+    // there's a shop, and set Service mode in Admin → Settings.
+    enabled: process.env.SHOP_ENABLED === "1",
     address: ph(
       {
         line1: "123 Example Street",
@@ -105,9 +107,9 @@ export const business = {
       "Brands/products you actually use",
     ),
     guarantee: ph(
-      "Not happy with any area? Tell us within 48 hours and we'll come back and make it right — free.",
+      "Satisfaction guaranteed — if something isn't right, tell us and we'll make it right.",
       "proof.guarantee",
-      "Your satisfaction guarantee wording",
+      "Your satisfaction guarantee terms (the flyer only says 'Satisfaction guaranteed'; add any time limit)",
     ),
   },
 
@@ -212,7 +214,7 @@ export const business = {
             "77502", "77503", "77504", "77505", // Pasadena
           ],
           ringMaxKm: 45,
-          travelFeeCents: 2500,
+          travelFeeCents: 0,
           travelMinutes: 35,
           cities: ["Katy", "Sugar Land", "Missouri City", "Pearland", "Spring", "Cypress", "Humble", "Pasadena"],
         },
@@ -220,7 +222,7 @@ export const business = {
           name: "Outer areas",
           zipCodes: ["77380", "77381", "77382", "77384", "77385", "77386", "77301", "77302", "77303", "77304", "77573", "77375", "77377", "77520", "77521", "77546"],
           ringMaxKm: 70,
-          travelFeeCents: 4500,
+          travelFeeCents: 0,
           travelMinutes: 50,
           cities: ["The Woodlands", "Conroe", "League City", "Tomball", "Baytown", "Friendswood"],
         },
@@ -231,7 +233,7 @@ export const business = {
     settings: ph<OperationalSettings>(
       {
         timezone: "America/Chicago",
-        serviceMode: "both",
+        serviceMode: "mobile",
         slotIntervalMin: 30,
         bufferMin: 30,
         minLeadHours: 18,

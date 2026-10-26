@@ -32,7 +32,7 @@ export function PathStep({ state, dispatch, onNext }: StepProps) {
           {
             value: "custom",
             title: "Custom job / get a quote",
-            description: "PPF, boats & RVs, fleets, heavy restoration or anything unusual — send photos and we'll quote it.",
+            description: "Anything unusual or outside our packages — describe it, add photos and we'll quote it.",
           },
         ]}
       />

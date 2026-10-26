@@ -27,6 +27,10 @@ const d = createDb(p2);
 await seed(d, { reset: true });
 // Deterministic settings for E2E: zero lead time; hours Mon–Sat 08:00–18:00.
 await p2.query(`UPDATE settings SET data = jsonb_set(jsonb_set(data, '{minLeadHours}', '0'), '{timezone}', '"America/Chicago"') WHERE id = 1`);
+// The product is mobile-only; the suite still covers the in-shop path, so tests run with shop mode on.
+// A shared preview (PREVIEW_MODE) keeps the real mobile-only defaults.
+const shopTests = process.env.PREVIEW_MODE !== "1";
+if (shopTests) await p2.query(`UPDATE settings SET data = jsonb_set(data, '{serviceMode}', '"both"') WHERE id = 1`);
 // A shared preview link gets a random admin password (saved locally, git-ignored), not the
 // fixed test password that's in this repo.
 const adminPassword = process.env.PREVIEW_MODE === "1" ? (await import("node:crypto")).randomBytes(12).toString("base64url") : "e2e-admin-password-123";
@@ -50,6 +54,7 @@ const serverEnv = {
   CAPTCHA_DRIVER: "test",
   TEST_CLOCK: "1",
   ADMIN_2FA_OPTIONAL: "1",
+  ...(shopTests ? { SHOP_ENABLED: "1" } : {}),
   TOKEN_PEPPER: "e2e-pepper-0123456789abcdef",
   BETTER_AUTH_SECRET: "e2e-better-auth-secret-0123456789abcdef",
   CRON_SECRET: "e2e-cron",

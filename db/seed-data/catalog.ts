@@ -1,26 +1,21 @@
 /**
- * Seed catalog. The four detail packages and the five add-ons come from the owner's price
- * flyer (`real: true`) — their prices are real, but DURATIONS ARE ESTIMATES. Every other row
- * is still a placeholder. The owner reviews all of it in /admin/catalog and ticks "Catalog
- * reviewed" (settings.catalogReviewed) before launch. Rows are marked is_placeholder = true
- * until they're real or edited in admin.
+ * Seed catalog, taken from the owner's price flyer: four detail packages and five add-ons
+ * (`real: true`). Prices are real but DURATIONS ARE ESTIMATES. The owner reviews everything in
+ * /admin/catalog and ticks "Catalog reviewed" (settings.catalogReviewed) before launch.
  *
- * The flyer prices "cars" and "trucks & SUVs"; vans aren't listed, so they use the truck/SUV price.
+ * The flyer prices "cars" and "trucks & SUVs", so there are two vehicle sizes; vans are treated as
+ * trucks/SUVs. Anything else (boats, fleets, PPF, ...) goes through the custom-quote flow.
  */
 
 export const seedSizes = [
-  { id: "sedan", label: "Sedan / Coupe", description: "Cars, coupes and hatchbacks", priceMultiplier: 1.0, durationMultiplier: 1.0, sort: 1 },
-  { id: "suv", label: "SUV / Crossover", description: "Small to mid-size SUVs and crossovers", priceMultiplier: 1.2, durationMultiplier: 1.15, sort: 2 },
-  { id: "truck", label: "Truck", description: "Pickups and full-size SUVs", priceMultiplier: 1.3, durationMultiplier: 1.25, sort: 3 },
-  { id: "van", label: "Van / Minivan", description: "Minivans and passenger vans", priceMultiplier: 1.35, durationMultiplier: 1.3, sort: 4 },
+  { id: "sedan", label: "Car (sedan / coupe)", description: "Sedans, coupes and hatchbacks", priceMultiplier: 1.0, durationMultiplier: 1.0, sort: 1 },
+  { id: "suv", label: "Truck / SUV / Van", description: "Trucks, SUVs, crossovers and vans", priceMultiplier: 1.2, durationMultiplier: 1.15, sort: 2 },
 ] as const;
 
 export const seedCategories = [
   { slug: "detail-packages", name: "Detail packages", description: "Four tiers, from a routine maintenance wash to a full showroom finish.", sort: 0 },
-  { slug: "exterior", name: "Exterior", description: "Wash, decontamination and protection for paint, glass and wheels.", sort: 1 },
-  { slug: "interior", name: "Interior", description: "Deep cleaning for seats, carpets, plastics and odours.", sort: 2 },
-  { slug: "paint-protection", name: "Paint correction & protection", description: "Swirl removal, ceramic coatings and film.", sort: 3 },
-  { slug: "specialty", name: "Specialty & commercial", description: "Boats, RVs, fleets and one-off jobs.", sort: 4 },
+  { slug: "exterior", name: "Exterior add-ons", description: "Extras for the outside of your vehicle.", sort: 1 },
+  { slug: "interior", name: "Interior add-ons", description: "Extras for the inside of your vehicle.", sort: 2 },
 ] as const;
 
 type Loc = "mobile" | "shop";
@@ -47,11 +42,9 @@ type SeedSizeOverrides = Partial<Record<(typeof seedSizes)[number]["id"], { pric
 
 const BOTH: Loc[] = ["mobile", "shop"];
 
-/** Flyer pricing: one price for cars, one for trucks & SUVs (applied to SUVs, trucks and vans). */
+/** Flyer pricing: one price for cars, one for trucks, SUVs and vans. */
 const carVsTruck = (truckSuvCents: number): SeedSizeOverrides => ({
   suv: { priceCents: truckSuvCents },
-  truck: { priceCents: truckSuvCents },
-  van: { priceCents: truckSuvCents },
 });
 /** Flat add-on price regardless of vehicle size. */
 const flat = (cents: number): SeedSizeOverrides => carVsTruck(cents);
@@ -164,54 +157,11 @@ export const seedServices: SeedService[] = [
     real: true,
   },
   {
-    slug: "paint-decontamination",
-    category: "paint-protection",
-    kind: "addon",
-    name: "Paint decontamination",
-    summary: "Iron remover and clay bar to strip bonded contamination.",
-    descriptionMd: "Chemical iron removal and a full clay-bar pass. Required before any coating so it bonds to bare, clean paint.",
-    includes: ["Iron fallout remover", "Tar removal", "Clay bar on all painted surfaces"],
-    whatToExpect: [],
-    basePriceCents: 6900,
-    baseDurationMin: 45,
-    locationTypes: BOTH,
-    sort: 10,
-  },
-  {
-    slug: "paint-correction-1-stage",
-    category: "paint-protection",
-    kind: "service",
-    name: "Paint correction — 1-stage",
-    summary: "Single-step machine polish that removes light swirls and restores gloss.",
-    descriptionMd: "A one-step machine polish that removes roughly 50–70% of light swirls and haze and dramatically increases gloss. Ideal before a coating on newer paint.",
-    includes: ["Paint depth readings", "Taping of trim and badges", "One-step compound/polish"],
-    whatToExpect: ["Done in our shop or a covered garage — direct sun and wind affect polishing"],
-    basePriceCents: 39900,
-    baseDurationMin: 300,
-    locationTypes: ["shop"],
-    sort: 11,
-  },
-  {
-    slug: "paint-correction-2-stage",
-    category: "paint-protection",
-    kind: "service",
-    name: "Paint correction — 2-stage",
-    summary: "Cut and polish for deeper swirls, water spots and oxidation.",
-    descriptionMd: "A heavier compounding step followed by a refining polish. Removes most swirls, haze and moderate defects for a near-flawless finish.",
-    includes: ["Paint depth readings", "Compounding stage", "Refining polish stage", "Panel wipe inspection"],
-    whatToExpect: ["Shop only", "Many vehicles need more than a day — larger vehicles are quoted"],
-    basePriceCents: 69900,
-    baseDurationMin: 480,
-    locationTypes: ["shop"],
-    sort: 12,
-    sizeOverrides: { truck: { durationMin: 600 }, van: { durationMin: 600 } },
-  },
-  {
     slug: "ceramic-coating",
-    category: "paint-protection",
+    category: "exterior",
     kind: "addon",
     name: "1-year ceramic coating",
-    summary: "Starting at $100: a 1-year ceramic coating, without paint correction.",
+    summary: "A 1-year ceramic coating, applied without paint correction.",
     descriptionMd: "A 1-year ceramic coating applied without paint correction. Repels water and dirt and makes washing easier. Starting at $100; the final price depends on the vehicle.",
     includes: ["1-year ceramic coating", "Applied without paint correction"],
     whatToExpect: [],
@@ -221,21 +171,6 @@ export const seedServices: SeedService[] = [
     sort: 13,
     sizeOverrides: flat(10000),
     real: true,
-  },
-  {
-    slug: "paint-protection-film",
-    category: "paint-protection",
-    kind: "service",
-    name: "Paint protection film (PPF)",
-    summary: "Clear film against rock chips and scratches — quoted per vehicle.",
-    descriptionMd: "Self-healing clear film on high-impact areas or the whole car. Coverage and pricing depend on the vehicle, so we'll send you a quote.",
-    includes: ["Coverage consultation", "Precision-cut film", "Edge wrapping where possible"],
-    whatToExpect: ["Shop only", "Usually 1–3 days depending on coverage"],
-    basePriceCents: 0,
-    baseDurationMin: 480,
-    quoteOnly: true,
-    locationTypes: ["shop"],
-    sort: 14,
   },
   {
     slug: "headlight-restoration",
@@ -270,25 +205,11 @@ export const seedServices: SeedService[] = [
     real: true,
   },
   {
-    slug: "odor-ozone",
-    category: "interior",
-    kind: "addon",
-    name: "Odour / ozone treatment",
-    summary: "Neutralises smoke, pet and mildew odours at the source.",
-    descriptionMd: "An ozone treatment that breaks down odour molecules in fabrics and the HVAC system, followed by ventilation.",
-    includes: ["Ozone treatment", "HVAC cycle", "Ventilation"],
-    whatToExpect: ["The vehicle must stay closed for about an hour"],
-    basePriceCents: 7900,
-    baseDurationMin: 60,
-    locationTypes: BOTH,
-    sort: 22,
-  },
-  {
     slug: "pet-hair-removal",
     category: "interior",
     kind: "addon",
     name: "Pet hair removal",
-    summary: "Starting at $30: specialist tools to lift embedded pet hair.",
+    summary: "Specialist tools to lift embedded pet hair.",
     descriptionMd: "Rubber brushes and air tools to pull embedded hair from carpets and upholstery. Starting at $30; heavier pet hair costs more.",
     includes: ["Carpets and seats", "Cargo area"],
     whatToExpect: [],
@@ -304,7 +225,7 @@ export const seedServices: SeedService[] = [
     category: "exterior",
     kind: "addon",
     name: "Excessive mud / sand",
-    summary: "Starting at $25: extra time for heavy mud and sand.",
+    summary: "Extra time and care for heavy mud and sand.",
     descriptionMd: "Heavy mud or sand takes extra time and care to remove safely. Starting at $25; the final price depends on how much there is.",
     includes: ["Heavy mud and sand removal"],
     whatToExpect: [],
@@ -314,36 +235,6 @@ export const seedServices: SeedService[] = [
     sort: 24,
     sizeOverrides: flat(2500),
     real: true,
-  },
-  {
-    slug: "boat-rv",
-    category: "specialty",
-    kind: "service",
-    name: "Boat & RV detailing",
-    summary: "Gelcoat, hull and interior care — quoted per vessel or coach.",
-    descriptionMd: "Oxidation removal, polishing and protection for boats and RVs. Every job is different, so we quote it.",
-    includes: ["Inspection and quote", "Wash, oxidation removal and polish", "Protection"],
-    whatToExpect: [],
-    basePriceCents: 0,
-    baseDurationMin: 480,
-    quoteOnly: true,
-    locationTypes: BOTH,
-    sort: 30,
-  },
-  {
-    slug: "fleet-commercial",
-    category: "specialty",
-    kind: "service",
-    name: "Fleet & commercial",
-    summary: "Recurring service for company vehicles — volume pricing.",
-    descriptionMd: "Scheduled washes and details for fleets of any size, on-site, with consolidated invoicing.",
-    includes: ["On-site service", "Recurring schedule", "Monthly invoicing"],
-    whatToExpect: [],
-    basePriceCents: 0,
-    baseDurationMin: 240,
-    quoteOnly: true,
-    locationTypes: BOTH,
-    sort: 31,
   },
 ];
 
@@ -411,24 +302,6 @@ export const seedPackages: {
 ];
 
 export const seedRules = [
-  {
-    kind: "requires" as const,
-    service: "paint-correction-2-stage",
-    target: "paint-decontamination",
-    reason: "Polishing over bonded contamination drags it across the paint and creates new scratches.",
-  },
-  {
-    kind: "requires" as const,
-    service: "paint-correction-1-stage",
-    target: "paint-decontamination",
-    reason: "Polishing over bonded contamination drags it across the paint and creates new scratches.",
-  },
-  {
-    kind: "excludes" as const,
-    service: "paint-correction-1-stage",
-    target: "paint-correction-2-stage",
-    reason: "Choose one level of paint correction.",
-  },
   // Each tier already includes everything in the tiers below it.
   { kind: "excludes" as const, service: "silver-deep-interior-refresh", target: "bronze-maintenance-wash", reason: "Silver already includes everything in Bronze." },
   { kind: "excludes" as const, service: "gold-full-detail", target: "silver-deep-interior-refresh", reason: "Gold already includes everything in Silver." },
@@ -440,14 +313,11 @@ export const seedRules = [
   { kind: "excludes" as const, service: "vip-showroom-finish", target: "ceramic-coating", reason: "VIP already includes a 1-year ceramic coating." },
   { kind: "excludes" as const, service: "vip-showroom-finish", target: "engine-bay", reason: "VIP already includes the engine bay detail." },
   { kind: "excludes" as const, service: "vip-showroom-finish", target: "headlight-restoration", reason: "VIP already includes headlight restoration (if needed)." },
-  { kind: "excludes" as const, service: "vip-showroom-finish", target: "paint-decontamination", reason: "VIP already includes iron decontamination." },
-  { kind: "excludes" as const, service: "vip-showroom-finish", target: "paint-correction-1-stage", reason: "VIP already includes a one-step paint correction." },
 ];
 
 export const seedConditions = [
   { id: "light", group: "soil" as const, label: "Light — regular upkeep", description: "Washed in the last month, light dust.", surchargeType: "flat" as const, surchargeValue: 0, extraMinutes: 0, sort: 1 },
   { id: "moderate", group: "soil" as const, label: "Moderate — needs some love", description: "Crumbs, some stains, road film.", surchargeType: "flat" as const, surchargeValue: 2500, extraMinutes: 30, sort: 2 },
   { id: "heavy", group: "soil" as const, label: "Heavy — it's been a while", description: "Heavy soiling, mud, sand, spills.", surchargeType: "percent" as const, surchargeValue: 20, extraMinutes: 60, sort: 3 },
-  { id: "pet_hair", group: "extra" as const, label: "Pet hair", description: "Noticeable pet hair in the cabin.", surchargeType: "flat" as const, surchargeValue: 3000, extraMinutes: 30, sort: 4 },
   { id: "stains", group: "extra" as const, label: "Stains", description: "Visible stains on seats or carpets.", surchargeType: "flat" as const, surchargeValue: 2500, extraMinutes: 30, sort: 5 },
 ] as const;
