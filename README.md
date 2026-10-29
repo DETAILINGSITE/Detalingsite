@@ -104,7 +104,6 @@ docker compose up -d app scheduler
 
 | Key | What to provide |
 |---|---|
-| `brand.name` | Trading name |
 | `brand.legalName` | Legal entity name |
 | `brand.tagline` | One-line tagline |
 | `brand.description` | Default meta description (~155 characters) |

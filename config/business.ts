@@ -14,8 +14,8 @@ import type { BusinessHoursRow, OperationalSettings } from "@/lib/domain/setting
 import { ph } from "./placeholder";
 
 export const business = {
-  name: ph("Your Detailing Co.", "brand.name", "Trading name shown in the header, emails and SMS"),
-  legalName: ph("Your Detailing Co. LLC", "brand.legalName", "Legal entity name for terms/privacy"),
+  name: "MJDETALIZ",
+  legalName: ph("MJDETALIZ LLC", "brand.legalName", "Legal entity name for terms/privacy"),
   tagline: ph(
     "Showroom finish, wherever you park.",
     "brand.tagline",
@@ -26,8 +26,8 @@ export const business = {
     "brand.description",
     "Default meta description (≈155 characters)",
   ),
-  /** Short code used in booking numbers, e.g. DS-7K3QX. */
-  bookingPrefix: "DS",
+  /** Short code used in booking numbers, e.g. MJ-7K3QX. */
+  bookingPrefix: "MJ",
   logo: {
     src: ph("/brand/logo.svg", "brand.logo", "SVG logo in /public/brand (light + dark friendly)"),
     width: 168,
