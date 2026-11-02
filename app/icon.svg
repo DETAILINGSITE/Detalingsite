@@ -1,13 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Placeholder mark (same as components/site/logo.tsx). Replace with the real logo: see README "Values to fill in" → brand.logo. -->
+  <!-- Stand-in icon based on the flyer (same mark as components/site/logo.tsx). -->
   <defs>
     <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#cfe6ff"/>
-      <stop offset="1" stop-color="#1565c0"/>
+      <stop offset="1" stop-color="#2b8cff"/>
     </linearGradient>
   </defs>
   <rect width="32" height="32" rx="7" fill="#0b0c0e"/>
-  <path d="M5 20c3-6.5 7.2-10 11-10s8 3.5 11 10" fill="none" stroke="url(#g)" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M9.5 22h13" stroke="url(#g)" stroke-width="2.6" stroke-linecap="round"/>
-  <circle cx="21.5" cy="11" r="1.6" fill="#cfe6ff"/>
+  <g transform="translate(1.6 2) scale(.72)">
+    <path d="M13 9.5 12.6 3l4.6 3L20 1.5 22.8 6l4.6-3-.4 6.5Z" fill="url(#g)"/>
+    <path d="M3 29 7.2 13l6.3 11L20 13l-2.4 16" fill="none" stroke="url(#g)" stroke-width="3.6"/>
+    <path d="M33 13 30.2 25c-.8 3.2-3.4 4.4-7.2 3.2" fill="none" stroke="url(#g)" stroke-width="3.6" stroke-linecap="round"/>
+  </g>
 </svg>

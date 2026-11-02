@@ -45,7 +45,7 @@ export const business = {
     phone: "+18322507430",
     phoneDisplay: "(832) 250-7430",
     sms: "+18322507430",
-    email: ph("hello@example.com", "contact.email", "Public contact email"),
+    email: "hello@mjelitedetailing.com",
   },
 
   /** Physical shop. Set `enabled: false` for mobile-only businesses (address is then hidden in JSON-LD). */
