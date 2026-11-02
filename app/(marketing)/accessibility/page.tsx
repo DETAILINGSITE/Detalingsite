@@ -1,4 +1,5 @@
 import { business } from "@/config/business";
+import { isPlaceholder } from "@/config/placeholder";
 import { LegalPage } from "@/components/marketing/legal-page";
 import { pageMetadata } from "@/lib/seo/metadata";
 
@@ -17,7 +18,7 @@ export default function AccessibilityPage() {
       </ul>
       <h2>Need help?</h2>
       <p>
-        If anything on this site doesn't work for you, call {business.contact.phoneDisplay} or email {business.contact.email} and we'll book you in directly — and fix the problem.
+        If anything on this site doesn't work for you, call {business.contact.phoneDisplay}{isPlaceholder("contact.email") ? "" : ` or email ${business.contact.email}`} and we'll book you in directly — and fix the problem.
       </p>
     </LegalPage>
   );

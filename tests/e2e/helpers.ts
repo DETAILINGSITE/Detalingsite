@@ -91,6 +91,6 @@ export async function fakePaySuccess(page: Page) {
 }
 
 export async function bookingNumber(page: Page) {
-  const text = await page.getByText(/^Booking DS-/).first().textContent();
-  return /DS-[0-9A-Z]{6}/.exec(text ?? "")?.[0] ?? "";
+  const text = await page.getByText(/^Booking MJ-/).first().textContent();
+  return /MJ-[0-9A-Z]{6}/.exec(text ?? "")?.[0] ?? "";
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { business } from "@/config/business";
+import { isPlaceholder } from "@/config/placeholder";
 import { getPublicSchedule } from "@/lib/server/data/public";
 import { LEGAL, NAV, WEEKDAYS, formatHhmm } from "@/lib/site/nav";
 import { Logo } from "./logo";
@@ -8,11 +9,11 @@ export async function Footer() {
   const schedule = await getPublicSchedule();
   const cities = [...new Set(schedule.zones.flatMap((z) => z.cities))];
   const socials = [
-    ["Instagram", business.links.instagram],
-    ["Facebook", business.links.facebook],
+    ["Instagram", isPlaceholder("links.instagram") ? null : business.links.instagram],
+    ["Facebook", isPlaceholder("links.facebook") ? null : business.links.facebook],
     ["TikTok", business.links.tiktok],
     ["YouTube", business.links.youtube],
-    ["Google", business.links.googleBusinessProfile],
+    ["Google", isPlaceholder("links.gbp") ? null : business.links.googleBusinessProfile],
   ].filter((x): x is [string, string] => Boolean(x[1]));
 
   return (
@@ -23,7 +24,7 @@ export async function Footer() {
           <p className="max-w-xs text-sm leading-relaxed text-fg-muted">{business.tagline}</p>
           <address className="flex flex-col gap-1 text-sm not-italic text-fg-muted">
             <a href={`tel:${business.contact.phone}`} className="tabular hover:text-fg">{business.contact.phoneDisplay}</a>
-            <a href={`mailto:${business.contact.email}`} className="hover:text-fg">{business.contact.email}</a>
+            {!isPlaceholder("contact.email") && <a href={`mailto:${business.contact.email}`} className="hover:text-fg">{business.contact.email}</a>}
             {business.shop.enabled && (
               <span>
                 {business.shop.address.line1}, {business.shop.address.city}, {business.shop.address.region}

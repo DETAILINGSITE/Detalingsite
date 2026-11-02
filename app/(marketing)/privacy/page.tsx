@@ -1,4 +1,5 @@
 import { business } from "@/config/business";
+import { isPlaceholder } from "@/config/placeholder";
 import { LegalPage } from "@/components/marketing/legal-page";
 import { pageMetadata } from "@/lib/seo/metadata";
 
@@ -27,9 +28,9 @@ export default function PrivacyPage() {
       <h2>How long we keep it</h2>
       <p>Booking records are kept as long as needed for accounting and warranty purposes. Unconverted enquiries are deleted after 12 months.</p>
       <h2>Your choices</h2>
-      <p>You can ask us to access, correct or delete your information by emailing {business.contact.email}.</p>
+      <p>You can ask us to access, correct or delete your information by {isPlaceholder("contact.email") ? `calling ${business.contact.phoneDisplay}` : `emailing ${business.contact.email}`}.</p>
       <h2>Contact</h2>
-      <p>{business.legalName} · {business.contact.email} · {business.contact.phoneDisplay}</p>
+      <p>{business.legalName}{isPlaceholder("contact.email") ? "" : ` · ${business.contact.email}`} · {business.contact.phoneDisplay}</p>
     </LegalPage>
   );
 }

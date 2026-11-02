@@ -1,4 +1,5 @@
 /** JSON-LD builders (docs/PLAN.md §9 SEO). AggregateRating only when the rating is real. */
+import { isPlaceholder } from "@/config/placeholder";
 import { business } from "@/config/business";
 import type { BusinessHoursRow } from "@/lib/domain/settings";
 
@@ -18,7 +19,7 @@ export function localBusinessJsonLd(opts: { hours: BusinessHoursRow[]; cities: s
     description: business.description,
     url,
     telephone: business.contact.phone,
-    email: business.contact.email,
+    ...(isPlaceholder("contact.email") ? {} : { email: business.contact.email }),
     image: `${url}/opengraph-image`,
     priceRange: "$$",
     areaServed: opts.cities.map((c) => ({ "@type": "City", name: c })),
@@ -28,7 +29,11 @@ export function localBusinessJsonLd(opts: { hours: BusinessHoursRow[]; cities: s
       opens: h.opens,
       closes: h.closes,
     })),
-    sameAs: [business.links.instagram, business.links.facebook, business.links.googleBusinessProfile].filter(Boolean),
+    sameAs: [
+      isPlaceholder("links.instagram") ? null : business.links.instagram,
+      isPlaceholder("links.facebook") ? null : business.links.facebook,
+      isPlaceholder("links.gbp") ? null : business.links.googleBusinessProfile,
+    ].filter(Boolean),
   };
   if (business.shop.enabled) {
     const a = business.shop.address;

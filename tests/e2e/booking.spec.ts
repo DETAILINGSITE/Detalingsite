@@ -5,6 +5,9 @@
 import { expect, test } from "@playwright/test";
 import { advanceClock, agreeAndPay, bookingNumber, closeTabs, fakePaySuccess, fillContact, mobileAddress, newTab, next, outbox, pickFirstSlot, setClock, startService } from "./helpers";
 
+// The calendar opens on the browser's month, so tests that name a day pin the browser to the server's test clock.
+const CLOCK = new Date("2026-10-22T15:00:00Z");
+
 test.beforeEach(async ({ request }) => {
   await setClock(request);
 });
@@ -118,6 +121,7 @@ test("E2E-06 two users race for the last in-shop slot → one wins, the other se
 
 test("E2E-07 slot hold expires → the time becomes available again", async ({ browser, request }) => {
   const a = await newTab(browser);
+  await a.clock.setFixedTime(CLOCK);
   await startService(a, { pkg: "Bronze" });
   await a.getByRole("radio", { name: /at your shop/i }).click();
   await next(a);
@@ -134,6 +138,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await expect(a.getByText(/held for you/i)).toBeVisible();
   await advanceClock(request, 11 * 60_000);
   const b = await newTab(browser);
+  await b.clock.setFixedTime(CLOCK);
   await startService(b, { pkg: "Bronze" });
   await b.getByRole("radio", { name: /at your shop/i }).click();
   await next(b);
@@ -234,6 +239,7 @@ test("E2E-12 cancel outside the window → full refund queued", async ({ page, r
 });
 
 test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
+  await page.clock.setFixedTime(CLOCK);
   await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);

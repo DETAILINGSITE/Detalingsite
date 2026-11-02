@@ -3,7 +3,7 @@ import { SectionHeading } from "../section-heading";
 
 const STEPS = [
   { icon: ClipboardList, title: "Pick your package", body: "Choose Bronze, Silver, Gold or VIP, plus any add-ons. Prices update live for your vehicle size." },
-  { icon: CalendarCheck, title: "Choose a time", body: "See real availability and lock your slot with a small deposit." },
+  { icon: CalendarCheck, title: "Choose a time", body: "See real availability and pick the slot that suits you." },
   { icon: Car, title: "We come to you", body: "We bring water, power and equipment to your driveway, office or garage." },
   { icon: Sparkles, title: "Drive away gleaming", body: "Pay the balance when you're happy. Not happy? We come back." },
 ];

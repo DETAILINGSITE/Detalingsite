@@ -1,5 +1,6 @@
 import { Clock, Mail, MessageSquare, Phone } from "lucide-react";
 import { business } from "@/config/business";
+import { isPlaceholder } from "@/config/placeholder";
 import { ContactForm } from "@/components/forms/contact-form";
 import { MapFacade } from "@/components/marketing/map-facade";
 import { SectionHeading } from "@/components/marketing/section-heading";
@@ -34,10 +35,12 @@ export default async function ContactPage() {
               <MessageSquare className="size-5 text-gold-300" aria-hidden="true" />
               <a href={`sms:${business.contact.sms}`} className="inline-flex min-h-11 items-center hover:text-gold-300">Text us</a>
             </li>
-            <li className="flex items-center gap-3">
-              <Mail className="size-5 text-gold-300" aria-hidden="true" />
-              <a href={`mailto:${business.contact.email}`} className="inline-flex min-h-11 items-center hover:text-gold-300">{business.contact.email}</a>
-            </li>
+            {!isPlaceholder("contact.email") && (
+              <li className="flex items-center gap-3">
+                <Mail className="size-5 text-gold-300" aria-hidden="true" />
+                <a href={`mailto:${business.contact.email}`} className="inline-flex min-h-11 items-center hover:text-gold-300">{business.contact.email}</a>
+              </li>
+            )}
           </ul>
           <div className="card p-6">
             <h2 className="flex items-center gap-2 font-bold">

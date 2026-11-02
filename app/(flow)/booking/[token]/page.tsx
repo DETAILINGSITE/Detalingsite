@@ -11,6 +11,7 @@ import { getDb } from "@/db/client";
 import * as s from "@/db/schema";
 import { STATUS_LABELS } from "@/lib/domain/booking-state";
 import { googleCalendarUrl } from "@/lib/domain/ics";
+import { emailConfigured } from "@/lib/env";
 import { formatDuration, formatMoney } from "@/lib/domain/money";
 import { canReschedule } from "@/lib/domain/policy";
 import { formatDateTimeLong } from "@/lib/domain/time";
@@ -76,7 +77,11 @@ export default async function BookingPage({ params, searchParams }: { params: Pr
           <p className="text-lg text-fg-muted">
             Booking <strong className="text-fg">{booking.number}</strong> · {STATUS_LABELS[booking.status]}
           </p>
-          {isNew && !cancelled && <p className="text-fg-muted">We've emailed your confirmation{booking.customerId ? "" : ""}. Save this page to manage your booking.</p>}
+          {isNew && !cancelled && (
+            <p className="text-fg-muted">
+              {emailConfigured() ? "We've emailed your confirmation." : `We'll contact you to confirm. Questions? Call ${business.contact.phoneDisplay}.`} Save this page to manage your booking.
+            </p>
+          )}
         </div>
 
         <dl className="card grid gap-4 p-6 sm:grid-cols-2">

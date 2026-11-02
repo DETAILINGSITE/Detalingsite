@@ -111,7 +111,7 @@ export const seedCityPages = [
   { slug: "the-woodlands", city: "The Woodlands", region: "TX", zoneIndex: 2 },
 ].map((c) => ({
   ...c,
-  introMd: `MJDETAILZ brings professional mobile car detailing to homes and offices in ${c.city}, TX. Choose a Bronze, Silver, Gold or VIP package and we'll come to you.`,
+  introMd: `MJ Elite Detailing brings professional mobile car detailing to homes and offices in ${c.city}, TX. Choose a Bronze, Silver, Gold or VIP package and we'll come to you.`,
 }));
 
 export const seedPromos = [

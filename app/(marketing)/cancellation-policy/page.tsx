@@ -26,9 +26,15 @@ export default async function CancellationPolicyPage() {
       </p>
       <h2>Cancelling</h2>
       <ul>
-        <li>Cancel <strong>{cancellation.windowHours} hours or more</strong> before your appointment: full refund of your deposit.</li>
-        <li>Cancel <strong>less than {cancellation.windowHours} hours</strong> before your appointment: {feeText}.</li>
-        <li>Missed appointments (no-shows) forfeit the deposit.</li>
+        {deposit.mode === "none" ? (
+          <li>Please cancel or reschedule at least <strong>{cancellation.windowHours} hours</strong> before your appointment so we can offer the time to someone else.</li>
+        ) : (
+          <>
+            <li>Cancel <strong>{cancellation.windowHours} hours or more</strong> before your appointment: full refund of your deposit.</li>
+            <li>Cancel <strong>less than {cancellation.windowHours} hours</strong> before your appointment: {feeText}.</li>
+            <li>Missed appointments (no-shows) forfeit the deposit.</li>
+          </>
+        )}
       </ul>
       <h2>Rescheduling</h2>
       <p>

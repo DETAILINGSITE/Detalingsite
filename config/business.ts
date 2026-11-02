@@ -14,16 +14,16 @@ import type { BusinessHoursRow, OperationalSettings } from "@/lib/domain/setting
 import { ph } from "./placeholder";
 
 export const business = {
-  name: "MJDETAILZ",
-  legalName: ph("MJDETAILZ", "brand.legalName", "Legal entity name for terms/privacy (add LLC/Inc. if registered)"),
+  name: "MJ Elite Detailing",
+  legalName: ph("MJ Elite Detailing", "brand.legalName", "Legal entity name for terms/privacy (add LLC/Inc. if registered)"),
   tagline: "More than just a clean. It's an elite detail.",
   description: ph(
     "Premium mobile car detailing in Houston, TX: maintenance washes, deep interior refreshes, full details and showroom finishes. Book online in minutes.",
     "brand.description",
     "Default meta description (≈155 characters)",
   ),
-  /** Short code used in booking numbers, e.g. DS-7K3QX. */
-  bookingPrefix: "DS",
+  /** Short code used in booking numbers, e.g. MJ-7K3QX. */
+  bookingPrefix: "MJ",
   logo: {
     src: ph("/brand/logo.svg", "brand.logo", "SVG logo in /public/brand (light + dark friendly)"),
     width: 168,
@@ -50,7 +50,7 @@ export const business = {
 
   /** Physical shop. Set `enabled: false` for mobile-only businesses (address is then hidden in JSON-LD). */
   shop: {
-    // MJDETAILZ is 100% mobile for now. Set to true (or SHOP_ENABLED=1, used by the e2e suite) once
+    // MJ Elite Detailing is 100% mobile for now. Set to true (or SHOP_ENABLED=1, used by the e2e suite) once
     // there's a shop, and set Service mode in Admin → Settings.
     enabled: process.env.SHOP_ENABLED === "1",
     address: ph(
