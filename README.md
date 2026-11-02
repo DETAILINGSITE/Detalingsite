@@ -72,9 +72,9 @@ To reproduce the full verification report locally: start the production test ser
 
 1. Create a Postgres database (Neon via the Vercel Marketplace works well; PG 17+, `btree_gist` and `citext` are available).
 2. Import the repo in Vercel and add the environment variables from `.env.example` (Production).
-3. `vercel.json` runs `pnpm db:migrate` before each build and schedules `/api/cron/tick` every 5 minutes.
-   - **This needs a Vercel Pro plan.** Hobby only allows daily cron.
-   - Bookings stay correct without cron, but reminders would be late.
+3. `vercel.json` runs `scripts/vercel-build.sh` (migrate, optional seed/owner bootstrap, build) and schedules `/api/cron/tick` once a day, which the Hobby plan allows.
+   - First deploy: set `SEED_ON_BUILD=1`, `BOOTSTRAP_ADMIN_EMAIL` and `ADMIN_PASSWORD` (12+ characters) to seed the catalog and create the owner login. Remove `ADMIN_PASSWORD` afterwards.
+   - On Vercel Pro, change the schedule to `*/5 * * * *` so reminders, hold expiry and review requests run every 5 minutes. Bookings stay correct either way; only the timing of messages changes.
 4. Stripe → Developers → Webhooks: add `https://YOUR-DOMAIN/api/stripe/webhook` with these events, then copy the signing secret into `STRIPE_WEBHOOK_SECRET`:
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`

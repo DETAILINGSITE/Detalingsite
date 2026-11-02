@@ -13,6 +13,8 @@ export async function resetDb(opts: { hours?: { weekday: number; opens: string; 
   resetEnvCache();
   await db().execute(sql`TRUNCATE resource_allocations, booking_events, payments, outbox, leads, quote_photos, funnel_events, bookings, quote_requests, customers, webhook_events, rate_limits, cron_runs RESTART IDENTITY CASCADE`);
   await seed(db(), { reset: true });
+  // The business has one crew; tests also cover running two at once.
+  await db().insert(s.resources).values({ name: "Mobile crew 2", type: "mobile_crew", color: "#5b8def", sort: 1 });
   // Tests use a fixed timezone and simple Mon–Sat 08:00–18:00 hours unless overridden.
   await db().delete(s.businessHours);
   await db().insert(s.businessHours).values(
@@ -22,7 +24,7 @@ export async function resetDb(opts: { hours?: { weekday: number; opens: string; 
   const [row] = await db().select().from(s.settings).where(eq(s.settings.id, 1));
   await db()
     .update(s.settings)
-    .set({ data: { ...row!.data, timezone: "America/Chicago", minLeadHours: 0, maxDaysAhead: 120, serviceMode: "both", ...(opts.settings ?? {}) } as NonNullable<typeof row>["data"] })
+    .set({ data: { ...row!.data, timezone: "America/Chicago", minLeadHours: 0, maxDaysAhead: 120, serviceMode: "both", deposit: { mode: "fixed", valueCents: 5000 }, ...(opts.settings ?? {}) } as NonNullable<typeof row>["data"] })
     .where(eq(s.settings.id, 1));
 }
 

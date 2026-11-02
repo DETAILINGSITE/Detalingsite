@@ -30,21 +30,21 @@ export const seedFaqs = [
     featured: true,
     question: "How do I book, and do I need an account?",
     answerMd:
-      "Pick your package, vehicle and a time online — it takes a few minutes and you don't need an account. You'll get a confirmation by email (and text, if you opt in) with a link to manage your booking.",
+      "Pick your package, vehicle and a time online. It takes a few minutes and you don't need an account. Save your booking page to manage it later, and we'll contact you to confirm.",
   },
   {
     category: "Booking",
     featured: true,
     question: "Do you take a deposit?",
     answerMd:
-      "We take a small deposit when you book to hold your time. It's applied to your total, and the balance is due when the work is done. The exact amount is shown before you pay.",
+      "Not right now. You don't pay anything online. Payment is due when the work is done.",
   },
   {
     category: "Booking",
     featured: false,
     question: "Can I reschedule or cancel?",
     answerMd:
-      "Yes — use the link in your confirmation. Changes made outside the cancellation window are free. Late cancellations may forfeit the deposit; see our cancellation policy for the details.",
+      "Yes, use the link on your booking page or call us. Please give us at least 24 hours' notice so we can offer the time to someone else.",
   },
   {
     category: "Mobile service",

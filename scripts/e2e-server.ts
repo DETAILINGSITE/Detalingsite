@@ -30,7 +30,8 @@ await p2.query(`UPDATE settings SET data = jsonb_set(jsonb_set(data, '{minLeadHo
 // The product is mobile-only; the suite still covers the in-shop path, so tests run with shop mode on.
 // A shared preview (PREVIEW_MODE) keeps the real mobile-only defaults.
 const shopTests = process.env.PREVIEW_MODE !== "1";
-if (shopTests) await p2.query(`UPDATE settings SET data = jsonb_set(data, '{serviceMode}', '"both"') WHERE id = 1`);
+if (shopTests) await p2.query(`INSERT INTO resources(name,type,color,sort) VALUES ('Mobile crew 2','mobile_crew','#5b8def',1)`);
+if (shopTests) await p2.query(`UPDATE settings SET data = jsonb_set(jsonb_set(data, '{serviceMode}', '"both"'), '{deposit}', '{"mode":"fixed","valueCents":5000}') WHERE id = 1`);
 // A shared preview link gets a random admin password (saved locally, git-ignored), not the
 // fixed test password that's in this repo.
 const adminPassword = process.env.PREVIEW_MODE === "1" ? (await import("node:crypto")).randomBytes(12).toString("base64url") : "e2e-admin-password-123";

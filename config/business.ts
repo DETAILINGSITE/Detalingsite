@@ -183,7 +183,6 @@ export const business = {
     resources: ph(
       [
         { name: "Mobile crew 1", type: "mobile_crew" as const, color: "#c8a24a" },
-        { name: "Mobile crew 2", type: "mobile_crew" as const, color: "#5b8def" },
         { name: "Shop bay 1", type: "shop_bay" as const, color: "#3fb68b" },
       ],
       "ops.resources",
@@ -244,7 +243,7 @@ export const business = {
         paymentHoldMinutes: 15,
         travelCountsAgainstHours: false,
         base: { label: "Houston base", lat: 29.7604, lng: -95.3698 },
-        deposit: { mode: "fixed", valueCents: 5000 },
+        deposit: { mode: "none" },
         cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" } },
         reschedule: { minHoursBefore: 24, maxCount: 2 },
         taxRateBps: 0,
