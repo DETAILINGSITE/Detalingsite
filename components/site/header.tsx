@@ -39,7 +39,8 @@ export function Header({ minimal = false }: { minimal?: boolean }) {
             className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden md:inline-flex")}
           >
             <Phone aria-hidden="true" />
-            <span className="tabular">{business.contact.phoneDisplay}</span>
+            {/* Logo, nav and full number don't fit on small laptops: icon only there. */}
+            <span className="tabular lg:max-xl:sr-only">{business.contact.phoneDisplay}</span>
           </a>
           <Link href="/book" className={cn(buttonVariants({ size: "sm" }), "hidden sm:inline-flex")}>
             Book Now
