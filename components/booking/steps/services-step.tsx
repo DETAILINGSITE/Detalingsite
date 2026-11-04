@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/field";
 import { RadioCards } from "@/components/ui/radio-cards";
 import { noteText } from "@/lib/booking/summary";
-import { formatDuration, formatMoney } from "@/lib/domain/money";
+import { formatDuration } from "@/lib/domain/money";
 import { describePriceError, durationForItem, price, priceForItem } from "@/lib/domain/pricing";
+import { priceLabel } from "@/lib/site/pricing-labels";
 import { StepShell } from "../step-shell";
 import type { StepProps } from "./types";
 
@@ -36,7 +37,8 @@ export function ServicesStep({ state, dispatch, data, onNext, onBack, onSwitchTo
     if (!size) return "";
     const item = kind === "package" ? data.catalog.packages.find((p) => p.id === id) : data.catalog.services.find((s) => s.id === id);
     if (!item) return "";
-    return `${formatMoney(priceForItem(item, size, data.pricing.priceRoundingCents))} · ${formatDuration(durationForItem(item, size))}`;
+    // Same wording as the pricing page ("$75", "from $30"), so the price a customer saw there reads the same here.
+    return `${priceLabel(item.slug, size.id, priceForItem(item, size, data.pricing.priceRoundingCents))} · ${formatDuration(durationForItem(item, size))}`;
   };
 
   const toggle = (list: "serviceIds" | "addonIds", id: string, on: boolean) =>

@@ -1,12 +1,9 @@
-"use client";
 import { Check } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
 import { formatDuration } from "@/lib/domain/money";
-import { priceLabel } from "@/lib/site/pricing-labels";
-// clsx, not cn(): no conflicting utilities here, and it keeps tailwind-merge off the client.
+import { priceLabel, shortSizeLabel } from "@/lib/site/pricing-labels";
 import { clsx as cn } from "clsx";
 
 /** Each tier has its own accent, matching the price flyer. Unknown packages fall back to the brand colour. */
@@ -29,37 +26,22 @@ export interface PackageCardData {
   bySize: Record<string, { priceCents: number; durationMin: number }>;
 }
 
-/** Tiered packages with a live vehicle-size toggle (prices come from the cached catalog). */
+/** Tiered packages. Every card shows the price for each vehicle size side by side, like the price flyer. */
 export function PackagesPricing({ packages, sizes }: { packages: PackageCardData[]; sizes: { id: string; label: string }[] }) {
-  const [size, setSize] = useState(sizes[0]?.id ?? "sedan");
   const anyPlaceholder = packages.some((p) => p.isPlaceholder);
+  const firstSize = sizes[0]?.id;
 
   return (
     <div>
-      <fieldset className="mx-auto grid w-full max-w-sm grid-cols-2 gap-1 rounded-3xl border border-white/10 bg-ink-850 p-1 sm:flex sm:w-fit sm:max-w-none sm:flex-wrap sm:justify-center sm:rounded-full">
-        <legend className="sr-only">Vehicle size</legend>
-        {sizes.map((z) => (
-          <label
-            key={z.id}
-            className={cn(
-              "relative inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full px-4 text-center text-sm font-semibold transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold-300",
-              size === z.id ? "bg-[var(--brand)] text-ink-950" : "text-fg-muted hover:text-fg",
-            )}
-          >
-            <input type="radio" name="pkg-size" value={z.id} checked={size === z.id} onChange={() => setSize(z.id)} className="sr-only" />
-            {z.label}
-          </label>
-        ))}
-      </fieldset>
       {anyPlaceholder && (
-        <p className="mt-4 text-center">
+        <p className="text-center">
           <PlaceholderBadge label="Sample prices — set real prices in admin" />
         </p>
       )}
       <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {packages.map((p) => {
-          const entry = p.bySize[size];
           const tier = tierColor(p.slug);
+          const firstEntry = firstSize ? p.bySize[firstSize] : undefined;
           return (
             <li
               key={p.id}
@@ -85,13 +67,19 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
                 </h3>
                 <p className="mt-1 text-sm text-fg-muted">{p.tagline}</p>
               </div>
-              <p aria-live="polite" className="flex items-baseline gap-2">
-                <span className="text-sm text-fg-muted">from</span>
-                <span key={size} className="tabular animate-fade-in font-display text-5xl font-bold">
-                  {entry ? priceLabel(p.slug, size, entry.priceCents) : "—"}
-                </span>
-              </p>
-              <p className="-mt-3 text-sm text-fg-subtle">About {entry ? formatDuration(entry.durationMin) : "—"}</p>
+              {/* Side by side on phones and tablets; stacked rows once four narrow cards share a line. */}
+              <dl className="grid grid-cols-2 gap-3 lg:grid-cols-1 lg:gap-2">
+                {sizes.map((z) => {
+                  const entry = p.bySize[z.id];
+                  return (
+                    <div key={z.id} className="rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-2.5 lg:flex lg:items-center lg:justify-between lg:gap-3">
+                      <dt className="text-xs font-semibold tracking-wide text-fg-muted uppercase">{shortSizeLabel(z.id, z.label)}</dt>
+                      <dd className="tabular mt-1 font-display text-3xl font-bold lg:mt-0 lg:text-2xl">{entry ? priceLabel(p.slug, z.id, entry.priceCents) : "—"}</dd>
+                    </div>
+                  );
+                })}
+              </dl>
+              <p className="-mt-3 text-sm text-fg-subtle">About {firstEntry ? formatDuration(firstEntry.durationMin) : "—"}</p>
               <ul className="flex flex-col gap-2.5 text-sm">
                 {p.includedNames.map((n) => (
                   <li key={n} className="flex gap-2.5">
@@ -101,7 +89,7 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
                 ))}
               </ul>
               <Link
-                href={`/book?pkg=${p.slug}&size=${size}`}
+                href={`/book?pkg=${p.slug}`}
                 className={cn(buttonVariants({ variant: p.featured ? "primary" : "secondary" }), "mt-auto")}
                 style={
                   p.featured

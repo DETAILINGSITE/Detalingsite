@@ -11,8 +11,8 @@ import { PageTransition } from "@/components/motion/page-transition";
 import { JsonLd } from "@/components/seo/json-ld";
 import { buttonVariants } from "@/components/ui/button";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
-import { formatDuration, formatMoney } from "@/lib/domain/money";
-import { priceLabel } from "@/lib/site/pricing-labels";
+import { formatDuration } from "@/lib/domain/money";
+import { itemPriceLabel, priceLabel } from "@/lib/site/pricing-labels";
 import { getPublicCatalog, getPublicContent } from "@/lib/server/data/public";
 import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/seo/jsonld";
 import { pageMetadata } from "@/lib/seo/metadata";
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!s) return {};
   return pageMetadata({
     title: s.seoTitle ?? s.name,
-    description: s.seoDescription ?? `${s.summary} ${s.quoteOnly ? "Quoted per vehicle." : `From ${formatMoney(s.fromCents)}.`}`,
+    description: s.seoDescription ?? `${s.summary} ${s.quoteOnly ? "Quoted per vehicle." : `${itemPriceLabel(s.slug, s.bySize, { capitalize: true })}.`}`,
     path: `/services/${s.slug}`,
   });
 }
@@ -61,7 +61,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           <h1 className="text-[clamp(2.2rem,5vw,4.2rem)] leading-[1] font-extrabold">{s.name}</h1>
           <p className="text-lg leading-relaxed text-fg-muted">{s.summary}</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <span className="font-semibold text-gold-300">{s.quoteOnly ? "Quoted per vehicle" : `From ${formatMoney(s.fromCents)}`}</span>
+            <span className="font-semibold text-gold-300">{s.quoteOnly ? "Quoted per vehicle" : itemPriceLabel(s.slug, s.bySize, { capitalize: true })}</span>
             <span className="inline-flex items-center gap-1.5 text-fg-muted">
               <Clock className="size-4" aria-hidden="true" /> About {formatDuration(s.baseDurationMin)}
             </span>
@@ -136,7 +136,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                   {addons.map((a) => (
                     <li key={a.id} className="flex justify-between gap-4 py-3">
                       <Link href={`/services/${a.slug}`} className="hover:text-gold-300">{a.name}</Link>
-                      <span className="tabular text-fg-muted">from {formatMoney(a.fromCents)}</span>
+                      <span className="tabular text-fg-muted">{itemPriceLabel(a.slug, a.bySize)}</span>
                     </li>
                   ))}
                 </ul>
