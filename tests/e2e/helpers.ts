@@ -5,11 +5,14 @@ const extraContexts: BrowserContext[] = [];
 /**
  * A second, independent visitor (own cookies and storage) with the current project's device
  * emulation; browser.newPage() would give a desktop page even in the mobile projects.
+ * Carries the configured time zone and locale too (see playwright.config.ts).
  */
 export async function newTab(browser: Browser): Promise<Page> {
   const u = test.info().project.use;
   const ctx = await browser.newContext({
     baseURL: process.env.BASE_URL ?? u.baseURL,
+    timezoneId: u.timezoneId,
+    locale: u.locale,
     viewport: u.viewport,
     userAgent: u.userAgent,
     deviceScaleFactor: u.deviceScaleFactor,

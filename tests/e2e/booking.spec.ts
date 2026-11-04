@@ -129,7 +129,7 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   const first = a.getByRole("radiogroup", { name: /available times/i }).getByRole("radio").last();
   // The slot list's legend names the day ("Friday, October 23, 2026"); B selects the same day.
   const legend = (await a.locator("fieldset legend").first().textContent()) ?? "";
-  const [, month, dayNum] = /([A-Z][a-z]+) (\d{1,2}),/.exec(legend) ?? [];
+  const [, month, dayNum, year] = /([A-Z][a-z]+) (\d{1,2}), (\d{4})/.exec(legend) ?? [];
   expect(month).toBeTruthy();
   const dayName = new RegExp(`${month} ${dayNum}(st|nd|rd|th),`);
   const time = /\d{1,2}:\d{2} [AP]M/.exec(await first.ariaSnapshot())?.[0] ?? "";
@@ -142,7 +142,13 @@ test("E2E-07 slot hold expires → the time becomes available again", async ({ b
   await startService(b, { pkg: "Bronze" });
   await b.getByRole("radio", { name: /at your shop/i }).click();
   await next(b);
-  await b.getByRole("grid").getByRole("button", { name: dayName }).click();
+  // The calendar opens on the current month, but once earlier tests (and projects) have filled
+  // October, A's first open day is in a later month: page B's calendar forward to it.
+  await expect(b.getByRole("grid")).toBeVisible();
+  for (let i = 0; i < 3 && !(await b.getByRole("grid", { name: `${month} ${year}` }).isVisible()); i++) {
+    await b.getByRole("button", { name: /next month/i }).click();
+  }
+  await b.getByRole("grid", { name: `${month} ${year}` }).getByRole("button", { name: dayName }).click();
   await expect(b.getByRole("radiogroup", { name: /available times/i }).getByRole("radio", { name: new RegExp(`^${time}`) })).toBeVisible();
 });
 
