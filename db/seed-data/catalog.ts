@@ -135,9 +135,9 @@ export const seedServices: SeedService[] = [
     category: "detail-packages",
     kind: "service",
     name: "VIP — Showroom finish",
-    summary: "Everything in Gold, plus one-step paint correction and a 1-year ceramic coating. Trucks & SUVs start at $550+.",
+    summary: "Everything in Gold, plus one-step paint correction and a 1-year ceramic coating.",
     descriptionMd:
-      "The full showroom treatment. On top of the Gold full detail: iron decontamination, a one-step paint correction, a 1-year ceramic coating, the engine bay detailed, headlights restored if needed, a premium finishing inspection and a free maintenance wash within 30 days. Cars start at $450; trucks and SUVs start at $550+.",
+      "The full showroom treatment. On top of the Gold full detail: iron decontamination, a one-step paint correction, a 1-year ceramic coating, the engine bay detailed, headlights restored if needed, a premium finishing inspection and a free maintenance wash within 30 days. Cars are $450; trucks and SUVs are $550.",
     includes: [
       "Everything in Gold",
       "One-step paint correction",

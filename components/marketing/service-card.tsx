@@ -1,14 +1,15 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { ViewTransition } from "react";
-import { formatDuration, formatMoney } from "@/lib/domain/money";
+import { formatDuration } from "@/lib/domain/money";
+import { itemPriceLabel } from "@/lib/site/pricing-labels";
 import { ServiceArt } from "./service-art";
 
 export interface ServiceCardData {
   slug: string;
   name: string;
   summary: string;
-  fromCents: number;
+  bySize: Record<string, { priceCents: number }>;
   baseDurationMin: number;
   quoteOnly: boolean;
   categorySlug: string | null;
@@ -34,9 +35,10 @@ export function ServiceCard({ s }: { s: ServiceCardData }) {
           <ArrowUpRight className="size-5 shrink-0 text-fg-subtle transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-gold-300" aria-hidden="true" />
         </div>
         <p className="text-sm leading-relaxed text-fg-muted">{s.summary}</p>
-        <p className="mt-auto pt-2 text-sm font-semibold text-gold-300">
-          {s.quoteOnly ? "Quoted per vehicle" : `From ${formatMoney(s.fromCents)} · ${formatDuration(s.baseDurationMin)}`}
-        </p>
+        <div className="mt-auto pt-2 text-sm">
+          <p className="font-semibold text-gold-300">{s.quoteOnly ? "Quoted per vehicle" : itemPriceLabel(s.slug, s.bySize, { capitalize: true })}</p>
+          <p className="mt-0.5 text-fg-subtle">About {formatDuration(s.baseDurationMin)}</p>
+        </div>
       </div>
     </Link>
   );

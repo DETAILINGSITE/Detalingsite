@@ -116,7 +116,7 @@ export const business = {
   /** VIP maintenance membership (shown when flags.memberships is on). From the owner's price flyer. */
   membership: {
     name: "VIP Maintenance Membership",
-    priceLabel: "$1,200 – $1,500",
+    priceLabel: "$1,200–$1,500",
     period: "per year",
     perks: [
       "Up to 4 maintenance details per month (1 per week)",
