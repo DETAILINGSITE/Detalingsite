@@ -275,10 +275,14 @@ export function startMotion(): MotionHandle {
         SplitText.create(el, {
           type: "words",
           autoSplit: true,
+          // The words stay real text in reading order: "auto" would put aria-label on the <p>,
+          // which ARIA doesn't allow on a paragraph.
+          aria: "none",
           onSplit: (self) =>
             gsap.fromTo(
               self.words,
-              { opacity: 0.16 },
+              // Dim, not invisible: 0.4 keeps large bold text above 3:1 contrast before it lights up.
+              { opacity: 0.4 },
               safeVars({ opacity: 1, ease: "none", stagger: 0.1, scrollTrigger: { trigger: el, start: "top 80%", end: "bottom 45%", scrub: true } }),
             ),
         });
