@@ -7,9 +7,50 @@ import { eq } from "drizzle-orm";
 import { business } from "@/config/business";
 import type { Db } from "@/db/client";
 import * as s from "@/db/schema";
+import { formatMoney } from "@/lib/domain/money";
 import { env, siteUrl } from "@/lib/env";
+import { formatPhoneForDisplay } from "@/lib/validation/booking";
 import type { HandlerResult } from "../outbox";
 import { formatAddress } from "../booking/location";
+
+type Booking = typeof s.bookings.$inferSelect;
+type Customer = Pick<typeof s.customers.$inferSelect, "name" | "email" | "phoneE164">;
+
+/**
+ * The Google Calendar event for a booking: everything the owner needs on the job without opening
+ * admin (who, how to reach them, the car, what to do, what's still owed, where).
+ */
+export function calendarEvent(b: Booking, customer: Customer | null | undefined, site: string) {
+  const services = b.priceSnapshot.lines.filter((l) => ["package", "service", "quote"].includes(l.kind)).map((l) => l.label);
+  const addons = b.priceSnapshot.lines.filter((l) => l.kind === "addon").map((l) => l.label);
+  const car = [b.vehicleYear, b.vehicleColor, b.vehicleMake, b.vehicleModel].filter(Boolean).join(" ");
+  const vehicle = car ? `${car} (${b.priceSnapshot.sizeLabel})` : b.priceSnapshot.sizeLabel;
+  const where = b.locationType === "mobile" ? formatAddress(b.address) : "Shop";
+  const balance = b.totalCents - b.depositCents - b.balancePaidCents;
+  const description = [
+    customer?.name && `Customer: ${customer.name}`,
+    customer?.phoneE164 && `Phone: ${formatPhoneForDisplay(customer.phoneE164)}`,
+    customer?.email && `Email: ${customer.email}`,
+    `Vehicle: ${vehicle}`,
+    `Services: ${services.join(", ") || "—"}`,
+    addons.length > 0 && `Add-ons: ${addons.join(", ")}`,
+    `Total: ${formatMoney(b.totalCents)} · Deposit paid: ${formatMoney(b.depositCents)} · Balance due: ${formatMoney(Math.max(0, balance))}`,
+    `Where: ${where}`,
+    b.accessNotes && `Access notes: ${b.accessNotes}`,
+    "",
+    `Booking ${b.number}: ${site}/admin/bookings/${b.id}`,
+  ]
+    .filter((x) => x !== false && x !== null && x !== undefined)
+    .join("\n");
+  return {
+    id: eventId(b.id),
+    summary: `${services.join(", ") || "Booking"}${customer?.name ? ` — ${customer.name}` : ""}`,
+    location: where,
+    description,
+    start: { dateTime: b.startsAt.toISOString(), timeZone: b.timezone },
+    end: { dateTime: b.endsAt.toISOString(), timeZone: b.timezone },
+  };
+}
 
 async function accessToken(): Promise<string | null> {
   const e = env();
@@ -47,14 +88,8 @@ export async function syncCalendar(db: Db, bookingId: string, action: "upsert" |
   }
   const [b] = await db.select().from(s.bookings).where(eq(s.bookings.id, bookingId));
   if (!b) return { status: "skipped" };
-  const body = {
-    id: eventId(b.id),
-    summary: `${b.number} — ${b.priceSnapshot.lines.filter((l) => ["package", "service", "quote"].includes(l.kind)).map((l) => l.label).join(", ")}`,
-    location: b.locationType === "mobile" ? formatAddress(b.address) : "Shop",
-    description: `${siteUrl()}/admin/bookings/${b.id}`,
-    start: { dateTime: b.startsAt.toISOString() },
-    end: { dateTime: b.endsAt.toISOString() },
-  };
+  const [customer] = b.customerId ? await db.select().from(s.customers).where(eq(s.customers.id, b.customerId)) : [];
+  const body = calendarEvent(b, customer, siteUrl());
   let res = await fetch(`${base}/${body.id}`, { method: "PUT", headers, body: JSON.stringify(body) });
   if (res.status === 404) res = await fetch(base, { method: "POST", headers, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(`GCal upsert ${res.status}`);
