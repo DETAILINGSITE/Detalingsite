@@ -130,7 +130,9 @@ export const business = {
     memberships: true,
     giftCards: false,
     exitIntentOffer: false,
-    googleCalendarSync: false,
+    /** Confirmed bookings go to the owner's Google Calendar. Stays off until GCAL_ENABLED=1 and the
+     *  Google keys are set in the host's environment (see docs/GOOGLE_CALENDAR.md). */
+    googleCalendarSync: true,
   },
 
   giftCards: {
@@ -167,6 +169,7 @@ export const business = {
         { weekday: 4, opens: "08:00", closes: "18:00" },
         { weekday: 5, opens: "08:00", closes: "18:00" },
         { weekday: 6, opens: "08:00", closes: "16:00" },
+        { weekday: 7, opens: "08:00", closes: "18:00" },
       ],
       "ops.hours",
       "Opening hours per weekday",
