@@ -26,8 +26,8 @@ describe("U-AVAIL availability engine", () => {
   it("U-AVAIL-01 business hours: first and last start for a 60-minute job (Tue 2026-11-03, CST)", () => {
     const l = labels({});
     expect(l[0]).toBe("8:00 AM");
-    expect(l.at(-1)).toBe("5:00 PM");
-    expect(l).toHaveLength(19);
+    expect(l.at(-1)).toBe("5:30 PM");
+    expect(l).toHaveLength(20);
     expect(starts({})[0]).toBe("2026-11-03T14:00:00.000Z"); // 8am CST = UTC-6
   });
 
@@ -36,10 +36,12 @@ describe("U-AVAIL availability engine", () => {
     expect(starts({ blackoutDates: ["2026-11-03"] })).toHaveLength(0);
   });
 
-  it("U-AVAIL-03 job longer than the remaining hours is not offered (scenario 14)", () => {
-    const l = labels({ durationMin: 300 });
-    expect(l.at(-1)).toBe("1:00 PM");
-    expect(starts({ durationMin: 11 * 60 })).toHaveLength(0);
+  it("U-AVAIL-03 long jobs get every start time from opening to closing (owner's choice: they may run past closing)", () => {
+    const l = labels({ durationMin: 450 });
+    expect(l[0]).toBe("8:00 AM");
+    expect(l.at(-1)).toBe("5:30 PM");
+    expect(l).toHaveLength(20);
+    expect(computeAvailability(input({ durationMin: 450 }))[0]!.slots.at(-1)!.end).toBe("2026-11-04T07:00:00.000Z"); // 5:30 PM + 7½ h = 1:00 AM CST
   });
 
   it("U-AVAIL-04 capacity: two crews, one busy → capacity 1; both busy → slot gone", () => {
@@ -90,7 +92,7 @@ describe("U-AVAIL availability engine", () => {
     expect(new Set(slots.map((s) => s.label)).size).toBe(slots.length);
     expect(slots.find((s) => s.label === "1:00 AM")!.start).toBe("2026-11-01T06:00:00.000Z"); // first (CDT) occurrence
     expect(slots.find((s) => s.label === "3:00 AM")!.start).toBe("2026-11-01T09:00:00.000Z"); // CST
-    expect(slots.at(-1)!.label).toBe("10:30 PM");
+    expect(slots.at(-1)!.label).toBe("11:30 PM");
   });
 
   it("U-AVAIL-10 DST spring-forward (2027-03-14): nonexistent 2:00–2:59 never offered", () => {

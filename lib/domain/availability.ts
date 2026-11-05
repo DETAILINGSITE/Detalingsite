@@ -114,13 +114,14 @@ export function computeAvailability(input: AvailabilityInput): DayAvailability[]
         const openMin = hhmmToMinutes(iv.opens);
         const closeMin = hhmmToMinutes(iv.closes);
         const openMs = wallTimeToEpochLenient(date, openMin, tz);
-        const closeMs = wallTimeToEpochLenient(date, closeMin, tz);
 
+        // Every start time from opening to closing is offered; the owner chose to let a long job
+        // run past closing rather than hide the later start times.
         for (let m = openMin; m < closeMin; m += s.slotIntervalMin) {
           const start = wallTimeToEpoch(date, m, tz);
           if (start === null) continue; // nonexistent local time (spring-forward gap)
           const end = start + input.durationMin * MINUTE;
-          if (start < earliest || end > closeMs) continue;
+          if (start < earliest) continue;
           if (s.travelCountsAgainstHours && start - input.travelMin * MINUTE < openMs) continue;
 
           const blocked = blockedRange(start, input.durationMin, input.travelMin, s.bufferMin);
