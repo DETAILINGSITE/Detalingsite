@@ -243,8 +243,10 @@ test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
   await startService(page, { pkg: "Bronze" });
   await page.getByRole("radio", { name: /at your shop/i }).click();
   await next(page);
-  // Sunday 2026-10-25 is closed in seed hours.
-  await expect(page.getByRole("button", { name: /sunday, october 25/i })).toBeDisabled();
+  // Open 7 days a week, so check a seeded holiday closure: Thanksgiving, Thursday 2026-11-26.
+  await page.getByRole("button", { name: /next month/i }).click();
+  await expect(page.getByRole("button", { name: /november 26/i })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /november 25/i })).toBeEnabled();
 });
 
 test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {
