@@ -39,6 +39,8 @@ jobs:
         if: always()
         with:
           name: reports
+          # .lighthouseci-* are dot-directories, which upload-artifact skips unless asked.
+          include-hidden-files: true
           path: |
             docs/VERIFICATION.md
             playwright-report

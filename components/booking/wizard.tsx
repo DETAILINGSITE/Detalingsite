@@ -6,6 +6,7 @@
  * Transitions typed "step-forward" / "step-back".
  */
 import { CheckCircle2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { addTransitionType, startTransition, useEffect, useMemo, useReducer, useRef, useState, ViewTransition } from "react";
@@ -32,15 +33,49 @@ import { price } from "@/lib/domain/pricing";
 import type { ContactData } from "@/lib/validation/booking";
 import { HoldBanner } from "./hold-banner";
 import { Progress } from "./progress";
-import { ContactStep } from "./steps/contact-step";
-import { CustomStep } from "./steps/custom-step";
-import { LocationStep } from "./steps/location-step";
 import { PathStep } from "./steps/path-step";
-import { ReviewStep } from "./steps/review-step";
-import { ScheduleStep } from "./steps/schedule-step";
-import { ServicesStep } from "./steps/services-step";
-import { VehicleStep } from "./steps/vehicle-step";
 import { Summary } from "./summary";
+
+/*
+ * Only the first step ships with the page. The later steps bring zod, react-hook-form, the date
+ * picker, address autocomplete and the photo uploader, and evaluating all of that up front was one
+ * long main-thread task on a phone. They're still server-rendered (a deep link to ?step=schedule
+ * renders fully), and preloadSteps() fetches them on the visitor's first interaction.
+ */
+const stepModules = {
+  vehicle: () => import("./steps/vehicle-step"),
+  services: () => import("./steps/services-step"),
+  custom: () => import("./steps/custom-step"),
+  location: () => import("./steps/location-step"),
+  schedule: () => import("./steps/schedule-step"),
+  contact: () => import("./steps/contact-step"),
+  review: () => import("./steps/review-step"),
+};
+const stepLoading = () => <StepPlaceholder />;
+const VehicleStep = dynamic(() => stepModules.vehicle().then((m) => m.VehicleStep), { loading: stepLoading });
+const ServicesStep = dynamic(() => stepModules.services().then((m) => m.ServicesStep), { loading: stepLoading });
+const CustomStep = dynamic(() => stepModules.custom().then((m) => m.CustomStep), { loading: stepLoading });
+const LocationStep = dynamic(() => stepModules.location().then((m) => m.LocationStep), { loading: stepLoading });
+const ScheduleStep = dynamic(() => stepModules.schedule().then((m) => m.ScheduleStep), { loading: stepLoading });
+const ContactStep = dynamic(() => stepModules.contact().then((m) => m.ContactStep), { loading: stepLoading });
+const ReviewStep = dynamic(() => stepModules.review().then((m) => m.ReviewStep), { loading: stepLoading });
+
+function StepPlaceholder() {
+  return (
+    <div aria-busy="true" className="flex flex-col gap-4">
+      <div className="h-8 w-56 animate-pulse rounded-lg bg-white/[0.06]" />
+      <div className="h-64 animate-pulse rounded-2xl bg-white/[0.04]" />
+      <span className="sr-only">Loading…</span>
+    </div>
+  );
+}
+
+let stepsPreloaded = false;
+function preloadSteps() {
+  if (stepsPreloaded) return;
+  stepsPreloaded = true;
+  for (const load of Object.values(stepModules)) void load().catch(() => {});
+}
 
 const uuid = () => crypto.randomUUID();
 
@@ -77,6 +112,19 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
   const [state, dispatch] = useReducer(reducer, null, () => fromInit(init, data));
   const [notice, setNotice] = useState<string | null>(init.quoteError ?? null);
   const lastStep = useRef<StepId | null>(null);
+
+  // Fetch the remaining steps once the visitor starts interacting, so moving on is instant.
+  useEffect(() => {
+    const EVENTS = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
+    const go = () => {
+      for (const e of EVENTS) window.removeEventListener(e, go);
+      preloadSteps();
+    };
+    for (const e of EVENTS) window.addEventListener(e, go, { passive: true, once: true });
+    return () => {
+      for (const e of EVENTS) window.removeEventListener(e, go);
+    };
+  }, []);
 
   // Hydrate from sessionStorage after mount (server render can't see it).
   useEffect(() => {
