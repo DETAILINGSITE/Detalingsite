@@ -3,9 +3,11 @@ import { business } from "@/config/business";
 import { isPlaceholder } from "@/config/placeholder";
 import { getPublicSchedule } from "@/lib/server/data/public";
 import { LEGAL, NAV, WEEKDAYS, formatHhmm } from "@/lib/site/nav";
+import { CtaLink } from "@/components/ui/cta-link";
 import { Logo } from "./logo";
 
-export async function Footer() {
+/** cta=false drops the "Book your detail" banner (the booking flow is already that page). */
+export async function Footer({ cta = true }: { cta?: boolean }) {
   const schedule = await getPublicSchedule();
   const cities = [...new Set(schedule.zones.flatMap((z) => z.cities))];
   const socials = [
@@ -17,8 +19,16 @@ export async function Footer() {
   ].filter((x): x is [string, string] => Boolean(x[1]));
 
   return (
-    <footer className="border-t border-white/[0.07] bg-ink-950 pb-[calc(var(--mobile-bar-h)+2rem)] md:pb-12">
-      <div className="container-site grid gap-10 pt-16 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="relative overflow-hidden border-t border-white/[0.07] bg-[#050607] pb-[calc(var(--mobile-bar-h)+2rem)] md:pb-12">
+      {cta && (
+        <div className="container-site flex flex-col items-start justify-between gap-8 border-b border-white/[0.07] pt-20 pb-14 md:flex-row md:items-end md:pt-28">
+          <p className="max-w-[16ch] text-[clamp(2.2rem,5vw,4.4rem)] leading-[0.95] font-bold tracking-[-0.035em] text-fg">
+            Let&apos;s make it <span className="serif electric font-normal">shine.</span>
+          </p>
+          <CtaLink href="/book">Book your detail</CtaLink>
+        </div>
+      )}
+      <div className={`container-site grid gap-10 md:grid-cols-2 lg:grid-cols-4 ${cta ? "pt-14" : "pt-16"}`}>
         <div className="flex flex-col gap-4">
           <Logo />
           <p className="max-w-xs text-sm leading-relaxed text-fg-muted">{business.tagline}</p>
@@ -63,7 +73,7 @@ export async function Footer() {
             <ul className="grid grid-cols-2 gap-x-4 text-sm text-fg-muted">
               {NAV.map((n) => (
                 <li key={n.href}>
-                  <Link href={n.href} className="inline-flex min-h-11 items-center hover:text-fg">{n.label}</Link>
+                  <Link href={n.href} className="inline-flex min-h-11 min-w-11 items-center hover:text-fg">{n.label}</Link>
                 </li>
               ))}
             </ul>
@@ -91,6 +101,13 @@ export async function Footer() {
           ))}
         </ul>
       </div>
+      {/* Oversized outline wordmark spanning the width (Archivo "MJ ELITE" is ~5.5em wide → 16.5vw ≈ 91vw). */}
+      <p
+        aria-hidden="true"
+        className="pointer-events-none mt-10 text-center font-display text-[min(16.5vw,21rem)] leading-[0.75] font-extrabold tracking-[-0.05em] whitespace-nowrap text-transparent select-none [-webkit-text-stroke:1px_rgb(140_196_255/0.18)] md:-mb-[0.12em]"
+      >
+        MJ ELITE
+      </p>
     </footer>
   );
 }

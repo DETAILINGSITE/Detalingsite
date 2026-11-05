@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { paymentsMode } from "@/lib/env";
 import { business } from "@/config/business";
 import { FinalCta } from "@/components/marketing/final-cta";
 import { MembershipCard } from "@/components/marketing/membership-card";
@@ -43,7 +44,7 @@ function PriceTable({
             {rows.map((r) => (
               <tr key={r.id} className="hover:bg-white/[0.02]">
                 <th scope="row" className="px-5 py-4 font-semibold">
-                  {r.href ? <Link href={r.href} className="hover:text-gold-300">{r.name}</Link> : r.name}
+                  {r.href ? <Link href={r.href} className="-my-2 inline-flex min-h-11 items-center hover:text-gold-300">{r.name}</Link> : r.name}
                 </th>
                 {sizes.map((z) => (
                   <td key={z.id} className="tabular px-5 py-4 text-fg-muted">
@@ -66,12 +67,14 @@ export default async function PricingPage() {
   const packageServiceIds = new Set(catalog.packages.flatMap((p) => p.serviceIds));
   const services = catalog.services.filter((s) => s.kind === "service" && !packageServiceIds.has(s.id));
   const addons = catalog.services.filter((s) => s.kind === "addon");
-  const deposit = catalog.deposit;
+  // No card payments configured (no Stripe keys) means no deposit is actually taken.
+  const deposit = paymentsMode() === "none" ? ({ mode: "none" } as const) : catalog.deposit;
+  const keep = catalog.cancellation.depositRefundable === false ? "Non-refundable, " : "";
 
   return (
     <PageTransition>
       <div className="container-site flex flex-col gap-14 py-16 md:py-24">
-        <SectionHeading as="h1" eyebrow="Pricing" title="Clear prices for every vehicle." intro="Prices are per vehicle and include all products and equipment. Heavy soiling or stains may add a surcharge, shown before you pay." />
+        <SectionHeading as="h1" eyebrow="Pricing" title="Clear prices for" accent="every vehicle." intro="Prices are per vehicle and include all products and equipment. Heavy soiling or stains may add a surcharge, shown before you pay." />
         {catalog.packages.some((p) => p.isPlaceholder) && <PlaceholderBadge label="Sample prices — the owner sets real prices in admin" />}
 
         <section aria-labelledby="p-packages" className="flex flex-col gap-5">
@@ -117,8 +120,8 @@ export default async function PricingPage() {
               {deposit.mode === "none"
                 ? "No deposit — pay when the work is done."
                 : deposit.mode === "fixed"
-                  ? `${formatMoney(deposit.valueCents)} to hold your time, taken off your total.`
-                  : `${deposit.percent}% of the total to hold your time, taken off your total.`}
+                  ? `${formatMoney(deposit.valueCents)} to hold your time. ${keep}${keep ? "and" : "It's"} taken off your total.`
+                  : `${deposit.percent}% of the total to hold your time. ${keep}${keep ? "and" : "It's"} taken off your total.`}
             </p>
           </div>
           <div className="card p-6">

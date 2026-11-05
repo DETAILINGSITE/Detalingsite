@@ -104,7 +104,7 @@ export function Checkbox({
         onCheckedChange={(v) => onCheckedChange(v === true)}
         aria-invalid={invalid || undefined}
         aria-describedby={describedById}
-        className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-white/25 bg-ink-850 data-[state=checked]:border-gold-400 data-[state=checked]:bg-gold-400 aria-[invalid=true]:border-danger"
+        className="relative mt-0.5 flex size-6 shrink-0 items-center after:absolute after:-inset-2.5 after:content-[''] justify-center rounded-md border border-white/25 bg-ink-850 data-[state=checked]:border-gold-400 data-[state=checked]:bg-gold-400 aria-[invalid=true]:border-danger"
       >
         <RCheckbox.Indicator>
           <Check className="size-4 text-ink-950" strokeWidth={3} aria-hidden="true" />

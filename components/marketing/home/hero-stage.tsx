@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
 const HeroCanvas = dynamic(() => import("@/components/three/hero-canvas"), { ssr: false, loading: () => null });
+const PaintCanvas = dynamic(() => import("@/components/three/paint-canvas"), { ssr: false, loading: () => null });
 
 export function canRun3D(): { ok: boolean; reason?: string } {
   if (typeof window === "undefined") return { ok: false, reason: "ssr" };
@@ -34,7 +35,7 @@ export function canRun3D(): { ok: boolean; reason?: string } {
 }
 
 export function HeroStage() {
-  const [load, setLoad] = useState(false);
+  const [load, setLoad] = useState<"model" | "paint" | null>(null);
 
   useEffect(() => {
     const check = canRun3D();
@@ -46,13 +47,10 @@ export function HeroStage() {
       if (done) return;
       done = true;
       cleanup();
-      // Don't download Three.js until we know a licensed model has been added.
+      // A licensed car model wins when one has been added; otherwise the procedural paint form.
       fetch("/models/car.glb", { method: "HEAD" })
-        .then((r) => {
-          if (r.ok) setLoad(true);
-          else document.documentElement.dataset.hero3d = "off:no-model";
-        })
-        .catch(() => (document.documentElement.dataset.hero3d = "off:no-model"));
+        .then((r) => setLoad(r.ok ? "model" : "paint"))
+        .catch(() => setLoad("paint"));
     };
     const events = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"] as const;
     events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
@@ -69,5 +67,5 @@ export function HeroStage() {
   }, []);
 
   if (!load) return null;
-  return <HeroCanvas />;
+  return load === "model" ? <HeroCanvas /> : <PaintCanvas />;
 }

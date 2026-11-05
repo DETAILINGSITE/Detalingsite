@@ -13,9 +13,9 @@ export const metadata = pageMetadata({
 export default function AboutPage() {
   return (
     <PageTransition>
-      <section className="container-site py-16 md:py-24">
+      <section className="container-site py-20 md:py-32">
         <div className="flex max-w-3xl flex-col gap-6">
-          <SectionHeading as="h1" eyebrow="About us" title="Mobile detailing, done right." />
+          <SectionHeading as="h1" eyebrow="About us" title="Mobile detailing," accent="done right." />
           <p className="text-lg leading-relaxed text-fg-muted" data-reveal>
             {business.name} is a mobile auto detailing service serving Houston and the surrounding areas. We bring
             professional-quality products and our own equipment to you, whether that&apos;s a routine maintenance wash or a full

@@ -190,7 +190,7 @@ export function ScheduleStep({ state, dispatch, data, onNext, onBack, onSwitchTo
       ) : (
         // Calendar beside the times, except at lg where the summary sidebar leaves too little room.
         <div className="grid gap-8 md:grid-cols-[auto_1fr] lg:grid-cols-1 xl:grid-cols-[auto_1fr]">
-          <div aria-busy={loading} className="rounded-2xl border border-white/10 bg-ink-850 p-3 [--rdp-accent-color:var(--brand)] [--rdp-accent-background-color:rgb(200_162_74/0.15)] [--rdp-day-height:44px] [--rdp-day-width:44px] [--rdp-day_button-height:42px] [--rdp-day_button-width:42px]">
+          <div aria-busy={loading} className="rounded-2xl border border-white/10 bg-ink-850 p-3 [--rdp-accent-color:var(--brand)] [--rdp-accent-background-color:rgb(200_162_74/0.15)] [--rdp-day-height:44px] [--rdp-day-width:44px] [--rdp-day_button-height:42px] [--rdp-day_button-width:42px] max-[359px]:p-2">
             <DayPicker
               mode="single"
               timeZone={tz}

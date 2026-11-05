@@ -22,12 +22,12 @@ export default async function ReviewsPage() {
   const hasLinks = !isPlaceholder("links.reviews") && !isPlaceholder("links.gbp");
   return (
     <PageTransition>
-      <div className="container-site py-16 md:py-24">
+      <div className="container-site py-20 md:py-32">
         <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
           <SectionHeading
             as="h1"
             eyebrow="Reviews"
-            title="Real drivers. Real results."
+            title="Real drivers." accent="Real results."
             intro={
               rating.isReal ? (
                 <>
