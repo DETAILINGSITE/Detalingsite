@@ -42,8 +42,9 @@ export const business = {
 
   contact: {
     /** E.164 — used for tel: links and Twilio. NXX-555-01xx numbers are reserved as fictional. */
-    phone: "+18322507430",
-    phoneDisplay: "(832) 250-7430",
+    // Calls go to the Vapi AI assistant; texts stay on the owner's cell (Vapi numbers can't receive SMS).
+    phone: "+13042776078",
+    phoneDisplay: "(304) 277-6078",
     sms: "+18322507430",
     email: "hello@mjelitedetailing.com",
   },
