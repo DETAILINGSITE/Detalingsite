@@ -246,8 +246,9 @@ export const business = {
         paymentHoldMinutes: 15,
         travelCountsAgainstHours: false,
         base: { label: "Houston base", lat: 29.7604, lng: -95.3698 },
-        deposit: { mode: "none" },
-        cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" } },
+        // $50 non-refundable deposit, applied to the total (owner's request). Only charged once Stripe is set up.
+        deposit: { mode: "fixed", valueCents: 5000 },
+        cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" }, depositRefundable: false },
         reschedule: { minHoursBefore: 24, maxCount: 2 },
         taxRateBps: 0,
         taxTravel: false,

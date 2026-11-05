@@ -5,6 +5,7 @@
  * (exactly at the boundary counts as outside) → full deposit refund.
  * "Inside the window" (late) → fee per `lateFee`, taken from the deposit paid.
  * If no deposit was paid, a late fee can't be charged — it's recorded as owed.
+ * With `depositRefundable: false` the deposit is kept on every customer cancellation.
  */
 import { percentOf } from "./money";
 import type { OperationalSettings } from "./settings";
@@ -17,7 +18,8 @@ export interface CancellationInput {
   now: number;
   depositPaidCents: number;
   totalCents: number;
-  policy: OperationalSettings["cancellation"];
+  /** depositRefundable defaults to true when omitted. */
+  policy: Omit<OperationalSettings["cancellation"], "depositRefundable"> & { depositRefundable?: boolean };
   actor: Actor;
   /** Admin only: waive the late fee (default true for admin cancellations). */
   waiveFee?: boolean;
@@ -34,9 +36,26 @@ export interface CancellationOutcome {
 export function cancellationOutcome(input: CancellationInput): CancellationOutcome {
   const hoursBefore = (input.startsAt - input.now) / HOUR;
   const late = hoursBefore < input.policy.windowHours;
-  const waive = input.actor === "admin" ? input.waiveFee !== false : false;
+  const refundable = input.policy.depositRefundable !== false;
+  // Admins refund by default only when the deposit is refundable; they can still choose to refund
+  // a non-refundable deposit (e.g. when the business cancels).
+  const waive = input.actor === "admin" ? (refundable ? input.waiveFee !== false : input.waiveFee === true) : false;
 
-  if (!late || waive) {
+  if (waive) {
+    return { late, feeCents: 0, refundCents: input.depositPaidCents, feeOwedCents: 0 };
+  }
+  if (!refundable) {
+    // Non-refundable deposit: kept on any cancellation. A late fee beyond the deposit is still owed.
+    const lateFee = !late
+      ? 0
+      : input.policy.lateFee.type === "fixed"
+        ? input.policy.lateFee.cents
+        : input.policy.lateFee.type === "percent"
+          ? percentOf(input.totalCents, input.policy.lateFee.percent)
+          : 0;
+    return { late, feeCents: input.depositPaidCents, refundCents: 0, feeOwedCents: Math.max(0, lateFee - input.depositPaidCents) };
+  }
+  if (!late) {
     return { late, feeCents: 0, refundCents: input.depositPaidCents, feeOwedCents: 0 };
   }
 

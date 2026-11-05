@@ -23,6 +23,8 @@ export interface WizardData {
   timezone: string;
   shop: { enabled: boolean; label: string; mapsUrl: string };
   cancellationWindowHours: number;
+  /** false: the deposit is kept on any cancellation (it still counts toward the total). */
+  depositRefundable: boolean;
   payments: { mode: "stripe" | "fake" | "none"; publishableKey: string | null };
   smsAvailable: boolean;
   uploadsAvailable: boolean;

@@ -19,7 +19,7 @@ const PaymentPanel = dynamic(() => import("../payment-panel").then((m) => m.Paym
   loading: () => <p role="status" className="text-fg-muted">Loading secure payment…</p>,
 });
 
-export function ReviewStep({ state, dispatch, data, onBack, onConfirmed, summaryProps }: StepProps & { onConfirmed: (token: string) => void; summaryProps: { when: string | null; where: string | null; vehicle: string | null } }) {
+export function ReviewStep({ state, dispatch, data, onBack, onConfirmed, summaryProps }: StepProps & { onConfirmed: (token: string) => void; summaryProps: { depositRefundable: boolean; when: string | null; where: string | null; vehicle: string | null } }) {
   const hold = state.hold;
   const [price, setPrice] = useState<PriceSummary | null>(hold?.price ?? null);
   const [promo, setPromo] = useState(state.review.promoCode);
@@ -105,7 +105,11 @@ export function ReviewStep({ state, dispatch, data, onBack, onConfirmed, summary
             onCheckedChange={setAgree}
             invalid={!!error && !agree}
             label={<>I agree to the <Link href="/cancellation-policy" target="_blank" className="text-gold-300 underline">cancellation policy</Link></>}
-            description={`Free changes up to ${data.cancellationWindowHours} hours before your appointment.`}
+            description={
+              needsPayment && !data.depositRefundable
+                ? `Your ${formatMoney(price?.depositCents ?? 0)} deposit is non-refundable and goes toward your total. You can reschedule up to ${data.cancellationWindowHours} hours before your appointment.`
+                : `Free changes up to ${data.cancellationWindowHours} hours before your appointment.`
+            }
           />
           {needsPayment ? (
             <p className="text-sm text-fg-muted">

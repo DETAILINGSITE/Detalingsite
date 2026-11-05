@@ -227,14 +227,14 @@ test("E2E-11 reschedule via manage link frees the old slot and notifies", async 
   expect(msgs.some((m) => m.template === "booking_rescheduled")).toBe(true);
 });
 
-test("E2E-12 cancel outside the window → full refund queued", async ({ page, request }) => {
+test("E2E-12 cancel early → the non-refundable deposit is kept, no refund queued", async ({ page, request }) => {
   const number = await bookConfirmed(page, "cancel@example.com");
   await page.getByRole("button", { name: /cancel booking/i }).click();
-  await expect(page.getByText(/full deposit of \$50/i)).toBeVisible();
+  await expect(page.getByText(/\$50 deposit is non-refundable/i)).toBeVisible();
   await page.getByRole("button", { name: /yes, cancel my booking/i }).click();
   await expect(page.getByRole("heading", { name: /booking cancelled/i })).toBeVisible();
   const msgs = await outbox(request, number);
-  expect(msgs.some((m) => m.type === "stripe.refund")).toBe(true);
+  expect(msgs.some((m) => m.type === "stripe.refund")).toBe(false);
   expect(msgs.some((m) => m.template === "booking_cancelled")).toBe(true);
 });
 

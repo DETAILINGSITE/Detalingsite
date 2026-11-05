@@ -40,6 +40,7 @@ export default async function SettingsPage() {
             <AdminInput label="Online reschedule until (hours before)" name="rescheduleMinHours" type="number" defaultValue={st.reschedule.minHoursBefore} />
             <AdminInput label="Max online reschedules" name="rescheduleMax" type="number" defaultValue={st.reschedule.maxCount} />
           </div>
+          <AdminCheck label="Refund the deposit when a customer cancels early (untick for a non-refundable deposit)" name="depositRefundable" defaultChecked={st.cancellation.depositRefundable} />
         </section>
         <section className="card flex flex-col gap-4 p-5" aria-labelledby="pr-h">
           <h2 id="pr-h" className="font-bold">Pricing</h2>
