@@ -34,16 +34,18 @@ import type { ContactData } from "@/lib/validation/booking";
 import { HoldBanner } from "./hold-banner";
 import { Progress } from "./progress";
 import { PathStep } from "./steps/path-step";
+import { VehicleStep } from "./steps/vehicle-step";
 import { Summary } from "./summary";
 
 /*
- * Only the first step ships with the page. The later steps bring zod, react-hook-form, the date
- * picker, address autocomplete and the photo uploader, and evaluating all of that up front was one
- * long main-thread task on a phone. They're still server-rendered (a deep link to ?step=schedule
- * renders fully), and preloadSteps() fetches them on the visitor's first interaction.
+ * Only the entry steps ship with the page: path (/book) and vehicle (/quote starts there, and
+ * renders the wizard on the client, so a lazy entry step would show a placeholder, not the form).
+ * The later steps bring zod, react-hook-form, the date picker, address autocomplete and the
+ * photo uploader, and evaluating all of that up front was one long main-thread task on a phone.
+ * They're still server-rendered (a deep link to ?step=schedule renders fully), and
+ * preloadSteps() fetches them, plus the zod schemas, on the visitor's first interaction.
  */
 const stepModules = {
-  vehicle: () => import("./steps/vehicle-step"),
   services: () => import("./steps/services-step"),
   custom: () => import("./steps/custom-step"),
   location: () => import("./steps/location-step"),
@@ -52,9 +54,8 @@ const stepModules = {
   review: () => import("./steps/review-step"),
 };
 const stepLoading = () => <StepPlaceholder />;
-const VehicleStep = dynamic(() => stepModules.vehicle().then((m) => m.VehicleStep), { loading: stepLoading });
-const ServicesStep = dynamic(() => stepModules.services().then((m) => m.ServicesStep), { loading: stepLoading });
 const CustomStep = dynamic(() => stepModules.custom().then((m) => m.CustomStep), { loading: stepLoading });
+const ServicesStep = dynamic(() => stepModules.services().then((m) => m.ServicesStep), { loading: stepLoading });
 const LocationStep = dynamic(() => stepModules.location().then((m) => m.LocationStep), { loading: stepLoading });
 const ScheduleStep = dynamic(() => stepModules.schedule().then((m) => m.ScheduleStep), { loading: stepLoading });
 const ContactStep = dynamic(() => stepModules.contact().then((m) => m.ContactStep), { loading: stepLoading });
@@ -74,7 +75,7 @@ let stepsPreloaded = false;
 function preloadSteps() {
   if (stepsPreloaded) return;
   stepsPreloaded = true;
-  for (const load of Object.values(stepModules)) void load().catch(() => {});
+  for (const load of [...Object.values(stepModules), () => import("@/lib/validation/booking")]) void load().catch(() => {});
 }
 
 const uuid = () => crypto.randomUUID();
