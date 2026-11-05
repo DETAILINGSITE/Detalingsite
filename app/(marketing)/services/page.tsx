@@ -18,21 +18,21 @@ export default async function ServicesPage() {
   return (
     <PageTransition>
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Services", path: "/services" }])} />
-      <div className="container-site pt-16 pb-8 md:pt-24">
-        <SectionHeading as="h1" eyebrow="Services" title="Detailing, done properly." intro="Every service is priced by vehicle size and booked online. Not sure what you need? Request a custom quote." />
+      <div className="container-site pt-20 pb-10 md:pt-32">
+        <SectionHeading as="h1" eyebrow="Services" title="Detailing," accent="done properly." intro="Every service is priced by vehicle size and booked online. Not sure what you need? Request a custom quote." />
       </div>
       {catalog.categories.map((cat) => {
         const list = catalog.services.filter((s) => s.categoryId === cat.id);
         if (!list.length) return null;
         return (
           <section key={cat.id} aria-labelledby={`cat-${cat.slug}`} className="container-site py-12">
-            <h2 id={`cat-${cat.slug}`} className="text-2xl font-bold">
+            <h2 id={`cat-${cat.slug}`} className="text-[clamp(1.8rem,3.4vw,2.8rem)] leading-[1] font-bold tracking-[-0.03em]">
               {cat.name}
             </h2>
             <p className="mt-2 max-w-2xl text-fg-muted">{cat.description}</p>
-            <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-fan>
               {list.map((s) => (
-                <li key={s.id}>
+                <li key={s.id} data-fan-item>
                   <ServiceCard s={s} />
                 </li>
               ))}

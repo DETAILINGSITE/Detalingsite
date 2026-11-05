@@ -98,6 +98,19 @@ test("S-REDUCED reduced motion: no Lenis, no 3D, content visible", async ({ brow
   expect(await page.getByTestId("hero-canvas").count()).toBe(0);
   expect(await page.evaluate(() => document.documentElement.dataset.hero3d)).toMatch(/^off:reduced-motion/);
   await expect(page.getByRole("heading", { name: /packages|simple packages/i })).toBeVisible();
+  // Nothing animated may be left faded out: the engine skips those effects under reduced motion,
+  // so a CSS pre-state that hides them would leave whole sections blank.
+  for (const path of ["/", "/pricing", "/about"]) {
+    await page.goto(path);
+    await page.mouse.wheel(0, 400);
+    await page.waitForTimeout(1500);
+    const hidden = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>("[data-reveal],[data-depth],[data-fan-item],[data-stack-card],[data-recede]")]
+        .filter((el) => Number(getComputedStyle(el).opacity) < 1)
+        .map((el) => `${el.tagName.toLowerCase()}.${el.className.toString().slice(0, 40)}`),
+    );
+    expect(hidden, `${path}: ${hidden.join(", ")}`).toEqual([]);
+  }
   await ctx.close();
 });
 

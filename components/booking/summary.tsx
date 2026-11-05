@@ -10,7 +10,7 @@ import type { PriceSummary } from "@/lib/booking/summary";
 import { formatDuration, formatMoney } from "@/lib/domain/money";
 import { formatDateTimeLong } from "@/lib/domain/time";
 
-export function SummaryBody({ price, when, timezone, where, vehicle }: { price: PriceSummary | null; when: string | null; timezone: string; where: string | null; vehicle: string | null }) {
+export function SummaryBody({ price, when, timezone, where, vehicle, depositRefundable = true }: { price: PriceSummary | null; when: string | null; timezone: string; where: string | null; vehicle: string | null; depositRefundable?: boolean }) {
   if (!price || price.lines.length === 0) {
     return <p className="text-sm text-fg-muted">Your selections and price will appear here.</p>;
   }
@@ -65,7 +65,7 @@ export function SummaryBody({ price, when, timezone, where, vehicle }: { price: 
         {price.depositCents > 0 && (
           <>
             <div className="flex justify-between text-fg-muted">
-              <span>Deposit due today</span>
+              <span>{depositRefundable ? "Deposit due today" : "Non-refundable deposit due today"}</span>
               <span className="tabular">{formatMoney(price.depositCents)}</span>
             </div>
             <div className="flex justify-between text-fg-muted">

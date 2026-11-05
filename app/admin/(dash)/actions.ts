@@ -514,6 +514,7 @@ export async function settingsSaveAction(form: FormData): Promise<ActionResult> 
             : lateFeeType === "percent"
               ? { type: "percent", percent: Number(raw.lateFeeValue) }
               : { type: "forfeit_deposit" },
+        depositRefundable: raw.depositRefundable === "on",
       },
       reschedule: { minHoursBefore: Number(raw.rescheduleMinHours), maxCount: Number(raw.rescheduleMax) },
       taxRateBps: Math.round(Number(raw.taxRatePercent) * 100),

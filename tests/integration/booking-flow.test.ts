@@ -227,6 +227,7 @@ describe("booking flow (integration)", () => {
   });
 
   it("I-CANCEL inside and outside the window (scenario 12)", async () => {
+    await resetDb({ settings: { cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" }, depositRefundable: true } } });
     const book = async () => {
       const hold = await createHold(await holdReq(), clock());
       if (!hold.ok) throw new Error();
@@ -242,5 +243,16 @@ describe("booking flow (integration)", () => {
     const lateNow = at("2026-11-03T13:00:00Z"); // 2 hours before
     const inside = await cancelBooking(late, { actor: "customer" }, lateNow);
     expect(inside).toMatchObject({ ok: true, late: true, refundCents: 0, feeCents: 5000 });
+  });
+
+  it("I-CANCEL-NONREFUNDABLE a non-refundable deposit is kept even on an early cancellation", async () => {
+    await resetDb({ settings: { cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" }, depositRefundable: false } } });
+    const hold = await createHold(await holdReq(), clock());
+    if (!hold.ok) throw new Error();
+    await attachContact(hold.token, contact, { ip: null, now: clock(), sessionId: crypto.randomUUID() });
+    await handlePaymentEvent((await confirmViaWebhook(hold.token)).event, clock());
+    const booking = (await findBookingByToken(db(), hold.token))!;
+    const out = await cancelBooking(booking, { actor: "customer" }, clock());
+    expect(out).toMatchObject({ ok: true, late: false, refundCents: 0, feeCents: 5000 });
   });
 });

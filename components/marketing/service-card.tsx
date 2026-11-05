@@ -21,9 +21,10 @@ export function ServiceCard({ s }: { s: ServiceCardData }) {
     <Link
       href={`/services/${s.slug}`}
       transitionTypes={["nav-forward"]}
-      className="group card flex h-full flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1"
-      data-reveal
+      className="group card glint relative flex h-full flex-col overflow-hidden rounded-[2rem]"
+      data-tilt="5"
     >
+      <span className="spot z-10" aria-hidden="true" />
       <ViewTransition name={`service-${s.slug}`} share="morph" default="none">
         <div className="relative aspect-[16/10] overflow-hidden">
           <ServiceArt slug={s.slug} category={s.categorySlug} className="size-full transition-transform duration-700 group-hover:scale-[1.04]" />

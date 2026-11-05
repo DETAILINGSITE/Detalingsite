@@ -29,6 +29,18 @@ describe("U-POLICY cancellation & reschedule", () => {
     expect(o.refundCents).toBe(5000);
     expect(cancellationOutcome({ ...base, actor: "admin", waiveFee: false, now: start - H, policy: { windowHours: 24, lateFee: { type: "forfeit_deposit" } } }).refundCents).toBe(0);
   });
+  it("U-POLICY-07 non-refundable deposit: kept on any customer cancellation, early or late", () => {
+    const policy = { windowHours: 24, lateFee: { type: "forfeit_deposit" as const }, depositRefundable: false };
+    expect(cancellationOutcome({ ...base, now: start - 10 * 24 * H, policy })).toEqual({ late: false, feeCents: 5000, refundCents: 0, feeOwedCents: 0 });
+    expect(cancellationOutcome({ ...base, now: start - H, policy })).toEqual({ late: true, feeCents: 5000, refundCents: 0, feeOwedCents: 0 });
+    // A late fee bigger than the deposit is still owed on top.
+    expect(cancellationOutcome({ ...base, now: start - H, policy: { ...policy, lateFee: { type: "fixed", cents: 8000 } } })).toEqual({ late: true, feeCents: 5000, refundCents: 0, feeOwedCents: 3000 });
+  });
+  it("U-POLICY-08 non-refundable deposit: admins keep it by default but can choose to refund", () => {
+    const policy = { windowHours: 24, lateFee: { type: "forfeit_deposit" as const }, depositRefundable: false };
+    expect(cancellationOutcome({ ...base, actor: "admin", now: start - 48 * H, policy }).refundCents).toBe(0);
+    expect(cancellationOutcome({ ...base, actor: "admin", waiveFee: true, now: start - 48 * H, policy }).refundCents).toBe(5000);
+  });
   it("U-POLICY-06 reschedule limits", () => {
     const policy = { minHoursBefore: 24, maxCount: 2 };
     expect(canReschedule({ startsAt: start, now: start - 48 * H, count: 0, status: "confirmed", policy, actor: "customer" })).toEqual({ ok: true });
