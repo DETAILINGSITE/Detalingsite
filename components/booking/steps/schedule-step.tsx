@@ -32,8 +32,18 @@ interface AvailabilityOk {
 }
 type AvailabilityErr = { ok: false; code: string; message: string };
 
+/** The business-timezone calendar date of a real instant (e.g. a hold's start time). */
 function ymd(d: Date, tz: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+}
+
+/**
+ * The calendar date of a day cell, read with the same getters the day picker uses for its
+ * labels. Converting the cell's Date to the business timezone instead shifted every day by
+ * one for visitors whose device isn't on that timezone (the "Nov 26" cell became Nov 25).
+ */
+function cellDate(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export function ScheduleStep({ state, dispatch, data, onNext, onBack, onSwitchToQuote, notice }: StepProps & { onSwitchToQuote: () => void; notice?: string | null }) {
@@ -158,7 +168,7 @@ export function ScheduleStep({ state, dispatch, data, onNext, onBack, onSwitchTo
     } else setError(fail.message ?? "Something went wrong. Please try again.");
   };
 
-  const disabledDay = (d: Date) => !byDate.has(ymd(d, tz));
+  const disabledDay = (d: Date) => !byDate.has(cellDate(d));
 
   return (
     <StepShell
@@ -195,11 +205,11 @@ export function ScheduleStep({ state, dispatch, data, onNext, onBack, onSwitchTo
               mode="single"
               timeZone={tz}
               selected={selectedDate ? new Date(`${selectedDate}T12:00:00`) : undefined}
-              onSelect={(d) => d && setSelectedDate(ymd(d, tz))}
+              onSelect={(d) => d && setSelectedDate(cellDate(d))}
               disabled={disabledDay}
               startMonth={avail ? new Date(`${avail.firstBookableDate}T12:00:00`) : undefined}
               endMonth={avail ? new Date(`${avail.lastBookableDate}T12:00:00`) : undefined}
-              onMonthChange={(m) => setFromDate(ymd(m, tz))}
+              onMonthChange={(m) => setFromDate(cellDate(m))}
               aria-label="Choose a date"
             />
           </div>

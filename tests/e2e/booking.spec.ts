@@ -249,6 +249,22 @@ test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
   await expect(page.getByRole("button", { name: /november 25/i })).toBeEnabled();
 });
 
+// Day cells must match the business calendar whatever timezone the visitor's device is on
+// (CI browsers run in UTC, ahead of Houston; Honolulu is behind it).
+test.describe("E2E-13b closed days in another timezone", () => {
+  test.use({ timezoneId: "Pacific/Honolulu" });
+  test("Thanksgiving is still the closed day", async ({ page }) => {
+    await page.clock.setFixedTime(CLOCK);
+    await startService(page, { pkg: "Bronze" });
+    await page.getByRole("radio", { name: /at your shop/i }).click();
+    await next(page);
+    await page.getByRole("button", { name: /next month/i }).click();
+    await expect(page.getByRole("button", { name: /november 26/i })).toBeDisabled();
+    await expect(page.getByRole("button", { name: /november 25/i })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /november 27/i })).toBeEnabled();
+  });
+});
+
 test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {
   await startService(page, { size: "SUV", pkg: "VIP" });
   await expect(page.getByRole("heading", { name: /where should we do the work/i })).toBeVisible();
