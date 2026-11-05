@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo } from "next/font/google";
+import { Archivo, Instrument_Serif } from "next/font/google";
 import type { CSSProperties, ReactNode } from "react";
 import { business } from "@/config/business";
 import { Analytics } from "@/components/analytics/analytics";
@@ -12,6 +12,16 @@ const archivo = Archivo({
   display: "swap",
   variable: "--font-archivo",
   preload: true,
+});
+
+/** Second (and last) family: an italic editorial serif for accent words in headlines. */
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["italic"],
+  display: "swap",
+  variable: "--font-serif",
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -35,8 +45,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={archivo.variable} style={{ "--brand": business.colors.brand } as CSSProperties}>
+    <html lang="en" className={`${archivo.variable} ${serif.variable}`} style={{ "--brand": business.colors.brand } as CSSProperties}>
       <body className="min-h-dvh">
+        <div aria-hidden="true" className="grain" />
         <a
           href="#main"
           className="sr-only fixed top-3 left-3 z-[200] rounded-full bg-gold-400 px-4 py-3 font-semibold text-ink-950 focus:not-sr-only"

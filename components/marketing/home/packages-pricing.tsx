@@ -38,33 +38,40 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
           <PlaceholderBadge label="Sample prices — set real prices in admin" />
         </p>
       )}
-      <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-fan>
         {packages.map((p) => {
           const tier = tierColor(p.slug);
           const firstEntry = firstSize ? p.bySize[firstSize] : undefined;
           return (
             <li
               key={p.id}
-              data-reveal
-              className={cn("card relative flex flex-col gap-6 overflow-hidden p-7", p.featured && "lg:-translate-y-3")}
+              data-fan-item
+              data-tilt="5"
+              className={cn("card glint relative flex flex-col gap-6 overflow-hidden rounded-[2rem] p-6 sm:p-7", p.featured && "lg:-translate-y-4")}
               style={{
                 borderColor: `color-mix(in srgb, ${tier} ${p.featured ? 70 : 40}%, transparent)`,
                 boxShadow: p.featured ? `0 30px 80px -40px ${tier}` : undefined,
               }}
             >
+              <span className="spot" aria-hidden="true" />
               <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1" style={{ background: tier }} />
-              {p.featured && (
-                <span
-                  className="absolute top-4 right-5 rounded-full px-3 py-1 text-xs font-bold tracking-wide text-ink-950 uppercase"
-                  style={{ background: tier }}
-                >
-                  Most popular
-                </span>
-              )}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-28 -right-28 size-72 rounded-full opacity-30"
+                style={{ background: `radial-gradient(circle, ${tier}, transparent 65%)` }}
+              />
               <div>
-                <h3 className="text-2xl font-bold" style={{ color: tier }}>
-                  {p.name}
-                </h3>
+                {/* Badge sits in the title row and wraps under it on narrow cards, so it never covers the name. */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <h3 className="text-2xl font-bold" style={{ color: tier }}>
+                    {p.name}
+                  </h3>
+                  {p.featured && (
+                    <span className="rounded-full px-3 py-1 text-[0.68rem] font-bold tracking-wide whitespace-nowrap text-ink-950 uppercase" style={{ background: tier }}>
+                      Most popular
+                    </span>
+                  )}
+                </div>
                 <p className="mt-1 text-sm text-fg-muted">{p.tagline}</p>
               </div>
               {/* Side by side on phones and tablets; stacked rows once four narrow cards share a line. */}
@@ -72,9 +79,9 @@ export function PackagesPricing({ packages, sizes }: { packages: PackageCardData
                 {sizes.map((z) => {
                   const entry = p.bySize[z.id];
                   return (
-                    <div key={z.id} className="rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-2.5 lg:flex lg:items-center lg:justify-between lg:gap-3">
-                      <dt className="text-xs font-semibold tracking-wide text-fg-muted uppercase">{shortSizeLabel(z.id, z.label)}</dt>
-                      <dd className="tabular mt-1 font-display text-3xl font-bold lg:mt-0 lg:text-2xl">{entry ? priceLabel(p.slug, z.id, entry.priceCents) : "—"}</dd>
+                    <div key={z.id} className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] px-2.5 py-2.5 sm:px-3 lg:flex lg:items-center lg:justify-between lg:gap-3">
+                      <dt className="text-[0.62rem] font-semibold tracking-[0.06em] whitespace-nowrap text-fg-muted uppercase sm:text-xs sm:tracking-wide lg:whitespace-normal">{shortSizeLabel(z.id, z.label)}</dt>
+                      <dd className="tabular mt-1 font-display text-[1.65rem] font-bold sm:text-3xl lg:mt-0 lg:text-2xl">{entry ? priceLabel(p.slug, z.id, entry.priceCents) : "—"}</dd>
                     </div>
                   );
                 })}

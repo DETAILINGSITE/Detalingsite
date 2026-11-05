@@ -152,6 +152,7 @@ export async function previewCancellation(booking: Booking, actor: PolicyActor, 
       waiveFee,
     }),
     windowHours: ctx.settings.cancellation.windowHours,
+    depositRefundable: ctx.settings.cancellation.depositRefundable,
     depositPaidCents: paid.cents,
   };
 }

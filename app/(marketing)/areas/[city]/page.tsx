@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { business } from "@/config/business";
 import { FinalCta } from "@/components/marketing/final-cta";
 import { ServiceCard } from "@/components/marketing/service-card";
 import { PageTransition } from "@/components/motion/page-transition";
 import { JsonLd } from "@/components/seo/json-ld";
-import { buttonVariants } from "@/components/ui/button";
+import { CtaLink } from "@/components/ui/cta-link";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
 import { formatMoney } from "@/lib/domain/money";
 import { getCityPage, getPublicCatalog, getPublicContent, getPublicSchedule } from "@/lib/server/data/public";
@@ -39,10 +38,10 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   return (
     <PageTransition>
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: page.city, path: `/areas/${page.slug}` }])} />
-      <section className="container-site flex flex-col gap-6 py-16 md:py-24">
+      <section className="container-site flex flex-col gap-6 pt-20 pb-16 md:pt-32 md:pb-24">
         <p className="eyebrow">Service area</p>
-        <h1 className="max-w-3xl text-[clamp(2.2rem,5vw,4rem)] leading-[1] font-extrabold">
-          Car detailing in {page.city}, {page.region}
+        <h1 className="max-w-4xl text-[clamp(2.5rem,6vw,5.2rem)] leading-[0.95] font-extrabold tracking-[-0.035em]">
+          Car detailing in <span className="serif electric font-normal tracking-[-0.02em]">{page.city}, {page.region}</span>
         </h1>
         {page.isPlaceholder && <PlaceholderBadge label="Sample city page — add genuinely local content" />}
         <p className="max-w-2xl text-lg leading-relaxed text-fg-muted">{page.introMd}</p>
@@ -53,12 +52,12 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
           </p>
         )}
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Link href={`/book?zip=${zone?.zipCodes[0] ?? ""}`} className={buttonVariants({ size: "lg" })}>
+          <CtaLink href={`/book?zip=${zone?.zipCodes[0] ?? ""}`} className="w-full sm:w-auto">
             Book in {page.city}
-          </Link>
-          <a href={`tel:${business.contact.phone}`} className={buttonVariants({ size: "lg", variant: "secondary" })}>
+          </CtaLink>
+          <CtaLink href={`tel:${business.contact.phone}`} variant="glass" className="w-full sm:w-auto">
             Call {business.contact.phoneDisplay}
-          </a>
+          </CtaLink>
         </div>
       </section>
       <section aria-labelledby="city-services" className="container-site pb-16">

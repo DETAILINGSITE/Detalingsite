@@ -9,7 +9,7 @@ import { FinalCta } from "@/components/marketing/final-cta";
 import { ServiceArt } from "@/components/marketing/service-art";
 import { PageTransition } from "@/components/motion/page-transition";
 import { JsonLd } from "@/components/seo/json-ld";
-import { buttonVariants } from "@/components/ui/button";
+import { CtaLink } from "@/components/ui/cta-link";
 import { PlaceholderBadge } from "@/components/ui/placeholder-badge";
 import { formatDuration } from "@/lib/domain/money";
 import { itemPriceLabel, priceLabel } from "@/lib/site/pricing-labels";
@@ -43,6 +43,8 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
   const gallery = content.gallery.filter((g) => g.serviceId === s.id).slice(0, 2);
   // A package's own service is booked as that package (the booking page doesn't list it separately).
   const pkg = catalog.packages.find((p) => p.serviceIds.includes(s.id));
+  // "VIP — Showroom finish": the part after the dash is set in the accent serif.
+  const [lead, accent] = s.name.includes(" — ") ? s.name.split(" — ", 2) : [s.name, ""];
   const bookHref = s.quoteOnly ? `/quote?svc=${s.slug}` : pkg ? `/book?pkg=${pkg.slug}` : `/book?svc=${s.slug}`;
 
   return (
@@ -51,14 +53,23 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Services", path: "/services" }, { name: s.name, path: `/services/${s.slug}` }])} />
       {faqs.length > 0 && <JsonLd data={faqJsonLd(faqs.map((f) => ({ question: f.question, answer: f.answerMd })))} />}
 
-      <section className="container-site grid gap-10 pt-12 pb-16 md:pt-20 lg:grid-cols-2 lg:items-center">
+      <section className="container-site grid gap-10 pt-12 pb-16 md:pt-24 lg:grid-cols-2 lg:items-center lg:gap-16">
         <div className="flex flex-col gap-6">
           <nav aria-label="Breadcrumb" className="text-sm text-fg-subtle">
             <Link href="/services" transitionTypes={["nav-back"]} className="inline-flex min-h-11 items-center hover:text-fg">
               ← All services
             </Link>
           </nav>
-          <h1 className="text-[clamp(2.2rem,5vw,4.2rem)] leading-[1] font-extrabold">{s.name}</h1>
+          <h1 className="text-[clamp(2.5rem,5.5vw,4.8rem)] leading-[0.95] font-extrabold tracking-[-0.035em]">
+            {accent ? (
+              <>
+                {lead} <span className="sr-only">— </span>
+                <span className="serif electric block font-normal tracking-[-0.02em]">{accent}</span>
+              </>
+            ) : (
+              s.name
+            )}
+          </h1>
           <p className="text-lg leading-relaxed text-fg-muted">{s.summary}</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
             <span className="font-semibold text-gold-300">{s.quoteOnly ? "Quoted per vehicle" : itemPriceLabel(s.slug, s.bySize, { capitalize: true })}</span>
@@ -69,16 +80,16 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           </div>
           {/* Stacked on phones: a side-by-side row could wrap differently once the web font loads (CLS). */}
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <Link href={bookHref} className={buttonVariants({ size: "lg" })}>
-              {s.quoteOnly ? "Request a quote" : `Book ${s.name}`}
-            </Link>
-            <Link href="/contact" className={buttonVariants({ size: "lg", variant: "secondary" })}>
+            <CtaLink href={bookHref} className="w-full sm:w-auto">
+              {s.quoteOnly ? "Request a quote" : `Book ${lead}`}
+            </CtaLink>
+            <CtaLink href="/contact" variant="glass" className="w-full sm:w-auto">
               Ask a question
-            </Link>
+            </CtaLink>
           </div>
         </div>
         <ViewTransition name={`service-${s.slug}`} share="morph" default="none">
-          <div className="relative aspect-[16/10] overflow-hidden rounded-[var(--radius-card)] border border-white/10">
+          <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] border border-white/10 shadow-[0_40px_100px_-50px_rgb(43_140_255/0.5)]">
             <ServiceArt slug={s.slug} category={s.categorySlug} className="size-full" />
           </div>
         </ViewTransition>
@@ -124,7 +135,8 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                   <tr key={z.id}>
                     <th scope="row" className="py-3 font-semibold">{z.label}</th>
                     <td className="tabular py-3">{priceLabel(s.slug, z.id, s.bySize[z.id]?.priceCents ?? 0)}</td>
-                    <td className="py-3 text-fg-muted">{formatDuration(s.bySize[z.id]?.durationMin ?? 0)}</td>
+                    {/* Size multipliers give odd minutes (483 → "8 hr 3 min"); show the nearest quarter hour. */}
+                    <td className="py-3 text-fg-muted">About {formatDuration(Math.round((s.bySize[z.id]?.durationMin ?? 0) / 15) * 15)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -135,7 +147,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
                 <ul className="mt-4 flex flex-col divide-y divide-white/[0.08]">
                   {addons.map((a) => (
                     <li key={a.id} className="flex justify-between gap-4 py-3">
-                      <Link href={`/services/${a.slug}`} className="hover:text-gold-300">{a.name}</Link>
+                      <Link href={`/services/${a.slug}`} className="-my-2 inline-flex min-h-11 items-center hover:text-gold-300">{a.name}</Link>
                       <span className="tabular text-fg-muted">{itemPriceLabel(a.slug, a.bySize)}</span>
                     </li>
                   ))}
@@ -163,7 +175,7 @@ export default async function ServicePage({ params }: { params: Promise<{ slug: 
           <FaqList items={faqs.map((f) => ({ id: f.id, question: f.question, answer: f.answerMd }))} />
         </section>
       )}
-      <FinalCta title={s.quoteOnly ? "Tell us about your project." : `Book your ${s.name.toLowerCase()}.`} />
+      <FinalCta title={s.quoteOnly ? "Tell us about your project." : accent ? `Book your ${lead} detail.` : `Book your ${s.name.toLowerCase()}.`} />
     </PageTransition>
   );
 }

@@ -142,7 +142,7 @@ export function buildMessage(input: MessageInput): MessageContent {
           refund > 0
             ? `A refund of ${money(refund)} is on its way to your card and usually appears within 5–10 business days.`
             : (b.cancellationFeeCents ?? 0) > 0
-              ? `As this was inside the cancellation window, ${money(b.cancellationFeeCents ?? 0)} of the deposit was kept per our cancellation policy.`
+              ? `Per our cancellation policy, ${money(b.cancellationFeeCents ?? 0)} of your deposit was kept and isn't refunded.`
               : "No payment was taken.",
           "We'd love to see you another time.",
         ],

@@ -9,6 +9,8 @@ import { formatPhoneForDisplay } from "@/lib/validation/booking";
 import { bookingDetail } from "@/lib/server/admin/queries";
 import { requireAdminPage } from "@/lib/server/admin-guard";
 import { formatAddress } from "@/lib/server/booking/location";
+import { loadSettings } from "@/lib/server/data/settings";
+import { getDb } from "@/db/client";
 import { bookingBalanceAction, bookingCancelAction, bookingNotesAction, bookingStatusAction } from "../../actions";
 
 export default async function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,6 +20,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   const d = await bookingDetail(id);
   if (!d) notFound();
   const { booking: b, customer: c } = d;
+  const depositRefundable = (await loadSettings(getDb())).cancellation.depositRefundable;
   const balance = b.totalCents - b.depositCents - b.balancePaidCents;
   const live = b.status === "confirmed" || b.status === "in_progress";
 
@@ -105,7 +108,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
           {b.status === "confirmed" && session.role === "owner" && (
             <ActionForm action={bookingCancelAction} submitLabel="Cancel booking" variant="danger" confirm="Cancel this booking and notify the customer?">
               <input type="hidden" name="id" value={b.id} />
-              <AdminCheck label="Waive late fee (full deposit refund)" name="waiveFee" defaultChecked />
+              <AdminCheck label={depositRefundable ? "Waive late fee (full deposit refund)" : "Refund the deposit anyway (it's non-refundable by policy)"} name="waiveFee" defaultChecked={depositRefundable} />
               <AdminInput label="Reason" name="reason" />
             </ActionForm>
           )}

@@ -39,7 +39,7 @@ jobs:
         if: always()
         with:
           name: reports
-          # .lighthouseci-* are dot-directories, which upload-artifact skips unless asked.
+          # Lighthouse writes to .lighthouseci*, which upload-artifact skips unless hidden files are included.
           include-hidden-files: true
           path: |
             docs/VERIFICATION.md

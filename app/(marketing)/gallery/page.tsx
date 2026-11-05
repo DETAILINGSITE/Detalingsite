@@ -34,11 +34,11 @@ export default async function GalleryPage() {
   });
   return (
     <PageTransition>
-      <div className="container-site py-16 md:py-24">
+      <div className="container-site py-20 md:py-32">
         <SectionHeading
           as="h1"
           eyebrow="Gallery"
-          title="The proof is in the paint."
+          title="The proof is" accent="in the paint."
           intro={items.length > 0 ? "Tap any project to compare before and after." : "Photos of our recent work are coming soon."}
         />
         <div className="mt-12">

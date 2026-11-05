@@ -233,14 +233,14 @@ test("E2E-11 reschedule via manage link frees the old slot and notifies", async 
   expect(msgs.some((m) => m.template === "booking_rescheduled")).toBe(true);
 });
 
-test("E2E-12 cancel outside the window → full refund queued", async ({ page, request }) => {
+test("E2E-12 cancel early → the non-refundable deposit is kept, no refund queued", async ({ page, request }) => {
   const number = await bookConfirmed(page, "cancel@example.com");
   await page.getByRole("button", { name: /cancel booking/i }).click();
-  await expect(page.getByText(/full deposit of \$50/i)).toBeVisible();
+  await expect(page.getByText(/\$50 deposit is non-refundable/i)).toBeVisible();
   await page.getByRole("button", { name: /yes, cancel my booking/i }).click();
   await expect(page.getByRole("heading", { name: /booking cancelled/i })).toBeVisible();
   const msgs = await outbox(request, number);
-  expect(msgs.some((m) => m.type === "stripe.refund")).toBe(true);
+  expect(msgs.some((m) => m.type === "stripe.refund")).toBe(false);
   expect(msgs.some((m) => m.template === "booking_cancelled")).toBe(true);
 });
 
@@ -253,6 +253,22 @@ test("E2E-13 closed days are disabled in the calendar", async ({ page }) => {
   await page.getByRole("button", { name: /next month/i }).click();
   await expect(page.getByRole("button", { name: /november 26/i })).toBeDisabled();
   await expect(page.getByRole("button", { name: /november 25/i })).toBeEnabled();
+});
+
+// Day cells must match the business calendar whatever timezone the visitor's device is on
+// (CI browsers run in UTC, ahead of Houston; Honolulu is behind it).
+test.describe("E2E-13b closed days in another timezone", () => {
+  test.use({ timezoneId: "Pacific/Honolulu" });
+  test("Thanksgiving is still the closed day", async ({ page }) => {
+    await page.clock.setFixedTime(CLOCK);
+    await startService(page, { pkg: "Bronze" });
+    await page.getByRole("radio", { name: /at your shop/i }).click();
+    await next(page);
+    await page.getByRole("button", { name: /next month/i }).click();
+    await expect(page.getByRole("button", { name: /november 26/i })).toBeDisabled();
+    await expect(page.getByRole("button", { name: /november 25/i })).toBeEnabled();
+    await expect(page.getByRole("button", { name: /november 27/i })).toBeEnabled();
+  });
 });
 
 test("E2E-14 a job longer than a day routes to a custom quote", async ({ page }) => {

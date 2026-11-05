@@ -17,7 +17,7 @@ export default function GiftCardsPage() {
   return (
     <PageTransition>
       <div className="container-site flex flex-col gap-8 py-16 md:py-24">
-        <SectionHeading as="h1" eyebrow="Gift cards" title="Give a showroom finish." intro="Perfect for birthdays, new car owners and anyone who never has time to clean theirs. Delivered by email instantly." />
+        <SectionHeading as="h1" eyebrow="Gift cards" title="Give a" accent="showroom finish." intro="Perfect for birthdays, new car owners and anyone who never has time to clean theirs. Delivered by email instantly." />
         {business.giftCards.paymentLink ? (
           <a href={business.giftCards.paymentLink} className={buttonVariants({ size: "lg" }) + " w-fit"} rel="noopener">
             Buy a gift card
