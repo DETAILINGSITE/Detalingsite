@@ -22,7 +22,7 @@ export default async function ContactPage() {
     <PageTransition>
       <div className="container-site grid gap-14 py-16 md:py-24 lg:grid-cols-[1.2fr_1fr]">
         <div className="flex flex-col gap-8">
-          <SectionHeading as="h1" eyebrow="Contact" title="Let's talk about your car." intro="Questions, membership enquiries or anything else — send a message and we'll reply within one business day." />
+          <SectionHeading as="h1" eyebrow="Contact" title="Let's talk about" accent="your car." intro="Questions, membership enquiries or anything else — send a message and we'll reply within one business day." />
           <ContactForm />
         </div>
         <aside className="flex flex-col gap-6" aria-label="Contact details">

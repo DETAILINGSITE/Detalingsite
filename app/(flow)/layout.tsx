@@ -20,7 +20,7 @@ export default async function FlowLayout({ children }: { children: ReactNode }) 
       <main id="main" tabIndex={-1} className="min-h-[70dvh] outline-none">
         <Suspense fallback={<FlowSkeleton />}>{children}</Suspense>
       </main>
-      <Footer />
+      <Footer cta={false} />
     </>
   );
 }

@@ -63,6 +63,8 @@ export const OperationalSettingsSchema = z.object({
   cancellation: z.object({
     windowHours: z.number().min(0).max(24 * 14),
     lateFee: LateFee,
+    /** false: the deposit is kept on every customer cancellation, however early (it still counts toward the total). */
+    depositRefundable: z.boolean().default(true),
   }),
   reschedule: z.object({
     minHoursBefore: z.number().min(0).max(24 * 14),

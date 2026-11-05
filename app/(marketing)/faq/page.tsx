@@ -19,8 +19,8 @@ export default async function FaqPage() {
   return (
     <PageTransition>
       <JsonLd data={faqJsonLd(faqs.map((f) => ({ question: f.question, answer: f.answerMd })))} />
-      <div className="container-site py-16 md:py-24">
-        <SectionHeading as="h1" eyebrow="FAQ" title="Questions, answered." />
+      <div className="container-site py-20 md:py-32">
+        <SectionHeading as="h1" eyebrow="FAQ" title="Questions," accent="answered." />
         <div className="mt-12 flex flex-col gap-14">
           {groups.map((g) => (
             <section key={g} aria-labelledby={`faq-${g}`}>

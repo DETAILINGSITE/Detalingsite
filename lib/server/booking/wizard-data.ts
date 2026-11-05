@@ -52,6 +52,7 @@ export async function loadWizardData(): Promise<WizardData> {
     timezone: schedule.timezone,
     shop: { enabled: business.shop.enabled && schedule.serviceMode !== "mobile", label: `${a.line1}, ${a.city}, ${a.region} ${a.postalCode}`, mapsUrl: business.shop.mapsUrl },
     cancellationWindowHours: catalog.cancellation.windowHours,
+    depositRefundable: catalog.cancellation.depositRefundable,
     payments: { mode: paymentsMode(e), publishableKey: e.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? null },
     smsAvailable: smsConfigured(e),
     uploadsAvailable: storageMode(e) !== "none",

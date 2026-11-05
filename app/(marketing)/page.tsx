@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { business } from "@/config/business";
 import { isPlaceholder } from "@/config/placeholder";
 import { BeforeAfter } from "@/components/marketing/before-after";
@@ -16,6 +15,7 @@ import { SectionHeading } from "@/components/marketing/section-heading";
 import { ZipChecker } from "@/components/marketing/zip-checker";
 import { PageTransition } from "@/components/motion/page-transition";
 import { JsonLd } from "@/components/seo/json-ld";
+import { CtaLink } from "@/components/ui/cta-link";
 import { buttonVariants } from "@/components/ui/button";
 import { getPublicCatalog, getPublicContent, getPublicSchedule } from "@/lib/server/data/public";
 import { localBusinessJsonLd } from "@/lib/seo/jsonld";
@@ -38,16 +38,17 @@ export default async function HomePage() {
       <Hero />
       <TrustBar />
 
-      <section aria-labelledby="packages-title" className="py-20 md:py-28">
+      <section aria-labelledby="packages-title" className="section-pad" data-recede>
         <div className="container-site">
           <SectionHeading
             id="packages-title"
             eyebrow="Packages & pricing"
-            title="Simple packages. Honest prices."
-            intro="Choose your vehicle size to see exact starting prices. Add-ons and condition are confirmed when you book."
+            title="Simple packages."
+            accent="Honest prices."
+            intro="Every package shows the price for cars and for trucks & SUVs. Add-ons and condition are confirmed when you book."
             align="center"
           />
-          <div className="mt-12">
+          <div className="mt-6">
             <PackagesPricing
               sizes={catalog.sizes.map((z) => ({ id: z.id, label: z.label }))}
               packages={catalog.packages.map((p) => ({
@@ -63,21 +64,20 @@ export default async function HomePage() {
             />
           </div>
           <AddOnsList catalog={catalog} />
-          <p className="mt-10 text-center">
-            <Link href="/pricing" className={buttonVariants({ variant: "link" })}>
+          <p className="mt-14 text-center">
+            <CtaLink href="/pricing" variant="glass" size="md">
               See the full price list
-            </Link>
+            </CtaLink>
           </p>
         </div>
       </section>
 
       {showcase.length > 0 && (
-        <section aria-labelledby="results-title" className="container-site py-24 md:py-32">
-          <SectionHeading id="results-title" eyebrow="Results" title="Drag to see the difference." />
-          <div className="mt-12 grid gap-8 lg:grid-cols-2">
+        <section aria-labelledby="results-title" className="container-site section-pad" data-recede>
+          <SectionHeading id="results-title" eyebrow="Results" title="Drag to see" accent="the difference." />
+          <div className="mt-14 grid gap-8 lg:grid-cols-2" data-fan>
             {showcase.map((g, i) => (
-              <BeforeAfter
-                key={g.id}
+              <div key={g.id} data-fan-item className="shell"><div className="core p-0"><BeforeAfter
                 before={g.beforeSrc}
                 after={g.afterSrc}
                 altBefore={g.altBefore}
@@ -86,13 +86,13 @@ export default async function HomePage() {
                 height={g.height}
                 isPlaceholder={g.isPlaceholder}
                 peek={i === 0}
-              />
+              /></div></div>
             ))}
           </div>
-          <p className="mt-8">
-            <Link href="/gallery" className={buttonVariants({ variant: "secondary" })}>
+          <p className="mt-12">
+            <CtaLink href="/gallery" variant="glass" size="md">
               View the gallery
-            </Link>
+            </CtaLink>
           </p>
         </section>
       )}
@@ -101,17 +101,17 @@ export default async function HomePage() {
       <WhyUs />
 
       {content.testimonials.length > 0 && (
-        <section aria-labelledby="reviews-title" className="bg-ink-850 py-24 md:py-32">
+        <section aria-labelledby="reviews-title" className="section-pad relative border-y border-white/[0.06] bg-[#0a0c0f]">
           <div className="container-site">
             <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-              <SectionHeading id="reviews-title" eyebrow="Reviews" title="Drivers notice the difference." />
+              <SectionHeading id="reviews-title" eyebrow="Reviews" title="Drivers notice" accent="the difference." />
               {!isPlaceholder("links.gbp") && (
                 <a href={business.links.googleBusinessProfile} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "secondary" })}>
                   Read all reviews on Google
                 </a>
               )}
             </div>
-            <div className="mt-12">
+            <div className="mt-14" data-depth>
               <ReviewsCarousel
                 reviews={content.testimonials.map((t) => ({
                   id: t.id,
@@ -128,43 +128,44 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section id="service-area" aria-labelledby="area-title" className="container-site grid gap-12 py-24 md:py-32 lg:grid-cols-2">
+      <section id="service-area" aria-labelledby="area-title" className="container-site section-pad grid gap-12 lg:grid-cols-2 lg:gap-20">
         <div className="flex flex-col gap-6">
           <SectionHeading
             id="area-title"
             eyebrow="Service area"
-            title="Do you service my area?"
+            title="Do you service"
+            accent="my area?"
             intro="We bring everything — water, power and pro equipment — to homes and offices across Houston and the surrounding areas."
           />
           <ul className="flex flex-wrap gap-2" data-reveal>
             {[...new Set(schedule.zones.flatMap((z) => z.cities))].map((c) => (
-              <li key={c} className="rounded-full border border-white/10 px-3 py-1.5 text-sm text-fg-muted">
+              <li key={c} className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-fg-muted transition-colors duration-300 hover:border-gold-400/40 hover:text-fg">
                 {c}
               </li>
             ))}
           </ul>
         </div>
-        <ZipChecker
+        <div data-depth><ZipChecker
           shopEnabled={business.shop.enabled && schedule.serviceMode !== "mobile"}
           zones={schedule.zones.map((z) => ({ name: z.name, zipCodes: z.zipCodes, travelFeeCents: z.travelFeeCents, cities: z.cities }))}
-        />
+        /></div>
       </section>
 
       {business.flags.memberships && (
-        <section aria-labelledby="members-title" className="container-site pb-24">
+        <section aria-labelledby="members-title" className="container-site pb-24 md:pb-36" data-depth>
           <MembershipCard headingId="members-title" />
         </section>
       )}
 
       {featuredFaqs.length > 0 && (
-        <section aria-labelledby="faq-title" className="container-site grid gap-12 pb-24 md:pb-32 lg:grid-cols-[1fr_2fr]">
+        <section aria-labelledby="faq-title" className="container-site grid gap-12 pb-24 md:pb-36 lg:grid-cols-[1fr_2fr] lg:gap-20">
           <div className="flex flex-col gap-6">
-            <SectionHeading id="faq-title" eyebrow="FAQ" title="Good questions." />
-            <Link href="/faq" className={buttonVariants({ variant: "secondary" }) + " w-fit"}>
+            <SectionHeading id="faq-title" eyebrow="FAQ" title="Good" accent="questions." />
+            <CtaLink href="/faq" variant="glass" size="md" className="w-fit">
               All FAQs
-            </Link>
+            </CtaLink>
           </div>
-          <FaqList items={featuredFaqs.map((f) => ({ id: f.id, question: f.question, answer: f.answerMd }))} />
+          <div data-depth><FaqList items={featuredFaqs.map((f) => ({ id: f.id, question: f.question, answer: f.answerMd }))} /></div>
         </section>
       )}
 

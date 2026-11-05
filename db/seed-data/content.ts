@@ -37,7 +37,7 @@ export const seedFaqs = [
     featured: true,
     question: "Do you take a deposit?",
     answerMd:
-      "Not right now. You don't pay anything online. Payment is due when the work is done.",
+      "Yes. A $50 non-refundable deposit holds your appointment and goes toward your total, so you pay the rest when the work is done. If you need a different time, reschedule instead of cancelling and the deposit moves with your booking.",
   },
   {
     category: "Booking",

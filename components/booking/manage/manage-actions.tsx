@@ -23,7 +23,7 @@ export function ManageActions({ token, timezone, canReschedule, rescheduleNote }
   const [slot, setSlot] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [preview, setPreview] = useState<{ late: boolean; feeCents: number; refundCents: number; windowHours: number; depositPaidCents: number } | null>(null);
+  const [preview, setPreview] = useState<{ late: boolean; feeCents: number; refundCents: number; feeOwedCents: number; windowHours: number; depositRefundable: boolean; depositPaidCents: number } | null>(null);
   const [reason, setReason] = useState("");
 
   const openReschedule = async () => {
@@ -117,7 +117,9 @@ export function ManageActions({ token, timezone, canReschedule, rescheduleNote }
             {mode === "cancel" && preview && (
               <div className="mt-5 flex flex-col gap-4">
                 <p className="rounded-xl bg-ink-800 p-4 text-sm">
-                  {preview.late
+                  {preview.depositPaidCents > 0 && !preview.depositRefundable && preview.refundCents === 0
+                    ? `Your ${formatMoney(preview.depositPaidCents)} deposit is non-refundable, so it won't be refunded.${preview.feeOwedCents > 0 ? ` A ${formatMoney(preview.feeOwedCents)} late-cancellation fee is still owed.` : ""}`
+                    : preview.late
                     ? `You're cancelling within ${preview.windowHours} hours of your appointment. ${preview.feeCents > 0 ? `${formatMoney(preview.feeCents)} of your deposit is kept as a late-cancellation fee.` : ""} ${preview.refundCents > 0 ? `${formatMoney(preview.refundCents)} will be refunded.` : "No refund is due."}`
                     : preview.depositPaidCents > 0
                       ? `Your full deposit of ${formatMoney(preview.refundCents)} will be refunded to your card.`

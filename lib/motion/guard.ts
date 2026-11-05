@@ -4,7 +4,7 @@
  */
 const ALLOWED = new Set([
   "x", "y", "z", "xPercent", "yPercent", "rotation", "rotate", "rotationX", "rotationY", "rotateX", "rotateY",
-  "scale", "scaleX", "scaleY", "skewX", "skewY", "opacity", "autoAlpha", "transformOrigin", "force3D",
+  "scale", "scaleX", "scaleY", "skewX", "skewY", "opacity", "autoAlpha", "transformOrigin", "transformPerspective", "force3D",
   // tween controls (not CSS properties)
   "duration", "delay", "ease", "stagger", "repeat", "yoyo", "repeatDelay", "paused", "overwrite", "immediateRender",
   "onStart", "onUpdate", "onComplete", "scrollTrigger", "clearProps", "id", "easeReverse", "snap", "textContent",

@@ -239,6 +239,7 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
   }, [state, data]);
 
   const summaryProps = {
+    depositRefundable: data.depositRefundable,
     when: state.hold?.startsAt ?? null,
     where:
       state.quoteToken && init.quote

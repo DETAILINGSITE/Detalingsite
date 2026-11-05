@@ -42,8 +42,9 @@ export const business = {
 
   contact: {
     /** E.164 — used for tel: links and Twilio. NXX-555-01xx numbers are reserved as fictional. */
-    phone: "+18322507430",
-    phoneDisplay: "(832) 250-7430",
+    // Calls go to the Vapi AI assistant; texts stay on the owner's cell (Vapi numbers can't receive SMS).
+    phone: "+13042776078",
+    phoneDisplay: "(304) 277-6078",
     sms: "+18322507430",
     email: "hello@mjelitedetailing.com",
   },
@@ -246,8 +247,9 @@ export const business = {
         paymentHoldMinutes: 15,
         travelCountsAgainstHours: false,
         base: { label: "Houston base", lat: 29.7604, lng: -95.3698 },
-        deposit: { mode: "none" },
-        cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" } },
+        // $50 non-refundable deposit, applied to the total (owner's request). Only charged once Stripe is set up.
+        deposit: { mode: "fixed", valueCents: 5000 },
+        cancellation: { windowHours: 24, lateFee: { type: "forfeit_deposit" }, depositRefundable: false },
         reschedule: { minHoursBefore: 24, maxCount: 2 },
         taxRateBps: 0,
         taxTravel: false,
