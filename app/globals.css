@@ -251,7 +251,55 @@
   }
 
   .hairline { border-color: rgb(255 255 255 / 0.08); }
+
+  /* Home package cards (components/marketing/home/packages-pricing.tsx). --tier is set per card;
+     the accent bar, corner glow and check marks are drawn here rather than as extra elements. */
+  .tier-card {
+    @apply relative flex flex-col gap-6 overflow-hidden rounded-[2rem] p-6 sm:p-7;
+    border-color: color-mix(in srgb, var(--tier) 40%, transparent);
+    background:
+      radial-gradient(circle 12.75rem at calc(100% - 2rem) 2rem, color-mix(in srgb, var(--tier) 30%, transparent), transparent 65%),
+      radial-gradient(120% 80% at 0% 0%, rgb(43 140 255 / 0.05), transparent 60%),
+      linear-gradient(180deg, #14171b, #0e1013);
+  }
+  .tier-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 0.25rem;
+    background: var(--tier);
+  }
+  .tier-card[data-featured] {
+    @apply lg:-translate-y-4;
+    border-color: color-mix(in srgb, var(--tier) 70%, transparent);
+    box-shadow: 0 30px 80px -40px var(--tier);
+  }
+  .tier-badge {
+    @apply rounded-full px-3 py-1 text-[0.68rem] font-bold tracking-wide whitespace-nowrap text-ink-950 uppercase;
+    background: var(--tier);
+  }
+  .tier-price {
+    @apply min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] px-2.5 py-2.5 sm:px-3 lg:flex lg:items-center lg:justify-between lg:gap-3;
+  }
+  .tier-price dt {
+    @apply text-[0.62rem] font-semibold tracking-[0.06em] whitespace-nowrap text-fg-muted uppercase sm:text-xs sm:tracking-wide lg:whitespace-normal;
+  }
+  .tier-price dd { @apply mt-1 text-[1.65rem] font-bold sm:text-3xl lg:mt-0 lg:text-2xl; }
+  .tier-checks { @apply flex flex-col gap-2.5 text-sm; }
+  .tier-checks li { @apply flex gap-2.5; }
+  .tier-checks li::before {
+    content: "";
+    @apply mt-0.5 size-4 shrink-0;
+    background: var(--tier);
+    -webkit-mask: var(--check-mask) center / contain no-repeat;
+    mask: var(--check-mask) center / contain no-repeat;
+  }
 }
+
+/* Unlayered so it wins over the button variant utilities, as the inline styles it replaces did. */
+.tier-card { --check-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E"); }
+.tier-btn { border-color: color-mix(in srgb, var(--tier) 60%, transparent); color: var(--tier); }
+.tier-card[data-featured] .tier-btn { background: var(--tier); border-color: var(--tier); color: #0b0c0e; box-shadow: none; }
 
 /* ─── Atmosphere: fixed film grain + ambient light (fixed layers only, never on scrollers) ── */
 .grain {
