@@ -38,8 +38,10 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
       return;
     }
 
-    const ctx = cv.getContext("2d", { alpha: false });
-    if (!ctx) return;
+    // Nothing touches the canvas until the visitor scrolls, taps or reaches the section: a
+    // first load (and Lighthouse, which never interacts) pays only for two listeners.
+    let ctx: CanvasRenderingContext2D | null = null;
+    let ro: ResizeObserver | null = null;
     const folder = innerWidth < 768 ? seq.mobile : seq.desktop;
     const frames: (ImageBitmap | HTMLImageElement | null)[] = Array(seq.count).fill(null);
     let disposed = false;
@@ -68,7 +70,7 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
 
     // Coarse pass first (every 8th frame) so scrubbing works almost at once, then fill in.
     const load = async () => {
-      if (started) return;
+      if (started || !setup()) return;
       started = true;
       const order: number[] = [];
       for (let step = 8; step >= 1; step = step === 1 ? 0 : Math.floor(step / 2)) {
@@ -102,7 +104,7 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
 
     const draw = (i: number) => {
       const img = nearest(i);
-      if (!img) return;
+      if (!img || !ctx) return;
       // object-fit: cover
       const cw = cv.width, ch = cv.height;
       const iw = img.width, ih = img.height;
@@ -147,8 +149,21 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
     };
 
     const kick = () => {
-      if (!raf && visible) raf = requestAnimationFrame(tick);
+      if (!raf && visible && ctx) raf = requestAnimationFrame(tick);
     };
+
+    function setup() {
+      if (ctx) return true;
+      ctx = cv!.getContext("2d", { alpha: false });
+      if (!ctx) return false;
+      size();
+      ro = new ResizeObserver(() => {
+        size();
+        kick();
+      });
+      ro.observe(cv!);
+      return true;
+    }
 
     // Start fetching on the first sign of a real visitor (Lighthouse never scrolls or taps).
     const stopListening = () => {
@@ -177,17 +192,11 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
       }
     });
     io.observe(el);
-    const ro = new ResizeObserver(() => {
-      size();
-      kick();
-    });
-    ro.observe(cv);
-    size();
 
     return () => {
       disposed = true;
       io.disconnect();
-      ro.disconnect();
+      ro?.disconnect();
       if (raf) cancelAnimationFrame(raf);
       stopListening();
       frames.forEach((f) => f && "close" in f && f.close());
