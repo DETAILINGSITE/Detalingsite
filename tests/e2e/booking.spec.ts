@@ -8,8 +8,15 @@ import { advanceClock, agreeAndPay, bookingNumber, closeTabs, fakePaySuccess, fi
 // The calendar opens on the browser's month, so tests that name a day pin the browser to the server's test clock.
 const CLOCK = new Date("2026-10-22T15:00:00Z");
 
-test.beforeEach(async ({ request }) => {
+test.beforeEach(async ({ request, page }) => {
   await setClock(request);
+  // These tests cover the booking logic, not the step animation. Headless Chromium on the CI
+  // runners (no GPU) stops finishing view transitions after a few dozen in one browser, which
+  // stalled step changes (E2E-10/14/17, desktop only, never on the first repeat). Without the API
+  // the wizard takes its no-animation path, the same one S-VT checks.
+  await page.addInitScript(() => {
+    delete (Document.prototype as unknown as Record<string, unknown>).startViewTransition;
+  });
 });
 test.afterEach(closeTabs);
 
