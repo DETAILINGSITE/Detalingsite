@@ -20,6 +20,8 @@ export interface CspOptions {
 
 const STRIPE = ["https://js.stripe.com", "https://*.js.stripe.com"];
 const TURNSTILE = "https://challenges.cloudflare.com";
+// Cloudflare Web Analytics: the proxy in front of the custom domain injects this beacon.
+const CF_INSIGHTS = "https://static.cloudflareinsights.com";
 
 export function buildCsp(o: CspOptions): string {
   const plausibleHost = o.plausibleSrc ? new URL(o.plausibleSrc).origin : "https://plausible.io";
@@ -28,8 +30,8 @@ export function buildCsp(o: CspOptions): string {
     : [];
   const script =
     o.mode === "strict"
-      ? [`'nonce-${o.nonce}'`, "'strict-dynamic'", "'self'", ...STRIPE, TURNSTILE, plausibleHost, ...ads]
-      : ["'self'", "'unsafe-inline'", ...STRIPE, TURNSTILE, plausibleHost, ...ads];
+      ? [`'nonce-${o.nonce}'`, "'strict-dynamic'", "'self'", ...STRIPE, TURNSTILE, CF_INSIGHTS, plausibleHost, ...ads]
+      : ["'self'", "'unsafe-inline'", ...STRIPE, TURNSTILE, CF_INSIGHTS, plausibleHost, ...ads];
   if (o.dev) script.push("'unsafe-eval'");
 
   const directives: Record<string, string[]> = {
@@ -38,7 +40,7 @@ export function buildCsp(o: CspOptions): string {
     "style-src": ["'self'", "'unsafe-inline'"],
     "img-src": ["'self'", "data:", "blob:", "https://*.stripe.com", ...(o.extraImgHosts ?? []), ...(o.adsEnabled ? ["https://www.facebook.com", "https://www.google-analytics.com"] : [])],
     "font-src": ["'self'", "data:"],
-    "connect-src": ["'self'", "https://api.stripe.com", "https://*.stripe.com", TURNSTILE, plausibleHost, ...(o.extraImgHosts ?? []), ...(o.adsEnabled ? ["https://www.google-analytics.com", "https://*.google-analytics.com"] : [])],
+    "connect-src": ["'self'", "https://api.stripe.com", "https://*.stripe.com", TURNSTILE, "https://cloudflareinsights.com", plausibleHost, ...(o.extraImgHosts ?? []), ...(o.adsEnabled ? ["https://www.google-analytics.com", "https://*.google-analytics.com"] : [])],
     "frame-src": [...STRIPE, "https://hooks.stripe.com", TURNSTILE, "https://www.google.com"],
     "worker-src": ["'self'", "blob:"],
     "media-src": ["'self'"],

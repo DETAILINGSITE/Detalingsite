@@ -1,5 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "sh scripts/vercel-build.sh",
-  "crons": [{ "path": "/api/cron/tick", "schedule": "0 13 * * *" }]
+  "crons": [
+    {
+      "path": "/api/cron/tick",
+      "schedule": "0 13 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "detalingsite.vercel.app"
+        }
+      ],
+      "destination": "https://mjelitedetailing.com/:path",
+      "permanent": false
+    }
+  ]
 }
