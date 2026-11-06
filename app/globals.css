@@ -368,3 +368,29 @@ html:has(dialog[open]:modal) {
     --rdp-day_button-height: 38px;
   }
 }
+
+/* ─── Scroll-scrubbed frame sequence (components/marketing/home/scroll-sequence.tsx) ── */
+.scroll-seq { height: 340vh; }
+.scroll-seq .seq-stage { position: sticky; top: 0; height: 100svh; }
+.scroll-seq .seq-steps { min-height: 10rem; }
+.scroll-seq .seq-step { position: absolute; inset-inline: 0; bottom: 0; opacity: 0; will-change: opacity, transform; }
+/* Reduced motion (before JS) or data saver (JS sets data-static): one still, all steps listed. */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-seq { height: auto; }
+  .scroll-seq .seq-stage { position: relative; height: auto; min-height: 90svh; }
+  .scroll-seq .seq-canvas, .scroll-seq .seq-bar { display: none; }
+  .scroll-seq .seq-steps { display: grid; gap: 2rem; min-height: 0; }
+  .scroll-seq .seq-step { position: relative; opacity: 1; transform: none !important; }
+}
+.scroll-seq[data-static] { height: auto; }
+.scroll-seq[data-static] .seq-stage { position: relative; height: auto; min-height: 90svh; }
+.scroll-seq[data-static] .seq-canvas, .scroll-seq[data-static] .seq-bar { display: none; }
+.scroll-seq[data-static] .seq-steps { display: grid; gap: 2rem; min-height: 0; }
+.scroll-seq[data-static] .seq-step { position: relative; opacity: 1; transform: none !important; }
+@media (min-width: 768px) {
+  .scroll-seq .seq-steps { min-height: 8.5rem; }
+  .scroll-seq[data-static] .seq-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+  .scroll-seq .seq-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
