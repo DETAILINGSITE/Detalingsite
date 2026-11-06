@@ -23,15 +23,23 @@ export function canRun3D(): { ok: boolean; reason?: string } {
   const cores = nav.hardwareConcurrency ?? 8;
   const memory = nav.deviceMemory ?? 8;
   if (cores <= 4 && memory <= 4) return { ok: false, reason: "low-power" };
+  return { ok: true };
+}
+
+/**
+ * Creating a WebGL2 context is slow (software GL even more so), so this runs only when the
+ * scene is about to load, not while the page is hydrating.
+ */
+function hasWebGL2(): boolean {
   try {
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl2");
-    if (!gl) return { ok: false, reason: "no-webgl2" };
+    if (!gl) return false;
     gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
   } catch {
-    return { ok: false, reason: "no-webgl2" };
+    return false;
   }
-  return { ok: true };
 }
 
 export function HeroStage() {
@@ -47,6 +55,10 @@ export function HeroStage() {
       if (done) return;
       done = true;
       cleanup();
+      if (!hasWebGL2()) {
+        document.documentElement.dataset.hero3d = "off:no-webgl2";
+        return;
+      }
       // A licensed car model wins when one has been added; otherwise the procedural paint form.
       fetch("/models/car.glb", { method: "HEAD" })
         .then((r) => setLoad(r.ok ? "model" : "paint"))
