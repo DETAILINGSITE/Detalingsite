@@ -1,8 +1,8 @@
 "use client";
 /**
  * Booking wizard (docs/PLAN.md §4.1). State: reducer + sessionStorage. The URL's ?step= is
- * kept in sync with native history.pushState, which Next integrates with useSearchParams (no
- * server round trip), so browser back/forward walk the steps. Steps animate with React View
+ * kept in sync with native history.pushState (no server round trip), so browser back/forward
+ * walk the steps. Steps animate with React View
  * Transitions typed "step-forward" / "step-back".
  */
 import { CheckCircle2 } from "lucide-react";
@@ -118,8 +118,9 @@ function fromInit(init: WizardInit, data: WizardData, makeId: () => string = () 
 
 export function BookingWizard({ data, init }: { data: WizardData; init: WizardInit }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const urlStep = searchParams.get("step") as StepId | null;
+  // Not read: it keeps /quote's static shell rendering the wizard on the client only (see
+  // app/(marketing)/quote/page.tsx). Steps follow popstate, below, not this value.
+  useSearchParams();
   const [ready, setReady] = useState(false);
   const [initial] = useState(() => fromInit(init, data));
   const [state, reactDispatch] = useReducer(reducer, initial);
@@ -191,7 +192,9 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
   }, [state.step, ready]);
 
   // URL → state: browser back/forward. A step that can't be entered yet snaps the URL back.
-  // Idempotent: safe to call from both the popstate listener and the useSearchParams effect.
+  // Only real popstate events move the wizard. useSearchParams lags behind pushState: a Back
+  // pressed right after Continue could be followed by the stale step from that push, which
+  // dragged the wizard (and the URL) forward again.
   const followUrl = useCallback((step: StepId | null) => {
     const current = latest.current;
     if (!readyRef.current || !step || step === current.step) return;
@@ -208,10 +211,6 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
       window.history.replaceState(null, "", url);
     }
   }, [dispatch]);
-  useEffect(() => {
-    followUrl(urlStep);
-  }, [followUrl, urlStep, ready]);
-  // Rapid back/forward can outrun Next's router transition; read the URL directly as well.
   useEffect(() => {
     const onPop = () => followUrl(new URLSearchParams(window.location.search).get("step") as StepId | null);
     window.addEventListener("popstate", onPop);
