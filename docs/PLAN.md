@@ -51,7 +51,7 @@ You need a production-ready, lead-generating site for a car detailing business. 
 | Components | shadcn (CLI), radix-ui | 4.x / 1.8.x | Accessible Dialog, Popover, RadioGroup, Accordion, Select, Checkbox, Tabs, Sheet. Copied into the repo, so there's no runtime lock-in. |
 | Calendar | react-day-picker | 10.x | Used by shadcn Calendar; keyboard accessible. |
 | Icons | lucide-react | 1.x | Tree-shaken per icon. |
-| Fonts | next/font/google | — | Max 2 families, self-hosted, `display: swap`, preloaded. Default is **Archivo** (variable `wdth` axis: expanded cut for headlines, normal for UI), so one family covers both. A second is added only if the design pass needs it. |
+| Fonts | next/font/google | — | Max 2 families, self-hosted, preloaded. Archivo uses `display: optional` (a late swap re-lays out the page and blew the mobile TBT budget); the accent serif uses `swap`. Default is **Archivo** (variable `wdth` axis: expanded cut for headlines, normal for UI), so one family covers both. A second is added only if the design pass needs it. |
 | Motion | gsap (+ScrollTrigger, SplitText), @gsap/react | 3.15.x / 2.1.x | Free including all plugins since 3.13. 3.15 adds `easeReverse` and deprecates `yoyoEase`. `useGSAP` handles cleanup; `gsap.matchMedia()` handles breakpoints and reduced motion. |
 | Smooth scroll | lenis (`lenis/react`) | 1.3.x | Driven from `gsap.ticker` with `lagSmoothing(0)`. `syncTouch: false` (native touch), `anchors: true`, `respectReducedMotion: true` (forces lerp 1). |
 | 3D | three, @react-three/fiber, @react-three/drei | 0.186.x / 9.8.x / 10.7.x | Only `useGLTF`, `Environment` and `Lightformer` from drei, so the env map is procedural and costs zero bytes to download. |
@@ -475,7 +475,7 @@ On confirm: customer email + SMS (if consented), owner email + SMS. Reminders at
 | Initial JS, mobile Home | ≤ 170 KB gzip | Estimate: Next + React runtime ~100–105 KB, header/sticky bar/size toggle/slider/ZIP checker ~15–25 KB. Lenis, GSAP (~50 KB) and Three/R3F (~200 KB+) all load after `load` | `scripts/check-bundle.ts` (Playwright sums encoded JS bytes until the `load` event on mobile emulation) |
 | 3D payload | Model ≤ 2 MB (target 1.5) | Meshopt + KTX2, procedural env map (0 bytes) | File-size test in CI |
 | Rendering mode | Marketing static; only booking/manage/quote/admin dynamic | `ensureStatic='navigation'` on the marketing layout fails the build if violated | `next build` + route manifest test |
-| Fonts | ≤ 2 families, swap, preloaded | next/font, variable, latin subset | Network test counts font families |
+| Fonts | ≤ 2 families, Archivo optional, preloaded | next/font, variable, latin subset | Network test counts font families |
 | Images | Correct `sizes`; lazy below the fold; hero eager | next/image AVIF/WebP | Playwright checks `loading` and `fetchpriority` |
 | Third parties | Plausible ~1 KB deferred; Turnstile only on form steps; Stripe.js only on step 7; Places only on step 4 focus; map iframe only on click (facade) | | Network assertions per route |
 

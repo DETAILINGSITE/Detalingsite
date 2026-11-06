@@ -9,7 +9,10 @@ import "./globals.css";
 const archivo = Archivo({
   subsets: ["latin"],
   axes: ["wdth"],
-  display: "swap",
+  // optional, not swap: swapping in Archivo after first paint re-lays out the whole page, which
+  // was most of the home page's blocking time on phones. It's preloaded, so it's usually in time;
+  // when it isn't, that view keeps the metric-matched fallback and the next one has Archivo.
+  display: "optional",
   variable: "--font-archivo",
   preload: true,
 });

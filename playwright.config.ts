@@ -25,7 +25,11 @@ export default defineConfig({
   timeout: 90_000,
   expect: { timeout: 10_000 },
   reporter: process.env.CI ? [["list"], ["json", { outputFile: "test-results/playwright.json" }], ["html", { open: "never" }]] : [["list"], ["json", { outputFile: "test-results/playwright.json" }]],
-  use: { baseURL, trace: "retain-on-failure", screenshot: "only-on-failure" },
+  // Browsers run in the shop's time zone, like its customers. Under Playwright's fake clock
+  // (page.clock) a browser east of Chicago — e.g. a UTC CI runner — renders the booking
+  // calendar one day off from the availability data, so tests that click a day by name
+  // land on the wrong day. Real clocks aren't affected; this keeps CI the same as a Central dev box.
+  use: { baseURL, timezoneId: "America/Chicago", locale: "en-US", trace: "retain-on-failure", screenshot: "only-on-failure" },
   webServer: process.env.BASE_URL
     ? undefined
     : {
