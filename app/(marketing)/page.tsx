@@ -7,6 +7,7 @@ import { Hero } from "@/components/marketing/home/hero";
 import { HowItWorks } from "@/components/marketing/home/how-it-works";
 import { PackagesPricing } from "@/components/marketing/home/packages-pricing";
 import { AddOnsList } from "@/components/marketing/home/addons-list";
+import { ScrollSequence } from "@/components/marketing/home/scroll-sequence";
 import { TrustBar } from "@/components/marketing/home/trust-bar";
 import { WhyUs } from "@/components/marketing/home/why-us";
 import { MembershipCard } from "@/components/marketing/membership-card";
@@ -19,6 +20,7 @@ import { CtaLink } from "@/components/ui/cta-link";
 import { buttonVariants } from "@/components/ui/button";
 import { getPublicCatalog, getPublicContent, getPublicSchedule } from "@/lib/server/data/public";
 import { localBusinessJsonLd } from "@/lib/seo/jsonld";
+import { transformSequence } from "@/lib/media/sequences";
 import { pageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = pageMetadata({
@@ -37,6 +39,21 @@ export default async function HomePage() {
       <JsonLd data={localBusinessJsonLd({ hours: schedule.hours, cities: schedule.zones.flatMap((z) => z.cities) })} />
       <Hero />
       <TrustBar />
+      {/* Scroll-scrubbed "dirty to showroom" clip; appears once scripts/make-sequence.ts has made frames. */}
+      {transformSequence && (
+        <ScrollSequence
+          seq={transformSequence}
+          eyebrow="The transformation"
+          title="Watch it come"
+          accent="back to life."
+          steps={[
+            { title: "Arrives road-worn", body: "Dust, road film and brake grime from everyday Houston driving." },
+            { title: "Foam and hand wash", body: "Thick foam lifts the dirt off before a wash mitt ever touches the paint." },
+            { title: "Decon and polish", body: "Clay and polish pull out what a wash can't, for a deep, clear gloss." },
+            { title: "Showroom finish", body: "Sealed, dressed and streak-free, right in your driveway." },
+          ]}
+        />
+      )}
 
       <section aria-labelledby="packages-title" className="section-pad" data-recede>
         <div className="container-site">

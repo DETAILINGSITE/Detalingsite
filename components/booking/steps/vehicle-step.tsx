@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Checkbox, Field, Input, describedBy, useFieldIds } from "@/components/ui/field";
 import { RadioCards } from "@/components/ui/radio-cards";
 import { formatMoney } from "@/lib/domain/money";
-import { VehicleSchema } from "@/lib/validation/booking";
 import { StepShell } from "../step-shell";
 import type { StepProps } from "./types";
 
@@ -23,7 +22,10 @@ export function VehicleStep({ state, dispatch, data, onNext, onBack }: StepProps
     return c.surchargeType === "flat" ? `+${formatMoney(c.surchargeValue)}` : `+${c.surchargeValue}%`;
   };
 
-  const next = () => {
+  const next = async () => {
+    // Loaded on demand: this step can be the first one rendered (/quote), and zod is heavy to
+    // evaluate on a phone. The wizard preloads it on the visitor's first interaction.
+    const { VehicleSchema } = await import("@/lib/validation/booking");
     const parsed = VehicleSchema.safeParse(v);
     if (!parsed.success) {
       const errs: Record<string, string> = {};
