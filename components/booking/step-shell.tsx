@@ -31,12 +31,17 @@ export function StepShell({
   hideNext?: boolean;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
+  const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
+    // This effect can run late (a step's View Transition holds back effects), by which time a
+    // fast keyboard user may already have tabbed into the step. Don't pull them back.
+    if (form.current?.contains(document.activeElement)) return;
     heading.current?.focus({ preventScroll: false });
   }, [title]);
 
   return (
     <form
+      ref={form}
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
