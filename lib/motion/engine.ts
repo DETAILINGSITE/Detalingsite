@@ -126,13 +126,15 @@ export function startMotion(): MotionHandle {
       });
 
       if (reduced) {
-        gsap.set(reveals, { opacity: 1, y: 0, clearProps: "transform" });
+        if (reveals.length) gsap.set(reveals, { opacity: 1, y: 0, clearProps: "transform" });
         return;
       }
 
       // Reveals
       const offset = desktop ? 24 : 12;
-      gsap.set(reveals.filter((el) => el.dataset.reveal !== "fade"), { y: offset });
+      const lifted = reveals.filter((el) => el.dataset.reveal !== "fade");
+      // GSAP warns ("target not found") on an empty list, e.g. a page whose reveals are all above the fold.
+      if (lifted.length) gsap.set(lifted, { y: offset });
       ScrollTrigger.batch(reveals, {
         start: "top 88%",
         once: true,
