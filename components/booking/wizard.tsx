@@ -1,15 +1,15 @@
 "use client";
 /**
  * Booking wizard (docs/PLAN.md §4.1). State: reducer + sessionStorage. The URL's ?step= is
- * kept in sync with native history.pushState, which Next integrates with useSearchParams (no
- * server round trip), so browser back/forward walk the steps. Steps animate with React View
+ * kept in sync with native history.pushState (no server round trip), so browser back/forward
+ * walk the steps. Steps animate with React View
  * Transitions typed "step-forward" / "step-back".
  */
 import { CheckCircle2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { addTransitionType, startTransition, useEffect, useMemo, useReducer, useRef, useState, ViewTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { addTransitionType, startTransition, useCallback, useEffect, useMemo, useReducer, useRef, useState, ViewTransition } from "react";
 import { submitQuoteAction } from "@/app/(flow)/book/actions";
 import { buttonVariants } from "@/components/ui/button";
 import { captureAttribution, funnel, getAttribution, track } from "@/lib/analytics/track";
@@ -25,6 +25,7 @@ import {
   prevStep,
   reducer,
   stepsFor,
+  type Action,
   type StepId,
   type WizardState,
 } from "@/lib/booking/wizard-state";
@@ -80,6 +81,17 @@ function preloadSteps() {
 
 const uuid = () => crypto.randomUUID();
 
+/** Every step change becomes a history entry (replace for the first one, which has no ?step=). */
+function syncUrl(step: StepId) {
+  const url = new URL(window.location.href);
+  const current = url.searchParams.get("step");
+  if (current === step) return;
+  for (const k of ["pkg", "svc", "size", "zip", "loc", "path"]) url.searchParams.delete(k);
+  url.searchParams.set("step", step);
+  if (current) window.history.pushState(null, "", url);
+  else window.history.replaceState(null, "", url);
+}
+
 /** `makeId` is a no-op during prerender; real ids are minted on mount (see the hydrate effect). */
 function fromInit(init: WizardInit, data: WizardData, makeId: () => string = () => ""): WizardState {
   const pkg = init.packageId ? data.packages.find((p) => p.slug === init.packageId || p.id === init.packageId) : null;
@@ -106,11 +118,26 @@ function fromInit(init: WizardInit, data: WizardData, makeId: () => string = () 
 
 export function BookingWizard({ data, init }: { data: WizardData; init: WizardInit }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const urlStep = searchParams.get("step") as StepId | null;
+  // Not read: it keeps /quote's static shell rendering the wizard on the client only (see
+  // app/(marketing)/quote/page.tsx). Steps follow popstate, below, not this value.
+  useSearchParams();
   const [ready, setReady] = useState(false);
-  const [state, dispatch] = useReducer(reducer, null, () => fromInit(init, data));
+  const [initial] = useState(() => fromInit(init, data));
+  const [state, reactDispatch] = useReducer(reducer, initial);
+  const readyRef = useRef(false);
+  // The newest state, including actions React hasn't committed yet. Saved progress and ?step=
+  // are written from here, at dispatch time: a step's DOM can appear before any effect runs
+  // (a View Transition commit waits for web fonts before running layout effects), so syncing
+  // from effects let a quick refresh reload the previous step.
+  const latest = useRef(initial);
+  const dispatch = useCallback((action: Action) => {
+    const next = reducer(latest.current, action);
+    latest.current = next;
+    reactDispatch(action);
+    if (!readyRef.current) return;
+    persist(next);
+    syncUrl(next.step);
+  }, []);
   const [notice, setNotice] = useState<string | null>(init.quoteError ?? null);
   const lastStep = useRef<StepId | null>(null);
 
@@ -133,8 +160,9 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
     const freshIntent = Boolean(init.packageId || init.serviceIds?.length || init.quoteToken || init.path);
     const saved = loadPersisted();
     const urlStep = new URL(window.location.href).searchParams.get("step") as StepId | null;
+    let next: WizardState;
     if (saved && !freshIntent && saved.step !== "submitted") {
-      let next = saved;
+      next = saved;
       if (urlStep && canEnter(saved, urlStep)) next = { ...saved, step: urlStep };
       else if (!canEnter(saved, saved.step)) next = { ...saved, step: firstIncomplete(saved) };
       // A lapsed hold can't be resumed on the steps after scheduling.
@@ -146,48 +174,29 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
           setNotice("Your hold on that time expired. Please choose a time again.");
         }
       }
-      dispatch({ type: "reset", state: next });
     } else {
-      dispatch({ type: "reset", state: fromInit(init, data, uuid) });
+      next = fromInit(init, data, uuid);
     }
+    readyRef.current = true;
+    dispatch({ type: "reset", state: next });
     setReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once on mount
   }, []);
 
   useEffect(() => {
-    if (ready) persist(state);
-  }, [state, ready]);
-
-  // State → URL: every step change becomes a history entry (replace for the first one).
-  useEffect(() => {
     if (!ready) return;
-    if (urlStep !== state.step) {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const k of ["pkg", "svc", "size", "zip", "loc", "path"]) params.delete(k);
-      params.set("step", state.step);
-      const href = `${pathname}?${params}`;
-      if (urlStep) window.history.pushState(null, "", href);
-      else window.history.replaceState(null, "", href);
-    }
     if (lastStep.current !== state.step) {
       funnel("step_view", state.step, getAttribution().utmSource);
       lastStep.current = state.step;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts to step changes only
   }, [state.step, ready]);
 
   // URL → state: browser back/forward. A step that can't be entered yet snaps the URL back.
-  const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  });
-  const readyRef = useRef(ready);
-  useEffect(() => {
-    readyRef.current = ready;
-  });
-  // Idempotent: safe to call from both the popstate listener and the useSearchParams effect.
-  const followUrl = (step: StepId | null) => {
-    const current = stateRef.current;
+  // Only real popstate events move the wizard. useSearchParams lags behind pushState: a Back
+  // pressed right after Continue could be followed by the stale step from that push, which
+  // dragged the wizard (and the URL) forward again.
+  const followUrl = useCallback((step: StepId | null) => {
+    const current = latest.current;
     if (!readyRef.current || !step || step === current.step) return;
     if (step !== "submitted" && canEnter(current, step)) {
       const order = stepsFor(current);
@@ -201,16 +210,12 @@ export function BookingWizard({ data, init }: { data: WizardData; init: WizardIn
       url.searchParams.set("step", current.step);
       window.history.replaceState(null, "", url);
     }
-  };
-  useEffect(() => {
-    followUrl(urlStep);
-  }, [urlStep, ready]);
-  // Rapid back/forward can outrun Next's router transition; read the URL directly as well.
+  }, [dispatch]);
   useEffect(() => {
     const onPop = () => followUrl(new URLSearchParams(window.location.search).get("step") as StepId | null);
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, []);
+  }, [followUrl]);
 
   const go = (step: StepId, direction: "forward" | "back") => {
     if (!canEnter(state, step) && step !== "submitted") return;

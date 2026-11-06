@@ -1,6 +1,6 @@
 "use client";
 import { ArrowLeft } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -31,7 +31,9 @@ export function StepShell({
   hideNext?: boolean;
 }) {
   const heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
+  // Layout effect: in the commit that shows the step. A step's View Transition holds back
+  // passive effects, and a late focus() would pull a fast keyboard user back mid-typing.
+  useLayoutEffect(() => {
     heading.current?.focus({ preventScroll: false });
   }, [title]);
 
