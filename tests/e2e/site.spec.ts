@@ -120,9 +120,13 @@ test("S-WEBGL-OFF 3D disabled → poster stays, no errors", async () => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
+  // The WebGL probe runs on first interaction (or idle), so interact only once the hero has
+  // hydrated and its listeners are attached; a move before that is never seen.
+  const hero3d = () => page.evaluate(() => document.documentElement.dataset.hero3d ?? "");
+  await expect.poll(hero3d).not.toBe("");
   await page.mouse.move(10, 10);
-  await page.waitForTimeout(3000);
-  expect(await page.evaluate(() => document.documentElement.dataset.hero3d)).toMatch(/^off:/);
+  await page.mouse.move(60, 60);
+  await expect.poll(hero3d, { timeout: 10_000 }).toMatch(/^off:/);
   await expect(page.locator('img[fetchpriority="high"]').first()).toBeVisible();
   expect(errors).toEqual([]);
   await browser.close();
