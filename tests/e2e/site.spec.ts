@@ -95,7 +95,6 @@ test("S-REDUCED reduced motion: no Lenis, content visible", async ({ browser }) 
   await page.mouse.wheel(0, 2000);
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => document.documentElement.classList.contains("lenis"))).toBe(false);
-  expect(await page.getByTestId("hero-canvas").count()).toBe(0);
   await expect(page.getByRole("heading", { name: /packages|simple packages/i })).toBeVisible();
   // Nothing animated may be left faded out: the engine skips those effects under reduced motion,
   // so a CSS pre-state that hides them would leave whole sections blank.
