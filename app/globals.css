@@ -341,14 +341,12 @@ html[data-hero3d="on"] .hero-poster { opacity: 0; }
   }
 }
 
+/* Reduced motion only drops smooth jump-scrolling. The decorative animations (marquee, pulses,
+   entrances) keep running: Windows reports reduced motion whenever "Animation effects" is off,
+   which left desktops visibly static next to phones. Scroll-driven and desktop-only effects
+   tone themselves down in JS (scroll-sequence.tsx, lib/motion/engine.ts). */
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track { animation: none; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.15s !important;
-  }
+  *, *::before, *::after { scroll-behavior: auto !important; }
 }
 
 /* ─── View transitions (React <ViewTransition>, docs/PLAN.md §6) ──────────── */

@@ -32,10 +32,9 @@ export function BeforeAfter({
   const dragging = useRef(false);
   const id = useId();
 
-  // One-time "peek" hint when it scrolls into view (skipped for reduced motion).
+  // One-time "peek" hint when it scrolls into view.
   useEffect(() => {
     if (!peek || !box.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e?.isIntersecting) return;
