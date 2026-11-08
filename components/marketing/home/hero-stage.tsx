@@ -59,10 +59,9 @@ export function HeroStage() {
         document.documentElement.dataset.hero3d = "off:no-webgl2";
         return;
       }
-      // A licensed car model wins when one has been added; otherwise the procedural paint form.
-      fetch("/models/car.glb", { method: "HEAD" })
-        .then((r) => setLoad(r.ok ? "model" : "paint"))
-        .catch(() => setLoad("paint"));
+      // A licensed car model wins when one has been added (see next.config.ts); otherwise the
+      // procedural paint form.
+      setLoad(process.env.NEXT_PUBLIC_HERO_MODEL === "1" ? "model" : "paint");
     };
     const events = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart", "scroll"] as const;
     events.forEach((e) => window.addEventListener(e, go, { once: true, passive: true }));
