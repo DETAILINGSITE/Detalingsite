@@ -6,8 +6,9 @@
  *
  * Cost control: nothing loads until the visitor first scrolls or touches the page, frames
  * decode off the main thread (createImageBitmap), phones get 900px frames, and only
- * transform/opacity change per frame. Reduced motion or data saver: one still of the
- * finished car with the steps listed (CSS handles reduced motion before JS runs).
+ * transform/opacity change per frame. Data saver: one still of the finished car with the
+ * steps listed. Reduced motion still scrubs (nothing moves unless the visitor scrolls, and many
+ * Windows PCs report it just for having "Animation effects" off), minus the glide and step slide.
  */
 import { useEffect, useRef } from "react";
 import type { FrameSequence } from "@/lib/media/sequence-types";
@@ -31,13 +32,14 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
     const cv = canvas.current;
     if (!el || !cv) return;
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches || conn?.saveData) {
+    if (conn?.saveData) {
       // Static: the finished car with every step listed (styles key off data-static).
       el.dataset.static = "";
       if (poster.current) poster.current.src = seq.posterEnd;
       return;
     }
 
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     // Nothing touches the canvas until the visitor scrolls, taps or reaches the section: a
     // first load (and Lighthouse, which never interacts) pays only for two listeners.
     let ctx: CanvasRenderingContext2D | null = null;
@@ -122,7 +124,7 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
       const p = Math.min(1, Math.max(0, -r.top / travel));
       const target = p * (seq.count - 1);
       // Ease toward the scroll position so the playback glides instead of stepping.
-      current += (target - current) * 0.2;
+      current = reduced ? target : current + (target - current) * 0.2;
       if (Math.abs(target - current) < 0.05) current = target;
       const frame = Math.round(current);
       if (frame !== lastDrawn) {
@@ -140,7 +142,7 @@ export function ScrollSequence({ seq, steps, eyebrow, title, accent }: { seq: Fr
         // Full until near the slice edge, then a crossfade that overlaps the next step.
         const o = dist < 0.36 ? 1 : dist > 0.64 ? 0 : 1 - (dist - 0.36) / 0.28;
         // Outgoing step slides up while the next rises in, so a crossfade never stacks text.
-        const y = (cp - centre) * n * -80;
+        const y = reduced ? 0 : (cp - centre) * n * -80;
         s.style.opacity = o.toFixed(3);
         s.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
       });
