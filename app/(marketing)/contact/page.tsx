@@ -1,4 +1,5 @@
 import { Clock, Mail, MessageSquare, Phone } from "lucide-react";
+import { EmailLink } from "@/components/ui/email";
 import { business } from "@/config/business";
 import { isPlaceholder } from "@/config/placeholder";
 import { ContactForm } from "@/components/forms/contact-form";
@@ -38,7 +39,7 @@ export default async function ContactPage() {
             {!isPlaceholder("contact.email") && (
               <li className="flex items-center gap-3">
                 <Mail className="size-5 text-gold-300" aria-hidden="true" />
-                <a href={`mailto:${business.contact.email}`} className="inline-flex min-h-11 items-center hover:text-gold-300">{business.contact.email}</a>
+                <EmailLink email={business.contact.email} className="inline-flex min-h-11 items-center hover:text-gold-300" />
               </li>
             )}
           </ul>

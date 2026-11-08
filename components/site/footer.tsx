@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmailLink } from "@/components/ui/email";
 import { business } from "@/config/business";
 import { isPlaceholder } from "@/config/placeholder";
 import { getPublicSchedule } from "@/lib/server/data/public";
@@ -34,7 +35,7 @@ export async function Footer({ cta = true }: { cta?: boolean }) {
           <p className="max-w-xs text-sm leading-relaxed text-fg-muted">{business.tagline}</p>
           <address className="flex flex-col gap-1 text-sm not-italic text-fg-muted">
             <a href={`tel:${business.contact.phone}`} className="tabular hover:text-fg">{business.contact.phoneDisplay}</a>
-            {!isPlaceholder("contact.email") && <a href={`mailto:${business.contact.email}`} className="hover:text-fg">{business.contact.email}</a>}
+            {!isPlaceholder("contact.email") && <EmailLink email={business.contact.email} className="hover:text-fg" />}
             {business.shop.enabled && (
               <span>
                 {business.shop.address.line1}, {business.shop.address.city}, {business.shop.address.region}

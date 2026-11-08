@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import type { NextConfig } from "next";
 
 const securityHeaders = [
@@ -20,6 +21,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // The hero uses a licensed car model when one is in public/models; checked once at build so the
+  // browser doesn't have to probe for it (a missing file logged a 404 on every home page visit).
+  env: { NEXT_PUBLIC_HERO_MODEL: existsSync("public/models/car.glb") ? "1" : "" },
   output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   images: {
     formats: ["image/avif", "image/webp"],
