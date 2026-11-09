@@ -12,7 +12,6 @@ const PaintCanvas = dynamic(() => import("@/components/three/paint-canvas"), { s
 
 export function canRun3D(): { ok: boolean; reason?: string } {
   if (typeof window === "undefined") return { ok: false, reason: "ssr" };
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return { ok: false, reason: "reduced-motion" };
   if (window.matchMedia("(prefers-reduced-data: reduce)").matches) return { ok: false, reason: "reduced-data" };
   const nav = navigator as Navigator & {
     deviceMemory?: number;

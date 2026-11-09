@@ -87,7 +87,7 @@ test("S-HEADERS security headers; nonce CSP on booking routes", async ({ request
   expect(book.headers()["x-robots-tag"]).toContain("noindex");
 });
 
-test("S-REDUCED reduced motion: no Lenis, no 3D, content visible", async ({ browser }) => {
+test("S-REDUCED reduced motion: no Lenis, content visible", async ({ browser }) => {
   const ctx = await browser.newContext({ reducedMotion: "reduce" });
   const page = await ctx.newPage();
   await page.goto("/");
@@ -95,8 +95,6 @@ test("S-REDUCED reduced motion: no Lenis, no 3D, content visible", async ({ brow
   await page.mouse.wheel(0, 2000);
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => document.documentElement.classList.contains("lenis"))).toBe(false);
-  expect(await page.getByTestId("hero-canvas").count()).toBe(0);
-  expect(await page.evaluate(() => document.documentElement.dataset.hero3d)).toMatch(/^off:reduced-motion/);
   await expect(page.getByRole("heading", { name: /packages|simple packages/i })).toBeVisible();
   // Nothing animated may be left faded out: the engine skips those effects under reduced motion,
   // so a CSS pre-state that hides them would leave whole sections blank.
