@@ -1,8 +1,10 @@
 "use client";
 /**
  * Procedural 3D hero: a slowly flowing form finished in deep-blue metallic paint under a clear
- * coat, lit by studio light strips — the reflections you see on a freshly detailed panel. No
- * model or licence needed. Loaded lazily (ssr: false) by HeroStage when no car.glb is present.
+ * coat, lit by studio light strips — the reflections you see on a freshly detailed panel. Scroll
+ * drives a detail: the form starts dull, hazed and swirl-marked, and a band of light wipes across
+ * it leaving sealed gloss behind while the surface settles (uPolish 0 → 1). No model or licence
+ * needed. Loaded lazily (ssr: false) by HeroStage when no car.glb is present.
  *
  * Same guard rails as the model hero: DPR clamp, renders only while on screen, FPS guard,
  * error boundary, context-loss fallback, shaders compiled async before the cross-fade.
@@ -26,8 +28,12 @@ class CanvasBoundary extends Component<{ children: ReactNode; onError: () => voi
   }
 }
 
+/** Direction the polish front travels across the form (object space). */
+const POLISH_DIR = new THREE.Vector3(0.8, 0.45, 0).normalize();
+
 // Ashima/stegu 3D simplex noise (MIT).
 const NOISE = /* glsl */ `
+#define POLISH_DIR vec3(${POLISH_DIR.x.toFixed(5)}, ${POLISH_DIR.y.toFixed(5)}, 0.0)
 vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
 vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
 vec4 permute(vec4 x){return mod289(((x*34.0)+10.0)*x);}
@@ -52,13 +58,14 @@ float snoise(vec3 v){
   return 105.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
 }
 float flow(vec3 p){
-  return snoise(p*0.62+vec3(uTime*0.16,0.0,uTime*0.1))*0.2+snoise(p*1.3-vec3(0.0,uTime*0.14,0.0))*0.035;
+  // The surface settles as it is polished: rough and restless → sleek.
+  return (snoise(p*0.62+vec3(uTime*0.16,0.0,uTime*0.1))*0.2+snoise(p*1.3-vec3(0.0,uTime*0.14,0.0))*0.035)*(1.0-0.45*uPolish);
 }
 vec3 displaced(vec3 p,vec3 n){return p+n*flow(p);}
 `;
 
 function usePaintMaterial() {
-  const uniforms = useMemo(() => ({ uTime: { value: 0 } }), []);
+  const uniforms = useMemo(() => ({ uTime: { value: 0 }, uPolish: { value: 0 } }), []);
   const material = useMemo(() => {
     const m = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color("#163a78"),
@@ -72,8 +79,9 @@ function usePaintMaterial() {
     });
     m.onBeforeCompile = (shader) => {
       shader.uniforms.uTime = uniforms.uTime;
+      shader.uniforms.uPolish = uniforms.uPolish;
       shader.vertexShader = shader.vertexShader
-        .replace("#include <common>", `#include <common>\nuniform float uTime;\n${NOISE}`)
+        .replace("#include <common>", `#include <common>\nuniform float uTime;\nuniform float uPolish;\nvarying vec3 vPos;\n${NOISE}`)
         .replace(
           "#include <beginnormal_vertex>",
           `#include <beginnormal_vertex>
@@ -87,17 +95,39 @@ function usePaintMaterial() {
           vec3 dp2 = displaced(position + db*e, normalize(position + db*e));
           objectNormal = normalize(cross(dp1 - dp0, dp2 - dp0));`,
         )
-        .replace("#include <begin_vertex>", "#include <begin_vertex>\ntransformed = dp0;");
+        .replace("#include <begin_vertex>", "#include <begin_vertex>\ntransformed = dp0;\nvPos = position;");
+      // Fragment: everything ahead of the wipe front is unpolished paint (hazy, swirl-marked, no
+      // clear coat); behind it the real material shows. The front itself glows like a light bar.
+      shader.fragmentShader = shader.fragmentShader
+        .replace("#include <common>", `#include <common>\nuniform float uTime;\nuniform float uPolish;\nvarying vec3 vPos;\n${NOISE}`)
+        .replace(
+          "#include <color_fragment>",
+          `#include <color_fragment>
+          float pCoord = dot(vPos, POLISH_DIR) + snoise(vPos * 1.7) * 0.12;
+          float pFront = mix(-1.7, 1.7, uPolish);
+          float pMask = 1.0 - smoothstep(pFront - 0.1, pFront + 0.1, pCoord);
+          float pEdge = exp(-pow((pCoord - pFront) / 0.075, 2.0)) * smoothstep(0.0, 0.04, uPolish) * (1.0 - smoothstep(0.96, 1.0, uPolish));
+          float pGrime = 0.5 + 0.5 * snoise(vPos * 3.2);
+          float pSwirl = 0.5 + 0.5 * sin(length(vPos.xy * vec2(1.0, 1.4)) * 38.0 + snoise(vPos * 2.0) * 6.0);
+          vec3 pDull = mix(diffuseColor.rgb * 0.5 + vec3(0.085, 0.08, 0.075), vec3(0.2, 0.185, 0.17), pGrime * 0.45);
+          diffuseColor.rgb = mix(pDull, diffuseColor.rgb, pMask);`,
+        )
+        .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\nroughnessFactor = mix(0.5 + 0.22 * pSwirl, roughnessFactor, pMask);")
+        .replace("#include <metalnessmap_fragment>", "#include <metalnessmap_fragment>\nmetalnessFactor = mix(0.3, metalnessFactor, pMask);")
+        .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(0.35, 0.65, 1.0) * pEdge * 1.5;")
+        .replace("#include <lights_physical_fragment>", "#include <lights_physical_fragment>\nmaterial.clearcoat *= pMask;");
     };
     return m;
   }, [uniforms]);
   useEffect(() => () => material.dispose(), [material]);
-  /** Advances the flow clock and returns the new time in seconds. */
+  /** Advances the flow clock, sets the polish progress (0-1) and returns the time in seconds. */
   const advance = useCallback(
-    (delta: number) => {
+    (delta: number, polish: number) => {
       // three.js uniforms are mutable by design: the shader reads them every frame.
-      // eslint-disable-next-line react-hooks/immutability
+      /* eslint-disable react-hooks/immutability */
       uniforms.uTime.value += Math.min(delta, 0.05);
+      uniforms.uPolish.value = polish;
+      /* eslint-enable react-hooks/immutability */
       return uniforms.uTime.value;
     },
     [uniforms],
@@ -112,6 +142,27 @@ function PaintForm({ mobile }: { mobile: boolean }) {
   useEffect(() => () => geometry.dispose(), [geometry]);
   const pointer = useRef({ x: 0, y: 0 });
   const scroll = useRef(0);
+  const polishRef = useRef(0);
+  // The light bar riding the polish front: a thin ring where the front's plane cuts the form.
+  const ring = useRef<THREE.Mesh>(null);
+  const ringGeometry = useMemo(() => new THREE.TorusGeometry(1, 0.008, 8, 96), []);
+  const ringMaterial = useMemo(
+    () => new THREE.MeshBasicMaterial({ color: "#8cc4ff", transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }),
+    [],
+  );
+  const ringQuat = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), POLISH_DIR), []);
+  useEffect(
+    () => () => {
+      ringGeometry.dispose();
+      ringMaterial.dispose();
+    },
+    [ringGeometry, ringMaterial],
+  );
+  const meter = useRef<{ fill: HTMLElement | null; pct: HTMLElement | null; last: number }>({ fill: null, pct: null, last: -1 });
+  useEffect(() => {
+    meter.current.fill = document.querySelector<HTMLElement>("[data-polish-fill]");
+    meter.current.pct = document.querySelector<HTMLElement>("[data-polish-pct]");
+  }, []);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -123,13 +174,43 @@ function PaintForm({ mobile }: { mobile: boolean }) {
   }, []);
 
   useFrame((state, delta) => {
-    const t = advance(delta);
     // Scroll progress through the first screen (read in the frame loop, no scroll listener).
     const target = Math.min(1.5, window.scrollY / Math.max(1, window.innerHeight));
     scroll.current = THREE.MathUtils.damp(scroll.current, target, 5, delta);
+    const s = scroll.current;
+    // Desktop: the hero is pinned, so the detail runs over the first part of the scroll and
+    // finishes a little before the hero leaves. Phones: the form sits below the first screen, so
+    // it runs as the canvas travels up into view (target, then the same damping as scroll).
+    let polishTarget: number;
+    if (mobile) {
+      // Starts once the form clears the bottom bar, done when it reaches mid-screen.
+      const rect = state.gl.domElement.getBoundingClientRect();
+      const centre = rect.top + rect.height / 2;
+      polishTarget = THREE.MathUtils.smootherstep(window.innerHeight * 0.88 - centre, 0, window.innerHeight * 0.4);
+    } else {
+      polishTarget = THREE.MathUtils.smootherstep(target, 0.02, 0.6);
+    }
+    polishRef.current = THREE.MathUtils.damp(polishRef.current, polishTarget, 5, delta);
+    const polish = polishRef.current;
+    const t = advance(delta, polish);
+    const m = meter.current;
+    const pct = Math.round(polish * 100);
+    if (pct !== m.last) {
+      m.last = pct;
+      if (m.fill) m.fill.style.transform = `scaleX(${(pct / 100).toFixed(2)})`;
+      if (m.pct) m.pct.textContent = String(pct).padStart(2, "0");
+    }
+    const r = ring.current;
+    if (r) {
+      const d = THREE.MathUtils.lerp(-1.7, 1.7, polish); // same front as the shader
+      const R = 1.5;
+      const radius = Math.sqrt(Math.max(0, R * R - d * d));
+      r.position.copy(POLISH_DIR).multiplyScalar(d);
+      r.scale.setScalar(Math.max(radius, 0.001));
+      (r.material as THREE.MeshBasicMaterial).opacity = radius > 0.05 ? Math.sin(Math.PI * polish) * 0.85 : 0;
+    }
     const g = group.current;
     if (!g) return;
-    const s = scroll.current;
     g.rotation.y = THREE.MathUtils.damp(g.rotation.y, t * 0.12 + pointer.current.x * 0.35 + s * 1.6, 4, delta);
     g.rotation.x = THREE.MathUtils.damp(g.rotation.x, pointer.current.y * 0.2 + s * 0.5, 4, delta);
     g.position.y = (mobile ? -0.2 : 0) - s * 0.6;
@@ -141,6 +222,7 @@ function PaintForm({ mobile }: { mobile: boolean }) {
   return (
     <group ref={group} position={mobile ? [0, -0.2, 0] : [2.05, 0.05, 0]} scale={mobile ? 0.86 : 0.8}>
       <mesh geometry={geometry} material={material} />
+      <mesh ref={ring} geometry={ringGeometry} material={ringMaterial} quaternion={ringQuat} />
     </group>
   );
 }

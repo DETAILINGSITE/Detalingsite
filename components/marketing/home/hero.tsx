@@ -8,12 +8,13 @@ import { HeroStage } from "./hero-stage";
  * Hero (docs/PLAN.md §6, Home 1). The poster <Image priority> is the LCP element; the
  * procedural 3D paint scene loads lazily on top of it and cross-fades in when its first frame
  * is ready. The headline animates with a transform-only CSS keyframe so it paints on frame 1.
- * On desktop the hero is pinned for a short scroll so the paint turns while the copy recedes.
+ * On desktop the hero is pinned for a short scroll so the paint is polished (dull → gloss, with a
+ * gloss meter) while the copy recedes.
  */
 export function Hero() {
   const rating = business.proof.rating;
   return (
-    <section aria-labelledby="hero-title" className="relative isolate md:h-[175vh] motion-reduce:md:h-auto" data-hero>
+    <section aria-labelledby="hero-title" className="relative isolate md:h-[175vh]" data-hero>
       <div className="relative overflow-hidden md:sticky md:top-0 md:h-[100svh]" data-hero-pin>
         <div className="absolute inset-x-0 bottom-0 -z-10 h-[340px] md:inset-0 md:h-auto">
           <Image
@@ -84,6 +85,15 @@ export function Hero() {
               </span>
             </a>
           )}
+        </div>
+
+        {/* Gloss meter: filled by the 3D scene as scroll polishes the paint (paint-canvas.tsx). */}
+        <div aria-hidden="true" className="polish-meter pointer-events-none absolute bottom-[352px] left-5 flex items-center gap-3 text-[0.66rem] font-semibold tracking-[0.3em] text-fg-subtle uppercase md:right-8 md:bottom-20 md:left-auto">
+          Gloss
+          <span className="relative h-px w-16 overflow-hidden bg-white/15">
+            <span data-polish-fill className="absolute inset-0 origin-left scale-x-0 bg-gold-300" />
+          </span>
+          <span className="tabular w-[3ch] text-fg"><span data-polish-pct>00</span>%</span>
         </div>
 
         <div aria-hidden="true" data-hero-content className="pointer-events-none absolute right-8 bottom-10 hidden items-center gap-4 text-[0.66rem] font-semibold tracking-[0.3em] text-fg-subtle uppercase md:flex">
