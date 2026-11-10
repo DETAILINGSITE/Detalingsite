@@ -325,6 +325,9 @@ body::before {
 /* The still poster steps aside once the live 3D paint scene is on screen. */
 .hero-poster { transition: opacity 1.4s var(--ease-fluid); }
 html[data-hero3d="on"] .hero-poster { opacity: 0; }
+/* The gloss meter only means something while the 3D scene is running. */
+.polish-meter { opacity: 0; transition: opacity 0.8s var(--ease-fluid); }
+html[data-hero3d="on"] .polish-meter { opacity: 1; }
 
 /* ─── Motion: pre-reveal states only exist once JS motion is confirmed ready ── */
 /* data-revealed: already on screen when motion booted, so it is never hidden. Never applied
