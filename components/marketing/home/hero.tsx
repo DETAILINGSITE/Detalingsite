@@ -1,13 +1,12 @@
 import { Star } from "lucide-react";
-import Image from "next/image";
 import { business } from "@/config/business";
 import { CtaLink } from "@/components/ui/cta-link";
 import { HeroStage } from "./hero-stage";
 
 /**
- * Hero (docs/PLAN.md §6, Home 1). The poster <Image priority> is the LCP element; the
- * procedural 3D paint scene loads lazily on top of it and cross-fades in when its first frame
- * is ready. The headline animates with a transform-only CSS keyframe so it paints on frame 1.
+ * Hero (docs/PLAN.md §6, Home 1). The headline is the LCP element; the procedural 3D paint scene
+ * loads lazily behind it and fades in when its first frame is ready. There is no still
+ * placeholder: devices that skip 3D just get the dark backdrop. The headline animates with a transform-only CSS keyframe so it paints on frame 1.
  * On desktop the hero is pinned for a short scroll so the paint is polished (dull → gloss, with a
  * gloss meter) while the copy recedes.
  */
@@ -17,16 +16,6 @@ export function Hero() {
     <section aria-labelledby="hero-title" className="relative isolate md:h-[175vh]" data-hero>
       <div className="relative overflow-hidden md:sticky md:top-0 md:h-[100svh]" data-hero-pin>
         <div className="absolute inset-x-0 bottom-0 -z-10 h-[340px] md:inset-0 md:h-auto">
-          <Image
-            src="/images/hero-poster.svg"
-            alt=""
-            fill
-            priority
-            fetchPriority="high"
-            sizes="100vw"
-            unoptimized
-            className="hero-poster object-cover object-[78%_50%] md:object-[70%_50%]"
-          />
           <HeroStage />
           <div className="pointer-events-none absolute inset-0 hidden bg-[linear-gradient(90deg,#07080a_0%,rgb(7_8_10/0.85)_32%,transparent_62%)] md:block" />
           <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#07080a] to-transparent md:hidden" />

@@ -4,8 +4,8 @@
  * - DPR clamped: ≤1.5 on mobile, ≤2 on desktop
  * - frameloop="demand": renders only when scroll progress changes
  * - IntersectionObserver: no rendering while the hero is off-screen
- * - FPS guard: if the first frames are too slow, fall back to the poster
- * - Error boundary: any WebGL/model failure leaves the poster in place
+ * - FPS guard: if the first frames are too slow, switch the scene off
+ * - Error boundary: any WebGL/model failure leaves the plain backdrop
  * - Resources disposed on unmount
  */
 import { Environment, Lightformer, useGLTF } from "@react-three/drei";

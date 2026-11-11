@@ -112,7 +112,7 @@ test("S-REDUCED reduced motion: no Lenis, content visible", async ({ browser }) 
   await ctx.close();
 });
 
-test("S-WEBGL-OFF 3D disabled → poster stays, no errors", async () => {
+test("S-WEBGL-OFF 3D disabled → no canvas, no errors", async () => {
   const browser = await chromium.launch({ args: ["--disable-webgl", "--disable-webgl2", "--disable-3d-apis"] });
   const page = await browser.newPage({ baseURL: test.info().project.use.baseURL });
   const errors: string[] = [];
@@ -125,12 +125,11 @@ test("S-WEBGL-OFF 3D disabled → poster stays, no errors", async () => {
   await page.mouse.move(10, 10);
   await page.mouse.move(60, 60);
   await expect.poll(hero3d, { timeout: 10_000 }).toMatch(/^off:/);
-  await expect(page.locator('img[fetchpriority="high"]').first()).toBeVisible();
   expect(errors).toEqual([]);
   await browser.close();
 });
 
-test("S-LOWPOWER low-power/save-data devices get the poster", async ({ browser }) => {
+test("S-LOWPOWER low-power/save-data devices skip the 3D scene", async ({ browser }) => {
   const ctx = await browser.newContext();
   await ctx.addInitScript(() => {
     Object.defineProperty(navigator, "hardwareConcurrency", { get: () => 2 });

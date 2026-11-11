@@ -54,7 +54,7 @@ const model = path.resolve("public/models/car.glb");
 if (fs.existsSync(model)) {
   const mb = fs.statSync(model).size / 1024 / 1024;
   add("3d", mb <= 2, `car.glb is ${mb.toFixed(2)} MB (budget 2 MB)`);
-} else add("3d", false, "public/models/car.glb missing (hero will show the poster only)");
+} else add("3d", false, "public/models/car.glb missing (hero uses the procedural paint scene)");
 
 // 4. Database content
 if (process.env.DATABASE_URL) {
