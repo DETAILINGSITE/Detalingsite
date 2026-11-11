@@ -1,7 +1,7 @@
 "use client";
 /**
  * Decides whether this device gets the 3D hero, then lazy-loads it (ssr: false) only
- * after first interaction or idle. Fallback for everything else = the static poster.
+ * after first interaction or idle. Everything else just keeps the dark backdrop.
  * Never throws: WebGL failures are caught by the boundary inside HeroCanvas.
  */
 import dynamic from "next/dynamic";
