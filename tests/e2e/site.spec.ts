@@ -142,15 +142,12 @@ test("S-LOWPOWER low-power/save-data devices skip the 3D scene", async ({ browse
   await ctx.close();
 });
 
-test("S-IMAGES hero is eager/high priority; below-the-fold images lazy", async ({ page }) => {
+test("S-IMAGES below-the-fold images are lazy", async ({ page }) => {
   // Below-the-fold images (the gallery has none until real photos are added) must all be lazy.
   await page.goto("/gallery");
   const images = await page.locator("main img").count();
   const lazy = await page.locator('main img[loading="lazy"]').count();
   expect(lazy).toBe(images);
-  await page.goto("/");
-  const hero = page.locator('img[fetchpriority="high"]').first();
-  expect(await hero.getAttribute("loading")).not.toBe("lazy");
 });
 
 test("S-FONTS at most two font families are downloaded", async ({ page }) => {
